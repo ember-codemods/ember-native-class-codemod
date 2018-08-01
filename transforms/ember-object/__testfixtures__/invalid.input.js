@@ -1,3 +1,8 @@
+import { observer, computed } from "@ember/object";
+import { inject as controller } from "@ember/controller";
+import { inject as service } from "@ember/service";
+import { on } from "@ember/object/evented";
+
 // Do not transform
 const Foo = EmberObject.extend({
   computed: computed({

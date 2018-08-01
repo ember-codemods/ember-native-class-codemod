@@ -1,7 +1,7 @@
 /**
  * Program comments
  */
-class Foo extends EmberObject {
+class Foo extends Test {
   /**
    * Property comments
    */
