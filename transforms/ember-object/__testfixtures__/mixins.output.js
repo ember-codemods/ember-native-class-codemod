@@ -1,8 +1,9 @@
-import { alias, sum as add } from "@ember/object/computed";
-import { get, set, observer, computed } from "@ember/object";
-import { inject as controller } from "@ember/controller";
-import { inject as service } from "@ember/service";
-import { on } from "@ember/object/evented";
+import { sum as add, alias } from "@ember-decorators/object/computed";
+import { get, set } from "@ember/object";
+import { computed, observes } from "@ember-decorators/object";
+import { controller as controller } from "@ember-decorators/controller";
+import { service as service } from "@ember-decorators/service";
+import { on } from "@ember-decorators/object/evented";
 import layout from "components/templates/foo";
 import MixinA from "mixins/A";
 import MixinB from "mixins/B";
@@ -82,7 +83,7 @@ class Foo extends EmberObject.extend(MixinA, MixinB) {
   Computed description
   */
   @computed("fullName", "age", "country")
-  description() {
+  get description() {
     return `${this.get(
       "fullName"
     )}; Age: ${this.get("age")}; Country: ${this.get("country")}`;

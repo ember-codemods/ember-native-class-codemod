@@ -1,8 +1,9 @@
-import { alias, sum as add } from "@ember/object/computed";
-import { get, set, observer, computed } from "@ember/object";
-import { inject as controller } from "@ember/controller";
-import { inject as service } from "@ember/service";
-import { on } from "@ember/object/evented";
+import { sum as add, alias } from "@ember-decorators/object/computed";
+import { get, set } from "@ember/object";
+import { computed, observes as watcher } from "@ember-decorators/object";
+import { controller as controller } from "@ember-decorators/controller";
+import { service as service } from "@ember-decorators/service";
+import { on } from "@ember-decorators/object/evented";
 import layout from "components/templates/foo";
 
 @tagName("div")
@@ -16,11 +17,15 @@ class Foo extends EmberObject {
   @controller("abc")
   myController;
 
-  @observes("xyz")
-  observedProp;
+  @watcher("xyz")
+  observedProp() {
+    return "observed";
+  }
 
   @on("click")
-  event;
+  event() {
+    return "abc";
+  }
 
   /**
   Comments
@@ -38,8 +43,11 @@ class Foo extends EmberObject {
 }
 
 class Comp extends EmberObject {
+  @computed("a", "c")
   @className("enabled", "disabled")
-  isEnabled = false;
+  get isEnabled() {
+    return false;
+  }
 
   @className("b", "c")
   a = true;
@@ -74,7 +82,7 @@ class Foo extends EmberObject {
   Computed description
   */
   @computed("fullName", "age", "country")
-  description() {
+  get description() {
     return `${this.get(
       "fullName"
     )}; Age: ${this.get("age")}; Country: ${this.get("country")}`;

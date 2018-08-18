@@ -1,5 +1,3 @@
-const { get, getPropType } = require("./util");
-
 const UNSUPPORTED_PROP_NAMES = ["actions", "layout"];
 
 /**
@@ -9,25 +7,17 @@ const UNSUPPORTED_PROP_NAMES = ["actions", "layout"];
  * @param {Boolean} useDecorator
  * @returns Boolean
  */
-function hasValidProps(
-  { instanceProps = [], computedProps = [], classDecoratorProps = [] } = {},
-  useDecorator = false
-) {
-  if (!useDecorator && (computedProps.length || classDecoratorProps.length)) {
-    return false;
-  }
-
+function hasValidProps({ instanceProps = [] } = {}, useDecorator = false) {
   const unsupportedPropNames = useDecorator ? [] : UNSUPPORTED_PROP_NAMES;
 
   return instanceProps.every(instanceProp => {
-    const propName = get(instanceProp, "key.name");
-    const propType = getPropType(instanceProp);
-
     if (
-      (!useDecorator && instanceProp.decoratorName) ||
-      unsupportedPropNames.includes(propName) ||
-      (propType === "ObjectExpression" && propName !== "actions") ||
-      (propType === "CallExpression" && !instanceProp.decoratorName)
+      (!useDecorator &&
+        (instanceProp.hasDecorators || instanceProp.isClassDecorator)) ||
+      unsupportedPropNames.includes(instanceProp.name) ||
+      (instanceProp.type === "ObjectExpression" &&
+        instanceProp.name !== "actions") ||
+      (instanceProp.isCallExpression && !instanceProp.hasDecorators)
     ) {
       return false;
     }
