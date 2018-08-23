@@ -1,1 +1,1 @@
-export default class extends EmberObject {}
+export default class DefaultExportInput extends EmberObject {}

@@ -1,31 +1,37 @@
-const UNSUPPORTED_PROP_NAMES = [
-  "layout",
-  "tagName",
-  "classNames",
-  "classNameBindings",
-  "attributeBindings",
-  "actions"
-];
+const { get, getPropType } = require("./util");
 
-const SUPPORTED_PROP_VALUE_TYPES = ["Literal", "Identifier"];
+const UNSUPPORTED_PROP_NAMES = ["actions", "layout"];
 
 /**
  * Interates through instance properties and verify if it has any prop which can not be transformed
- * Following special prop names are not supported now. The support will be added in future iterations
- * [ "tagName", "classNames", "classNameBindings", "attributeBindings", "actions"]
- * Please note that only ["Literal", "Identifier"] types are supported as prop values
  *
- * @param {Object} { instanceProps, functionProps } map of instance and function properties
+ * @param {Object} { instanceProps, computedProps, classDecoratorProps } map of object properties
+ * @param {Boolean} useDecorator
  * @returns Boolean
  */
-function hasValidProps({ instanceProps, functionProps } = {}) {
+function hasValidProps(
+  { instanceProps = [], computedProps = [], classDecoratorProps = [] } = {},
+  useDecorator = false
+) {
+  if (!useDecorator && (computedProps.length || classDecoratorProps.length)) {
+    return false;
+  }
+
+  const unsupportedPropNames = useDecorator ? [] : UNSUPPORTED_PROP_NAMES;
+
   return instanceProps.every(instanceProp => {
+    const propName = get(instanceProp, "key.name");
+    const propType = getPropType(instanceProp);
+
     if (
-      UNSUPPORTED_PROP_NAMES.includes(instanceProp.key.name) ||
-      !SUPPORTED_PROP_VALUE_TYPES.includes(instanceProp.value.type)
+      (!useDecorator && instanceProp.decoratorName) ||
+      unsupportedPropNames.includes(propName) ||
+      (propType === "ObjectExpression" && propName !== "actions") ||
+      (propType === "CallExpression" && !instanceProp.decoratorName)
     ) {
       return false;
     }
+
     return true;
   });
 }
@@ -36,8 +42,8 @@ function hasValidProps({ instanceProps, functionProps } = {}) {
  * @param {Object} j - jscodeshift lib reference
  * @param {Object} varDeclaration - VariableDeclaration
  */
-function isExtendsMixin(j, eoExpression) {
-  return j(eoExpression).get("arguments").value.length > 1;
+function isExtendsMixin(j, eoCallExpression) {
+  return j(eoCallExpression).get("arguments").value.length > 1;
 }
 
 module.exports = { hasValidProps, isExtendsMixin };

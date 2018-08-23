@@ -1,7 +1,7 @@
 /**
  * Program comments
  */
-const Foo = EmberObject.extend({
+const Foo = Test.extend({
   /**
    * Property comments
    */

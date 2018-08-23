@@ -10,7 +10,7 @@
     "codemod-cli"
   ],
   "dependencies": {
-    "codemod-cli": "^0.1.0"
+    "codemod-cli": "ssutar/codemod-cli"
   },
   "devDependencies": {
     "jest": "^23.1.0"
