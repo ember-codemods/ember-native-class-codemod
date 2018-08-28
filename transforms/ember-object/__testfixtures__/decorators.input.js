@@ -1,5 +1,5 @@
 import { alias, sum as add } from "@ember/object/computed";
-import { get, set, observer, computed } from "@ember/object";
+import { get, set, observer as watcher, computed } from "@ember/object";
 import { inject as controller } from "@ember/controller";
 import { inject as service } from "@ember/service";
 import { on } from "@ember/object/evented";
@@ -11,8 +11,12 @@ const Foo = EmberObject.extend({
   a: "",
   b: service("store"),
   myController: controller("abc"),
-  observedProp: observer("xyz"),
-  event: on("click"),
+  observedProp: watcher("xyz", function() {
+    return "observed";
+  }),
+  event: on("click", function() {
+    return "abc";
+  }),
 
   actions: {
     /**
@@ -28,7 +32,9 @@ const Foo = EmberObject.extend({
 
 var comp = EmberObject.extend({
   classNameBindings: ["isEnabled:enabled:disabled", "a:b:c", "c:d"],
-  isEnabled: false,
+  isEnabled: computed("a", "c", function() {
+    return false;
+  }),
   a: true,
   c: "",
   attributeBindings: ["customHref:href"],

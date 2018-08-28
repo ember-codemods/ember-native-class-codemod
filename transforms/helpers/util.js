@@ -1,11 +1,35 @@
-const DECORATOR_PROP_NAME = {
-  "on:@ember/object/evented": "on",
-  "observer:@ember/object": "observes",
-  "inject:@ember/controller": "controller",
-  "inject:@ember/service": "service",
-  "computed:@ember/object": "computed"
+const DECORATOR_PATHS = {
+  "@ember/object": {
+    importPropDecoratorMap: {
+      observer: "observes",
+      computed: "computed"
+    },
+    decoratorPath: "@ember-decorators/object"
+  },
+  "@ember/object/evented": {
+    importPropDecoratorMap: {
+      on: "on"
+    },
+    decoratorPath: "@ember-decorators/object/evented"
+  },
+  "@ember/controller": {
+    importPropDecoratorMap: {
+      inject: "controller"
+    },
+    decoratorPath: "@ember-decorators/controller"
+  },
+  "@ember/service": {
+    importPropDecoratorMap: {
+      inject: "service"
+    },
+    decoratorPath: "@ember-decorators/service"
+  },
+  "@ember/object/computed": {
+    decoratorPath: "@ember-decorators/object/computed"
+  }
 };
 
+const METHOD_DECORATORS = ["action", "on", "observer"];
 /**
  * Get a property from and object, useful to get nested props without checking for null values
  *
@@ -48,18 +72,9 @@ function getPropType(prop) {
  * @returns {String}
  */
 function getPropCalleeName(prop) {
-  return get(prop, "value.callee.name");
-}
-
-/**
- * Return the callee name of the computed property
- *
- * @param {Property} prop
- * @returns {String}
- */
-function getComputedPropertyName(prop) {
   return (
-    getPropCalleeName(prop) || get(prop, "value.callee.object.callee.name")
+    get(prop, "value.callee.name") ||
+    get(prop, "value.callee.object.callee.name")
   );
 }
 
@@ -70,26 +85,12 @@ function getComputedPropertyName(prop) {
  * @returns {Boolean}
  */
 function shouldSetValue(prop) {
-  const decoratorName = prop.decoratorName;
-  return (
-    !decoratorName ||
-    decoratorName === "className" ||
-    decoratorName === "attribute"
-  );
-}
-
-/**
- * Checks if the passed property is `computed`
- *
- * @param {Property} prop
- * @param {String[]} importedComputedProps
- * @returns {Boolean}
- */
-function isComputedProperty(prop, importedComputedProps) {
-  const calleeName = getComputedPropertyName(prop);
-  return (
-    get(prop, "value.type") === "CallExpression" &&
-    (calleeName === "computed" || importedComputedProps.includes(calleeName))
+  if (!prop.hasDecorators) {
+    return true;
+  }
+  return prop.decoratorNames.every(
+    decoratorName =>
+      decoratorName === "className" || decoratorName === "attribute"
   );
 }
 
@@ -113,15 +114,26 @@ function startsWithUpperCaseLetter(word = "") {
   return !!word && word.charAt(0) !== word.charAt(0).toLowerCase();
 }
 
+/**
+ * Return true if prop is of name `tagName` or `classNames`
+ * @param {Property} prop
+ * @returns boolean
+ */
+function isClassDecoratorProp(propName) {
+  return (
+    propName === "tagName" || propName === "classNames" || propName === "layout"
+  );
+}
+
 module.exports = {
-  DECORATOR_PROP_NAME,
+  DECORATOR_PATHS,
+  METHOD_DECORATORS,
   capitalizeFirstLetter,
   get,
   getPropName,
   getPropType,
   shouldSetValue,
   getPropCalleeName,
-  getComputedPropertyName,
-  isComputedProperty,
-  startsWithUpperCaseLetter
+  startsWithUpperCaseLetter,
+  isClassDecoratorProp
 };

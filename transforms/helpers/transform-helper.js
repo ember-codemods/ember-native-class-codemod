@@ -1,7 +1,7 @@
 const { get, getPropName, shouldSetValue } = require("./util");
 const {
   withDecorators,
-  createClassDecorators,
+  createClassDecorator,
   createInstancePropDecorators,
   createActionDecorators
 } = require("./decorator-helper");
@@ -24,7 +24,7 @@ function withComments(to, from) {
  * For example: `prop: value` --> `this.prop = value`
  *
  * @param {Object} j - jscodeshift lib reference
- * @param {Property[]} instanceProps Array of object properties
+ * @param {EOProp[]} instanceProps Array of object properties
  * @returns {ExpressionStatement[]}
  */
 function instancePropsToExpressions(j, instanceProps) {
@@ -96,32 +96,29 @@ function replaceSuperExpressions(j, methodDefinition) {
  * For example { foo: function() { }} --> { foo() { }}
  *
  * @param {Object} j - jscodeshift lib reference
- * @param {Property[]} functionProps
+ * @param {EOProp} functionProp
  * @param {Decorator[]} decorators
  * @returns {MethodDefinition[]}
  */
-function functionPropsToMethods(j, functionProps = [], decorators = []) {
-  return functionProps.map(functionProp => {
-    const propKind =
-      functionProp.kind === "init" ? "method" : functionProp.kind;
-    return withDecorators(
-      withComments(
-        replaceSuperExpressions(
-          j,
-          j.methodDefinition(propKind, functionProp.key, functionProp.value)
-        ),
-        functionProp
+function createMethodProp(j, functionProp, decorators = []) {
+  const propKind = functionProp.kind === "init" ? "method" : functionProp.kind;
+  return withDecorators(
+    withComments(
+      replaceSuperExpressions(
+        j,
+        j.methodDefinition(propKind, functionProp.key, functionProp.value)
       ),
-      decorators
-    );
-  });
+      functionProp
+    ),
+    decorators
+  );
 }
 
 /**
  * Create  a constructor method
  *
  * @param {Object} j - jscodeshift lib reference
- * @param {Property[]} instanceProps Array of Properties to be instantiated in the constructor
+ * @param {EOProp[]} instanceProps Array of Properties to be instantiated in the constructor
  * @return {MethodDefinition[]}
  */
 function createConstructor(j, instanceProps = []) {
@@ -150,10 +147,10 @@ function createConstructor(j, instanceProps = []) {
  * Create the class property from passed instance property
  *
  * @param {Object} j - jscodeshift lib reference
- * @param {Property} instanceProp
+ * @param {EOProp} instanceProp
  * @returns {ClassProperty}
  */
-function createClassProperty(j, instanceProp) {
+function createClassProp(j, instanceProp) {
   const decorators = createInstancePropDecorators(j, instanceProp);
 
   const classProp = withDecorators(
@@ -187,82 +184,68 @@ function createClassProperty(j, instanceProp) {
  * }
  *
  * @param {Object} j - jscodeshift lib reference
- * @param {Property} actionsProp
+ * @param {EOProp} actionsProp
  * @returns {MethodDefinition[]}
  */
-function createActionDecoratedProperties(j, actionsProp) {
+function createActionDecoratedProps(j, actionsProp) {
   const actionProps = get(actionsProp, "value.properties");
-  return functionPropsToMethods(j, actionProps, createActionDecorators(j));
-}
-
-/**
- * Iterate and covert the instance properties to class properties
- *
- * @param {Object} j - jscodeshift lib reference
- * @param {Property[]} instanceProps
- * @return {ClassProperty[]}
- */
-function createClassProperties(j, instanceProps = []) {
-  return instanceProps.reduce((classProps, instanceProp) => {
-    const instancePropName = getPropName(instanceProp);
-
-    if (instancePropName === "actions") {
-      return classProps.concat(
-        createActionDecoratedProperties(j, instanceProp)
-      );
-    }
-
-    classProps.push(createClassProperty(j, instanceProp));
-    return classProps;
-  }, []);
+  const actionDecorators = createActionDecorators(j);
+  return actionProps.map(actionProp =>
+    createMethodProp(j, actionProp, actionDecorators)
+  );
 }
 
 /**
  * Iterate and covert the computed properties to class methods
  *
  * @param {Object} j - jscodeshift lib reference
- * @param {Property[]} computedProps
+ * @param {EOProp} callExprProp
  * @return {Property[]}
  */
-function createComputedProperties(j, computedProps = []) {
-  return computedProps.reduce((props, computedProp) => {
-    const cpNameKey = get(computedProp, "key");
-    const cpArgs = get(computedProp, "value.arguments").slice(0);
-    const cpExpr = cpArgs.pop();
-    const cpType = get(cpExpr, "type");
+function createCallExpressionProp(j, callExprProp) {
+  const callExprArgs = callExprProp.callExprArgs.slice(0);
+  const callExprLastArg = callExprArgs.pop();
+  const lastArgType = get(callExprLastArg, "type");
 
-    let cpDecorators = [];
+  if (lastArgType === "FunctionExpression") {
+    const functionExpr = {
+      kind: callExprProp.kind,
+      key: callExprProp.key,
+      value: callExprLastArg,
+      comments: callExprProp.comments
+    };
+    return [
+      createMethodProp(
+        j,
+        functionExpr,
+        createInstancePropDecorators(j, callExprProp)
+      )
+    ];
+  } else if (lastArgType === "ObjectExpression") {
+    const callExprMethods = callExprLastArg.properties.map(callExprFunction => {
+      callExprFunction.kind = getPropName(callExprFunction);
+      callExprFunction.key = callExprProp.key;
+      return createMethodProp(j, callExprFunction);
+    });
 
-    if (cpType === "FunctionExpression" || cpType === "ObjectExpression") {
-      cpDecorators = createInstancePropDecorators(j, computedProp);
-    }
-    if (cpType === "FunctionExpression") {
-      const functionExpr = {
-        kind: "init",
-        key: cpNameKey,
-        value: cpExpr,
-        comments: computedProp.comments
-      };
-      return props.concat(
-        functionPropsToMethods(j, [functionExpr], cpDecorators)
-      );
-    } else if (cpType === "ObjectExpression") {
-      const cpFunctions = cpExpr.properties.map(cpFunction => {
-        cpFunction.kind = getPropName(cpFunction);
-        cpFunction.key = cpNameKey;
-        return cpFunction;
-      });
-      const cpMethods = functionPropsToMethods(j, cpFunctions);
-      withComments(cpMethods[0], computedProp);
-      withDecorators(cpMethods[0], cpDecorators);
-      return props.concat(cpMethods);
-    } else {
-      props.push(createClassProperty(j, computedProp));
-      return props;
-    }
-  }, []);
+    withDecorators(
+      withComments(callExprMethods[0], callExprProp),
+      createInstancePropDecorators(j, callExprProp)
+    );
+    return callExprMethods;
+  } else {
+    return [createClassProp(j, callExprProp)];
+  }
 }
 
+/**
+ * Create identifier for super class with mixins
+ *
+ * @param {Object} j - jscodeshift lib reference
+ * @param {String} superClassName
+ * @param {Expression[]} mixins
+ * @returns {Identifier}
+ */
 function createSuperClassExpression(j, superClassName = "", mixins = []) {
   if (mixins.length > 0) {
     return j.callExpression(
@@ -279,47 +262,60 @@ function createSuperClassExpression(j, superClassName = "", mixins = []) {
  * @param {Object} j - jscodeshift lib reference
  * @param {String} className
  * @param {Object} {
- *  instanceProps: Property[],
- *  functionProps: Property[],
- *  computedProps: Property[],
- *  classDecoratorProps: Property[],
+ *  instanceProps: EOProp[],
  * } ember object properties
  * @param {String} superClassName
- * @param {Expressions[]} mixins
+ * @param {Expression[]} mixins
+ * @returns {ClassDeclaration}
  */
 function createClass(
   j,
   className,
-  {
-    instanceProps = [],
-    computedProps = [],
-    functionProps = [],
-    classDecoratorProps = []
-  } = {},
+  { instanceProps = [] } = {},
   superClassName = "",
   mixins = []
 ) {
+  let classBody = [];
+  let classDecorators = [];
+  instanceProps.forEach(prop => {
+    if (prop.isClassDecorator) {
+      classDecorators.push(createClassDecorator(j, prop));
+    } else if (prop.type === "FunctionExpression") {
+      classBody.push(createMethodProp(j, prop));
+    } else if (prop.isCallExpression) {
+      classBody = classBody.concat(createCallExpressionProp(j, prop));
+    } else if (prop.name === "actions") {
+      classBody = classBody.concat(createActionDecoratedProps(j, prop));
+    } else {
+      classBody.push(createClassProp(j, prop));
+    }
+  });
   return withDecorators(
     j.classDeclaration(
       className ? j.identifier(className) : null,
-      j.classBody(
-        []
-          .concat(createClassProperties(j, instanceProps))
-          .concat(createComputedProperties(j, computedProps))
-          .concat(functionPropsToMethods(j, functionProps))
-      ),
+      j.classBody(classBody),
       createSuperClassExpression(j, superClassName, mixins)
     ),
-    createClassDecorators(j, classDecoratorProps)
+    classDecorators
   );
+}
+/**
+ * Create import statements
+ *
+ * @param {Object} j - jscodeshift lib reference
+ * @param {ImportSpecifier[]} specifiers
+ * @param {String} path
+ * @returns {ImportDeclaration}
+ */
+function createImportDeclaration(j, specifiers, path) {
+  return j.importDeclaration(specifiers, j.literal(path));
 }
 
 module.exports = {
   withComments,
   instancePropsToExpressions,
   createSuperExpressionStatement,
-  functionPropsToMethods,
   createConstructor,
-  createClassProperties,
-  createClass
+  createClass,
+  createImportDeclaration
 };

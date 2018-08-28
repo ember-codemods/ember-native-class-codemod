@@ -17,17 +17,15 @@ function withDecorators(to, decorators = []) {
  * Creates a list of class decorators `tagName` and `classNames`
  *
  * @param {Object} j - jscodeshift lib reference
- * @param {Property[]} classDecoratorProps
+ * @param {Property} classDecoratorProp
  * @returns {Decorator[]}
  */
-function createClassDecorators(j, classDecoratorProps = []) {
-  return classDecoratorProps.map(classDecoratorProp => {
-    return j.decorator(
-      j.callExpression(j.identifier(classDecoratorProp.key.name), [
-        classDecoratorProp.value
-      ])
-    );
-  });
+function createClassDecorator(j, classDecoratorProp) {
+  return j.decorator(
+    j.callExpression(j.identifier(classDecoratorProp.key.name), [
+      classDecoratorProp.value
+    ])
+  );
 }
 
 /**
@@ -40,7 +38,7 @@ function createClassDecorators(j, classDecoratorProps = []) {
  * @returns {Decorator[]}
  */
 function createCallExpressionDecorators(j, decoratorName, instanceProp) {
-  if (decoratorName === "computed") {
+  if (instanceProp.hasNonLiteralArg) {
     const decoratorArgs = get(instanceProp, "value.arguments").slice(0, -1);
     return [
       j.decorator(j.callExpression(j.identifier(decoratorName), decoratorArgs))
@@ -49,10 +47,7 @@ function createCallExpressionDecorators(j, decoratorName, instanceProp) {
     // clone the instance prop value
     const instancePropValue = JSON.parse(JSON.stringify(instanceProp.value));
     instancePropValue.callee.name = decoratorName;
-    if (
-      instanceProp.decoratorName &&
-      get(instanceProp, "value.callee.object.callee.name")
-    ) {
+    if (get(instanceProp, "value.callee.object.callee.name")) {
       const decoratorArgs = get(instancePropValue, "callee.object.arguments");
       instancePropValue.callee.object = get(
         instancePropValue,
@@ -101,19 +96,24 @@ function createBindingDecorators(j, decoratorName, instanceProp) {
  * @returns {Decorator[]}
  */
 function createInstancePropDecorators(j, instanceProp) {
-  const decoratorName = instanceProp.decoratorName;
-  if (!decoratorName) {
-    return [];
-  }
-  if (decoratorName === "className" || decoratorName === "attribute") {
-    return createBindingDecorators(j, decoratorName, instanceProp);
-  }
-  return createCallExpressionDecorators(j, decoratorName, instanceProp);
+  return instanceProp.decoratorNames.reduce((decorators, decoratorName) => {
+    if (!decoratorName) {
+      return decorators;
+    }
+    if (decoratorName === "className" || decoratorName === "attribute") {
+      return decorators.concat(
+        createBindingDecorators(j, decoratorName, instanceProp)
+      );
+    }
+    return decorators.concat(
+      createCallExpressionDecorators(j, decoratorName, instanceProp)
+    );
+  }, []);
 }
 
 module.exports = {
   withDecorators,
-  createClassDecorators,
+  createClassDecorator,
   createActionDecorators,
   createCallExpressionDecorators,
   createInstancePropDecorators
