@@ -1,14 +1,22 @@
 import { sum as add, alias } from "@ember-decorators/object/computed";
 import { get, set } from "@ember/object";
-import { computed, observes as watcher } from "@ember-decorators/object";
+import { computed, observes } from "@ember-decorators/object";
 import { controller } from "@ember-decorators/controller";
 import { service } from "@ember-decorators/service";
 import { on } from "@ember-decorators/object/evented";
 import layout from "components/templates/foo";
+import MixinA from "mixins/A";
+import MixinB from "mixins/B";
+
+class Foo extends Component.extend(MixinA) {}
+
+class Foo extends Component.extend(MixinA) {
+  biz = "div";
+}
 
 @tagName("div")
 @classNames(["test-class", "custom-class"])
-class Foo extends EmberObject {
+class Foo extends Component.extend(MixinA) {
   a = "";
 
   @service("store")
@@ -17,15 +25,11 @@ class Foo extends EmberObject {
   @controller("abc")
   myController;
 
-  @watcher("xyz")
-  observedProp() {
-    return "observed";
-  }
+  @observes("xyz")
+  observedProp;
 
   @on("click")
-  event() {
-    return "abc";
-  }
+  event;
 
   /**
   Comments
@@ -42,12 +46,9 @@ class Foo extends EmberObject {
   biz() {}
 }
 
-class Comp extends EmberObject {
-  @computed("a", "c")
+class Comp extends Component.extend(MixinB) {
   @className("enabled", "disabled")
-  get isEnabled() {
-    return false;
-  }
+  isEnabled = false;
 
   @className("b", "c")
   a = true;
@@ -59,7 +60,7 @@ class Comp extends EmberObject {
   customHref = "http://emberjs.com";
 }
 
-class Foo extends EmberObject {
+class Foo extends Component.extend(MixinA, MixinB) {
   firstName = null;
   lastName = null;
 
@@ -108,4 +109,4 @@ class Foo extends EmberObject {
 }
 
 @layout(layout)
-class Foo extends EmberObject {}
+class Foo extends Component {}
