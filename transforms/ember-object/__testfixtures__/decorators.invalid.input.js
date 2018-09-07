@@ -8,8 +8,3 @@ const Foo = EmberObject.extend({
 const Foo = EmberObject.extend({
   macroValue: macro()
 });
-
-// Do not transform as extends Mixin
-const Foo = EmberObject.extend(MyMixin, {
-  biz: "div"
-});

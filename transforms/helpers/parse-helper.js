@@ -2,6 +2,7 @@ const path = require("path");
 const camelCase = require("camelcase");
 const {
   get,
+  getOptions,
   capitalizeFirstLetter,
   startsWithUpperCaseLetter,
   DECORATOR_PATHS
@@ -353,9 +354,6 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
     const { eoExpression, mixins } = parseEmberObjectCallExpression(
       eoCallExpression
     );
-    if (mixins.length && !options.mixins) {
-      return;
-    }
 
     const eoProps = getEmberObjectProps(
       j,
@@ -363,7 +361,7 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
       importedDecoratedProps
     );
 
-    if (!hasValidProps(eoProps, options.decorators)) {
+    if (!hasValidProps(eoProps, getOptions(options))) {
       return;
     }
 
