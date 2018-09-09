@@ -1,16 +1,11 @@
 const { getOptions } = require("codemod-cli");
 const { replaceEmberObjectExpressions } = require("../helpers/parse-helper");
 
-module.exports = function transformer(file, api, options) {
+module.exports = function transformer(file, api) {
   const j = api.jscodeshift;
   const root = j(file.source);
 
-  replaceEmberObjectExpressions(
-    j,
-    root,
-    file.path,
-    Object.assign({}, options, getOptions())
-  );
+  replaceEmberObjectExpressions(j, root, file.path, getOptions());
 
   return root.toSource();
 };

@@ -38,25 +38,27 @@ function createClassDecorator(j, classDecoratorProp) {
  * @returns {Decorator[]}
  */
 function createCallExpressionDecorators(j, decoratorName, instanceProp) {
-  if (instanceProp.hasNonLiteralArg) {
-    const decoratorArgs = get(instanceProp, "value.arguments").slice(0, -1);
-    return [
-      j.decorator(j.callExpression(j.identifier(decoratorName), decoratorArgs))
-    ];
-  } else {
-    // clone the instance prop value
-    const instancePropValue = JSON.parse(JSON.stringify(instanceProp.value));
-    instancePropValue.callee.name = decoratorName;
-    if (get(instanceProp, "value.callee.object.callee.name")) {
-      const decoratorArgs = get(instancePropValue, "callee.object.arguments");
-      instancePropValue.callee.object = get(
-        instancePropValue,
-        "callee.object.callee"
-      );
-      instancePropValue.arguments = decoratorArgs;
-    }
-    return [j.decorator(instancePropValue)];
+  const decoratorArgs = instanceProp.hasNonLiteralArg
+    ? instanceProp.callExprArgs.slice(0, -1)
+    : instanceProp.callExprArgs.slice(0);
+
+  if (instanceProp.isVolatileReadOnly) {
+    return [];
   }
+
+  return instanceProp.modifiers.reduce(
+    (decorators, modifier) => {
+      if (modifier.args.length !== 0) {
+        decorators.push(
+          j.decorator(j.callExpression(modifier.prop), modifier.args)
+        );
+      } else {
+        decorators.push(j.decorator(modifier.prop));
+      }
+      return decorators;
+    },
+    [j.decorator(j.callExpression(j.identifier(decoratorName), decoratorArgs))]
+  );
 }
 
 /**

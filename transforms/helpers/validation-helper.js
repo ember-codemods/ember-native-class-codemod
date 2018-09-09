@@ -41,7 +41,9 @@ function hasValidProps(
       (!classFields && instanceProp.type === "Literal") ||
       (instanceProp.type === "ObjectExpression" &&
         !["actions", "queryParams"].includes(instanceProp.name)) ||
-      (instanceProp.isCallExpression && !instanceProp.hasDecorators)
+      (instanceProp.isCallExpression && !instanceProp.hasDecorators) ||
+      instanceProp.hasModifierWithArgs ||
+      (instanceProp.hasVolatile && instanceProp.hasMetaDecorator)
     ) {
       return false;
     }
