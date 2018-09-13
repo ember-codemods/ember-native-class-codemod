@@ -7,7 +7,7 @@ const {
   startsWithUpperCaseLetter,
   DECORATOR_PATHS
 } = require("./util");
-const { hasValidProps } = require("./validation-helper");
+const { hasValidProps, isFileOfType } = require("./validation-helper");
 const {
   withComments,
   createClass,
@@ -133,12 +133,16 @@ function isSpecifierDecorator(specifier, importPropDecoratorMap) {
  * @returns {ImportSpecifier}
  */
 function setSpecifierProps(specifier, importPropDecoratorMap) {
-  const importedName = get(specifier, "imported.name");
-  if (importPropDecoratorMap) {
-    specifier.imported.name = importPropDecoratorMap[importedName];
-  }
-  if (importedName === get(specifier, "local.name")) {
-    specifier.local = null;
+  const decoratorImportedName = get(
+    importPropDecoratorMap,
+    get(specifier, "imported.name")
+  );
+  if (decoratorImportedName) {
+    specifier.imported.name = decoratorImportedName;
+
+    if (decoratorImportedName === get(specifier, "local.name")) {
+      specifier.local = null;
+    }
   }
   return specifier;
 }
@@ -346,6 +350,9 @@ function parseEmberObjectCallExpression(eoCallExpression) {
  * @param {Object} options
  */
 function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
+  if (options.type && !isFileOfType(filePath, options.type)) {
+    return;
+  }
   // Parse the import statements
   const importedDecoratedProps = getImportedDecoratedProps(j, root);
   let transformed = false;
