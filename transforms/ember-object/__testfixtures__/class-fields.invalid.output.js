@@ -1,7 +1,7 @@
 /**
  * Program comments
  */
-const Foo = Test.extend(MyMixin, {
+const Foo = Test.extend({
   /**
    * Property comments
    */
@@ -31,5 +31,3 @@ const Foo = Test.extend(MyMixin, {
     this._super(...arguments);
   }
 });
-
-const Foo = EmberObject.extend(MixinA, MixinB);

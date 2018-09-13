@@ -30,6 +30,12 @@ const DECORATOR_PATHS = {
 };
 
 const METHOD_DECORATORS = ["action", "on", "observer"];
+
+const DEFAULT_OPTIONS = {
+  decorators: false,
+  classFields: true
+};
+
 /**
  * Get a property from and object, useful to get nested props without checking for null values
  *
@@ -125,11 +131,16 @@ function isClassDecoratorProp(propName) {
   );
 }
 
+function getOptions(options) {
+  return Object.assign({}, DEFAULT_OPTIONS, options);
+}
+
 module.exports = {
   DECORATOR_PATHS,
   METHOD_DECORATORS,
   capitalizeFirstLetter,
   get,
+  getOptions,
   getPropName,
   getPropType,
   shouldSetValue,

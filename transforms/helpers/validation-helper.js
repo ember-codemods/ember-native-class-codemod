@@ -3,18 +3,22 @@ const UNSUPPORTED_PROP_NAMES = ["actions", "layout"];
 /**
  * Interates through instance properties and verify if it has any prop which can not be transformed
  *
- * @param {Object} { instanceProps, computedProps, classDecoratorProps } map of object properties
- * @param {Boolean} useDecorator
+ * @param {Object} { instanceProps } map of object properties
+ * @param {Object} { decorators }
  * @returns Boolean
  */
-function hasValidProps({ instanceProps = [] } = {}, useDecorator = false) {
-  const unsupportedPropNames = useDecorator ? [] : UNSUPPORTED_PROP_NAMES;
+function hasValidProps(
+  { instanceProps = [] } = {},
+  { decorators = false, classFields = true } = {}
+) {
+  const unsupportedPropNames = decorators ? [] : UNSUPPORTED_PROP_NAMES;
 
   return instanceProps.every(instanceProp => {
     if (
-      (!useDecorator &&
+      (!decorators &&
         (instanceProp.hasDecorators || instanceProp.isClassDecorator)) ||
       unsupportedPropNames.includes(instanceProp.name) ||
+      (!classFields && instanceProp.type === "Literal") ||
       (instanceProp.type === "ObjectExpression" &&
         instanceProp.name !== "actions") ||
       (instanceProp.isCallExpression && !instanceProp.hasDecorators)
