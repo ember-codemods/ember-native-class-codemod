@@ -7,7 +7,7 @@ const {
   startsWithUpperCaseLetter,
   DECORATOR_PATHS
 } = require("./util");
-const { hasValidProps } = require("./validation-helper");
+const { hasValidProps, isFileOfType } = require("./validation-helper");
 const {
   withComments,
   createClass,
@@ -346,6 +346,9 @@ function parseEmberObjectCallExpression(eoCallExpression) {
  * @param {Object} options
  */
 function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
+  if (options.type && !isFileOfType(filePath, options.type)) {
+    return;
+  }
   // Parse the import statements
   const importedDecoratedProps = getImportedDecoratedProps(j, root);
   let transformed = false;
