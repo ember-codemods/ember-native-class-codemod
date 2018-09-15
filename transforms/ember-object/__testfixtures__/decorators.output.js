@@ -1,8 +1,8 @@
 import { sum as add, alias } from "@ember-decorators/object/computed";
 import { get, set } from "@ember/object";
 import { computed, observes as watcher } from "@ember-decorators/object";
-import { controller as controller } from "@ember-decorators/controller";
-import { service as service } from "@ember-decorators/service";
+import { controller } from "@ember-decorators/controller";
+import { service } from "@ember-decorators/service";
 import { on } from "@ember-decorators/object/evented";
 import layout from "components/templates/foo";
 
