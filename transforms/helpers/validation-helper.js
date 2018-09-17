@@ -1,4 +1,24 @@
+const minimatch = require("minimatch");
+
 const UNSUPPORTED_PROP_NAMES = ["actions", "layout"];
+
+const TYPE_PATTERNS = {
+  service: "**/services/**/*.js",
+  services: "**/services/**/*.js",
+  controller: "**/controllers/**/*.js",
+  controllers: "**/controllers/**/*.js",
+  component: "**/components/**/*.js",
+  components: "**/components/**/*.js",
+  route: "**/routes/**/*.js",
+  routes: "**/routes/**/*.js"
+};
+
+function isFileOfType(file, type) {
+  if (!type || !TYPE_PATTERNS[type]) {
+    return true;
+  }
+  return minimatch(file, TYPE_PATTERNS[type]);
+}
 
 /**
  * Interates through instance properties and verify if it has any prop which can not be transformed
@@ -40,4 +60,4 @@ function isExtendsMixin(j, eoCallExpression) {
   return j(eoCallExpression).get("arguments").value.length > 1;
 }
 
-module.exports = { hasValidProps, isExtendsMixin };
+module.exports = { isFileOfType, hasValidProps, isExtendsMixin };
