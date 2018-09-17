@@ -133,12 +133,16 @@ function isSpecifierDecorator(specifier, importPropDecoratorMap) {
  * @returns {ImportSpecifier}
  */
 function setSpecifierProps(specifier, importPropDecoratorMap) {
-  const importedName = get(specifier, "imported.name");
-  if (importPropDecoratorMap) {
-    specifier.imported.name = importPropDecoratorMap[importedName];
-  }
-  if (importedName === get(specifier, "local.name")) {
-    specifier.local = null;
+  const decoratorImportedName = get(
+    importPropDecoratorMap,
+    get(specifier, "imported.name")
+  );
+  if (decoratorImportedName) {
+    specifier.imported.name = decoratorImportedName;
+
+    if (decoratorImportedName === get(specifier, "local.name")) {
+      specifier.local = null;
+    }
   }
   return specifier;
 }
