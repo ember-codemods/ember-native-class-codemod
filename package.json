@@ -2,7 +2,7 @@
   "name": "ember-es6-class-codemod",
   "version": "0.1.0",
   "scripts": {
-    "test": "codemod-cli test",
+    "test": "eslint . && codemod-cli test",
     "update-docs": "codemod-cli update-docs"
   },
   "bin": "./bin/cli.js",
@@ -14,6 +14,10 @@
     "minimatch": "^3.0.4"
   },
   "devDependencies": {
-    "jest": "^23.1.0"
+    "eslint": "^5.6.0",
+    "eslint-config-prettier": "^3.0.1",
+    "eslint-plugin-prettier": "^2.6.2",
+    "jest": "^23.1.0",
+    "prettier": "^1.14.2"
   }
 }
