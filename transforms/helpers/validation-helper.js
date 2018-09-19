@@ -40,7 +40,7 @@ function hasValidProps(
       unsupportedPropNames.includes(instanceProp.name) ||
       (!classFields && instanceProp.type === "Literal") ||
       (instanceProp.type === "ObjectExpression" &&
-        instanceProp.name !== "actions") ||
+        !["actions", "queryParams"].includes(instanceProp.name)) ||
       (instanceProp.isCallExpression && !instanceProp.hasDecorators)
     ) {
       return false;
