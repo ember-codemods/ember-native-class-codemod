@@ -1,9 +1,8 @@
-'use strict';
+"use strict";
 
-const { runTransformTest } = require('codemod-cli');
-const transform = require('./index');
+const { runTransformTest } = require("codemod-cli");
 
 runTransformTest({
-  type: 'jscodeshift',
-  name: 'ember-object',
+  type: "jscodeshift",
+  name: "ember-object"
 });
