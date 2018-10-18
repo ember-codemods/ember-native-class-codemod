@@ -31,6 +31,12 @@ const DECORATOR_PATHS = {
 
 const METHOD_DECORATORS = ["action", "on", "observer"];
 
+const META_DECORATORS = {
+  readOnly: "reads",
+  reads: "overridableReads",
+  oneWay: "overridableReads"
+};
+
 const DEFAULT_OPTIONS = {
   decorators: false,
   classFields: true
@@ -131,19 +137,58 @@ function isClassDecoratorProp(propName) {
   );
 }
 
+/**
+ * Get the transform options
+ *
+ * @param {Object} options
+ */
 function getOptions(options) {
   return Object.assign({}, DEFAULT_OPTIONS, options);
+}
+
+/**
+ * Get property modifier from the property callee object
+ *
+ * @param {Expression} calleeObject
+ */
+function getModifier(calleeObject) {
+  return {
+    prop: get(calleeObject, "callee.property"),
+    args: get(calleeObject, "arguments")
+  };
+}
+
+/**
+ * Iterates over props to find if `import { volatile } from '@ember-decorators/object'` is needed
+ *
+ * @param {EOProp[]} props
+ */
+function shouldImportVolatile(props = []) {
+  return props.some(prop => prop.hasVolatile);
+}
+
+/**
+ * Iterates over props to find if `import { readOnly } from '@ember-decorators/object'` is needed
+ *
+ * @param {EOProp[]} props
+ */
+function shouldImportReadOnly(props = []) {
+  return props.some(prop => prop.hasReadOnly);
 }
 
 module.exports = {
   DECORATOR_PATHS,
   METHOD_DECORATORS,
+  META_DECORATORS,
   capitalizeFirstLetter,
   get,
   getOptions,
   getPropName,
+  getModifier,
   getPropType,
   shouldSetValue,
+  shouldImportVolatile,
+  shouldImportReadOnly,
   getPropCalleeName,
   startsWithUpperCaseLetter,
   isClassDecoratorProp

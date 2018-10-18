@@ -3,9 +3,13 @@ const camelCase = require("camelcase");
 const {
   get,
   getOptions,
+  shouldImportVolatile,
+  shouldImportReadOnly,
   capitalizeFirstLetter,
   startsWithUpperCaseLetter,
-  DECORATOR_PATHS
+  DECORATOR_PATHS,
+  METHOD_DECORATORS,
+  META_DECORATORS
 } = require("./util");
 const { hasValidProps, isFileOfType } = require("./validation-helper");
 const {
@@ -101,13 +105,27 @@ function getDecoratorInfo(specifier, importPropDecoratorMap) {
   const localName = get(specifier, "local.name");
   const importedName = get(specifier, "imported.name");
   const isImportedAs = importedName !== localName;
+  const isMetaDecorator = !importPropDecoratorMap;
   let decoratorName;
-  if (isImportedAs || !importPropDecoratorMap) {
+  if (isImportedAs) {
     decoratorName = localName;
   } else {
-    decoratorName = importPropDecoratorMap[importedName];
+    if (isMetaDecorator) {
+      decoratorName = META_DECORATORS[importedName] || localName;
+    } else {
+      decoratorName = importPropDecoratorMap[importedName];
+    }
   }
-  return { decoratorName, localName, importedName, isImportedAs };
+
+  const isMethodDecorator = METHOD_DECORATORS.includes(importedName);
+  return {
+    decoratorName,
+    localName,
+    importedName,
+    isImportedAs,
+    isMetaDecorator,
+    isMethodDecorator
+  };
 }
 
 /**
@@ -125,6 +143,13 @@ function isSpecifierDecorator(specifier, importPropDecoratorMap) {
   return false;
 }
 
+function getSpecifierLocalIdentifier(specifier) {
+  if (get(specifier, "local.name") === get(specifier, "imported.name")) {
+    return null;
+  }
+  return specifier.local;
+}
+
 /**
  * Set decorator name and remove the duplicated `local` property on specifier
  *
@@ -133,17 +158,24 @@ function isSpecifierDecorator(specifier, importPropDecoratorMap) {
  * @returns {ImportSpecifier}
  */
 function setSpecifierProps(specifier, importPropDecoratorMap) {
+  const isMetaDecorator = !importPropDecoratorMap;
+  const importedName = get(specifier, "imported.name");
   const decoratorImportedName = get(
     importPropDecoratorMap,
     get(specifier, "imported.name")
   );
-  if (decoratorImportedName) {
-    specifier.imported.name = decoratorImportedName;
-
-    if (decoratorImportedName === get(specifier, "local.name")) {
-      specifier.local = null;
+  specifier.local = getSpecifierLocalIdentifier(specifier);
+  if (isMetaDecorator) {
+    const metaDecoratorName = META_DECORATORS[importedName];
+    if (metaDecoratorName) {
+      specifier.imported.name = metaDecoratorName;
     }
+  } else {
+    specifier.imported.name = decoratorImportedName;
   }
+  // Needed one more time as we changed the imported name
+  specifier.local = getSpecifierLocalIdentifier(specifier);
+
   return specifier;
 }
 
@@ -171,13 +203,69 @@ function getDecoratorImports(j, root) {
 }
 
 /**
+ * Create the import declarations for `readOnly` in `computed(...).readOnly()` and `volatile` in `computed(...).volatile()`.
+ * It will import from these specifiers from `@ember-decorators/object`
+ *
+ * @param {Object} j - jscodeshift lib reference
+ * @param {Boolean} param.importVolatile if true import `volatile`
+ * @param {Boolean} param.importReadOnly if true import `readOnly`
+ */
+function createVolatileReadOnlyImportDeclarations(
+  j,
+  { importVolatile = false, importReadOnly = false } = {}
+) {
+  const specifiers = [];
+  if (importVolatile) {
+    specifiers.push(j.importSpecifier(j.identifier("volatile")));
+  }
+  if (importReadOnly) {
+    specifiers.push(j.importSpecifier(j.identifier("readOnly")));
+  }
+  if (specifiers.length) {
+    return createImportDeclaration(j, specifiers, "@ember-decorators/object");
+  }
+}
+
+/**
+ * Create and insert the import declarations for `computed(...).volatile()` and `computed(...).readOnly()`
+ *
+ * @param {Object} j - jscodeshift lib reference
+ * @param {File} root
+ * @param {Boolean} param.importVolatile if true import `volatile`
+ * @param {Boolean} param.importReadOnly if true import `readOnly`
+ */
+function insertVolatileReadOnlyImportDeclarations(
+  j,
+  root,
+  { importVolatile, importReadOnly }
+) {
+  const vroImportDeclaration = createVolatileReadOnlyImportDeclarations(j, {
+    importVolatile,
+    importReadOnly
+  });
+  if (!vroImportDeclaration) {
+    return;
+  }
+  const importDeclarations = root.find(j.ImportDeclaration);
+  if (importDeclarations.length) {
+    importDeclarations.at(-1).insertAfter(vroImportDeclaration);
+  } else {
+    root.get().node.program.body.unshift(vroImportDeclaration);
+  }
+}
+
+/**
  * Get decorated props from `import` statements
  *
  * @param {Object} j - jscodeshift lib reference
  * @param {File} root
  * @returns {Object}
  */
-function createDecoratorImportDeclarations(j, root) {
+function createDecoratorImportDeclarations(
+  j,
+  root,
+  { importVolatile = false, importReadOnly = false } = {}
+) {
   getDecoratorImports(j, root).forEach(decoratorImport => {
     const { importPropDecoratorMap, decoratorPath } = DECORATOR_PATHS[
       get(decoratorImport, "value.source.value")
@@ -190,9 +278,20 @@ function createDecoratorImportDeclarations(j, root) {
       const specifier = specifiers[i];
 
       if (isSpecifierDecorator(specifier, importPropDecoratorMap)) {
-        decoratedSpecifiers.push(
-          setSpecifierProps(specifier, importPropDecoratorMap)
+        const decoratedSpecifier = setSpecifierProps(
+          specifier,
+          importPropDecoratorMap
         );
+        const isSpecifierPresent = decoratedSpecifiers.some(specifier => {
+          return (
+            !get(specifier, "local.name") &&
+            get(specifier, "imported.name") ===
+              get(decoratedSpecifier, "imported.name")
+          );
+        });
+        if (!isSpecifierPresent) {
+          decoratedSpecifiers.push(decoratedSpecifier);
+        }
         specifiers.splice(i, 1);
       }
     }
@@ -209,6 +308,11 @@ function createDecoratorImportDeclarations(j, root) {
         j(decoratorImport).insertAfter(importDeclaration);
       }
     }
+  });
+
+  insertVolatileReadOnlyImportDeclarations(j, root, {
+    importVolatile,
+    importReadOnly
   });
 }
 
@@ -356,6 +460,8 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
   // Parse the import statements
   const importedDecoratedProps = getImportedDecoratedProps(j, root);
   let transformed = false;
+  let importVolatile = false;
+  let importReadOnly = false;
 
   getEmberObjectCallExpressions(j, root).forEach(eoCallExpression => {
     const { eoExpression, mixins } = parseEmberObjectCallExpression(
@@ -386,11 +492,18 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
       withComments(es6ClassDeclaration, expressionToReplace.value)
     );
     transformed = true;
+    importVolatile =
+      importVolatile || shouldImportVolatile(eoProps.instanceProps);
+    importReadOnly =
+      importReadOnly || shouldImportReadOnly(eoProps.instanceProps);
   });
   // Need to find another way, as there might be a case where
   // one object from a file is transformed and other is not
   if (transformed) {
-    createDecoratorImportDeclarations(j, root);
+    createDecoratorImportDeclarations(j, root, {
+      importVolatile,
+      importReadOnly
+    });
   }
 }
 

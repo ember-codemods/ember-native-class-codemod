@@ -225,6 +225,7 @@ function createCallExpressionProp(j, callExprProp) {
     const callExprMethods = callExprLastArg.properties.map(callExprFunction => {
       callExprFunction.kind = getPropName(callExprFunction);
       callExprFunction.key = callExprProp.key;
+      callExprFunction.value.params.shift();
       return createMethodProp(j, callExprFunction);
     });
 

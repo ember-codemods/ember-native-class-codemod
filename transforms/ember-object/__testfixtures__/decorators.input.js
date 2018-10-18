@@ -1,4 +1,10 @@
-import { alias, sum as add } from "@ember/object/computed";
+import {
+  alias,
+  readOnly,
+  reads,
+  oneWay as enoWay,
+  sum as add
+} from "@ember/object/computed";
 import { get, set, observer as watcher, computed } from "@ember/object";
 import { inject as controller } from "@ember/controller";
 import { inject as service } from "@ember/service";
@@ -59,8 +65,7 @@ const Foo = EmberObject.extend({
       this.set("lastName", lastName);
       return value;
     }
-  }),
-
+  }).readOnly(),
   /**
   Computed description
   */
@@ -68,12 +73,33 @@ const Foo = EmberObject.extend({
     return `${this.get(
       "fullName"
     )}; Age: ${this.get("age")}; Country: ${this.get("country")}`;
-  }),
+  })
+    .volatile()
+    .readOnly(),
 
   /**
    * Fname
    */
   fName: alias("firstName"),
+
+  /**
+   * Fname1
+   */
+  fName1: alias("firstName"),
+
+  /**
+   * Fname2
+   */
+  fName2: computed("firstName", "lastName", function() {
+    return true;
+  }).readOnly(),
+
+  /**
+   * Fname3
+   */
+  fName3: computed("firstName", "lastName", function() {
+    return true;
+  }).volatile(),
 
   /**
    * Lname
@@ -83,7 +109,27 @@ const Foo = EmberObject.extend({
   /**
    * Lname1
    */
-  lName1: add("description", "lastName").volatile()
+  lName1: add("description", "lastName"),
+
+  /**
+   * Lname2
+   */
+  lName2: readOnly("description"),
+
+  /**
+   * Lname3
+   */
+  lName3: reads("description", "lastName"),
+
+  /**
+   * Lname4
+   */
+  lName4: enoWay("description", "lastName"),
+
+  /**
+   * Lname5
+   */
+  lName5: add("description", "lastName").readOnly()
 });
 
 const Foo = EmberObject.extend({

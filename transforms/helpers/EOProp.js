@@ -2,9 +2,8 @@ const {
   get,
   getPropName,
   getPropType,
-  getPropCalleeName,
-  isClassDecoratorProp,
-  METHOD_DECORATORS
+  getModifier,
+  isClassDecoratorProp
 } = require("./util");
 
 /**
@@ -16,6 +15,7 @@ class EOProp {
   constructor(eoProp) {
     this._prop = eoProp;
     this.decoratorNames = [];
+    this.modifiers = [];
   }
 
   get value() {
@@ -43,7 +43,7 @@ class EOProp {
   }
 
   get calleeName() {
-    return getPropCalleeName(this._prop);
+    return get(this.calleeObject, "callee.name");
   }
 
   get comments() {
@@ -67,19 +67,53 @@ class EOProp {
   }
 
   get callExprArgs() {
-    return get(this._prop, "value.arguments") || [];
+    return get(this.calleeObject, "arguments") || [];
   }
 
   get hasNonLiteralArg() {
     return this.callExprArgs.some(arg => arg.type !== "Literal");
   }
 
+  get hasModifierWithArgs() {
+    return this.modifiers.some(modifier => modifier.args.length);
+  }
+
+  get hasVolatile() {
+    return this.modifiers.some(
+      modifier => get(modifier, "prop.name") === "volatile"
+    );
+  }
+
+  get hasReadOnly() {
+    return this.modifiers.some(
+      modifier => get(modifier, "prop.name") === "readOnly"
+    );
+  }
+
+  get isVolatileReadOnly() {
+    return this.modifiers.length === 2 && this.hasVolatile && this.hasReadOnly;
+  }
+
+  setCallExpressionProps() {
+    let calleeObject = get(this._prop, "value");
+    const modifiers = [getModifier(calleeObject)];
+    while (get(calleeObject, "callee.type") === "MemberExpression") {
+      calleeObject = get(calleeObject, "callee.object");
+      modifiers.push(getModifier(calleeObject));
+    }
+    this.calleeObject = calleeObject;
+    this.modifiers = modifiers.reverse();
+    this.modifiers.shift();
+  }
+
   setDecorators(importedDecoratedProps) {
     if (this.isCallExpression) {
-      const { decoratorName, importedName } =
+      this.setCallExpressionProps();
+      const { decoratorName, isMethodDecorator, isMetaDecorator } =
         importedDecoratedProps[this.calleeName] || {};
       if (decoratorName) {
-        this.hasMethodDecorator = METHOD_DECORATORS.includes(importedName);
+        this.hasMethodDecorator = isMethodDecorator;
+        this.hasMetaDecorator = isMetaDecorator;
         this.decoratorNames.push(decoratorName);
       }
     }
