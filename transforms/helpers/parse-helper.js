@@ -18,6 +18,7 @@ const {
   createImportDeclaration
 } = require("./transform-helper");
 const EOProp = require("./EOProp");
+const logger = require("./log-helper");
 
 /**
  * Return the map of instance props and functions from Ember Object
@@ -454,7 +455,13 @@ function parseEmberObjectCallExpression(eoCallExpression) {
  * @param {Object} options
  */
 function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
+  logger.info(`[${filePath}]: BEGIN`);
   if (options.type && !isFileOfType(filePath, options.type)) {
+    logger.warn(
+      `[${filePath}]: FAILURE Type mismatch, expected type '${
+        options.type
+      }' did not match type of file`
+    );
     return;
   }
   // Parse the import statements
@@ -473,8 +480,11 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
       eoExpression,
       importedDecoratedProps
     );
-
-    if (!hasValidProps(eoProps, getOptions(options))) {
+    const errors = hasValidProps(eoProps, getOptions(options));
+    if (errors.length) {
+      logger.warn(
+        `[${filePath}]: FAILURE \nValidation errors: \n\t${errors.join("\n\t")}`
+      );
       return;
     }
 
@@ -491,11 +501,15 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
     j(expressionToReplace).replaceWith(
       withComments(es6ClassDeclaration, expressionToReplace.value)
     );
+
     transformed = true;
+
     importVolatile =
       importVolatile || shouldImportVolatile(eoProps.instanceProps);
     importReadOnly =
       importReadOnly || shouldImportReadOnly(eoProps.instanceProps);
+
+    logger.info(`[${filePath}]: SUCCESS`);
   });
   // Need to find another way, as there might be a case where
   // one object from a file is transformed and other is not

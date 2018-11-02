@@ -33,23 +33,48 @@ function hasValidProps(
 ) {
   const unsupportedPropNames = decorators ? [] : UNSUPPORTED_PROP_NAMES;
 
-  return instanceProps.every(instanceProp => {
+  return instanceProps.reduce((errors, instanceProp) => {
+    if (!classFields && instanceProp.type === "Literal") {
+      errors.push(`[${instanceProp.name}]: Need option '--class-fields=true'`);
+    }
+
+    if (
+      instanceProp.type === "ObjectExpression" &&
+      !["actions", "queryParams"].includes(instanceProp.name)
+    ) {
+      errors.push(
+        `[${
+          instanceProp.name
+        }]: Transform not supported - value is of type object. For more details: eslint-plugin-ember/avoid-leaking-state-in-ember-objects`
+      );
+    }
+
     if (
       (!decorators &&
         (instanceProp.hasDecorators || instanceProp.isClassDecorator)) ||
       unsupportedPropNames.includes(instanceProp.name) ||
-      (!classFields && instanceProp.type === "Literal") ||
-      (instanceProp.type === "ObjectExpression" &&
-        !["actions", "queryParams"].includes(instanceProp.name)) ||
-      (instanceProp.isCallExpression && !instanceProp.hasDecorators) ||
-      instanceProp.hasModifierWithArgs ||
-      (instanceProp.hasVolatile && instanceProp.hasMetaDecorator)
+      (instanceProp.isCallExpression && !instanceProp.hasDecorators)
     ) {
-      return false;
+      errors.push(`[${instanceProp.name}]: Need option '--decorators=true'`);
     }
 
-    return true;
-  });
+    if (instanceProp.hasModifierWithArgs) {
+      errors.push(
+        `[${
+          instanceProp.name
+        }]: Transform not supported - value has modifiers like 'property' or 'meta'`
+      );
+    }
+
+    if (instanceProp.hasVolatile && instanceProp.hasMetaDecorator) {
+      errors.push(
+        `[${
+          instanceProp.name
+        }]: Transform not supported - value has 'volatile' modifier with computed meta ('@ember/object/computed') is not supported`
+      );
+    }
+    return errors;
+  }, []);
 }
 
 /**
