@@ -217,11 +217,12 @@ function getDecoratorImports(j, root) {
 function getDecoratorsToImport(instanceProps, decoratorsMap = {}) {
   return instanceProps.reduce((specs, prop) => {
     return {
+      attribute: specs.attribute || prop.hasAttributeDecorator,
       readOnly: specs.readOnly || prop.hasReadOnly,
-      action: specs.action || prop.hasAction,
+      action: specs.action || prop.isAction,
       layout: specs.layout || prop.isLayout,
       tagName: specs.tagName || prop.isTagName,
-      className: specs.className || prop.isClassName,
+      className: specs.className || prop.hasClassNameDecorator,
       classNames: specs.classNames || prop.isClassNames,
       volatile: specs.volatile || prop.hasVolatile
     };

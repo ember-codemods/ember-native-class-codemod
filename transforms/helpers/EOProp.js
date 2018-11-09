@@ -106,8 +106,8 @@ class EOProp {
     return this.name === "classNames";
   }
 
-  get hasActionDecorator() {
-    return this.decoratorNames.includes("action");
+  get isAction() {
+    return this.name === "actions";
   }
 
   get hasClassNameDecorator() {
