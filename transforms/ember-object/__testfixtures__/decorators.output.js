@@ -1,12 +1,11 @@
+import { layout, className, classNames, tagName, attribute } from "@ember-decorators/component";
 import { sum as add, overridableReads as enoWay, overridableReads, reads, alias } from "@ember-decorators/object/computed";
 import { get, set } from "@ember/object";
-import { computed, observes as watcher } from "@ember-decorators/object";
+import { action, readOnly, volatile, computed, observes as watcher } from "@ember-decorators/object";
 import { controller } from "@ember-decorators/controller";
 import { service } from "@ember-decorators/service";
 import { on } from "@ember-decorators/object/evented";
-import layout from "components/templates/foo";
-
-import { volatile, readOnly } from "@ember-decorators/object";
+import templateLayout from "components/templates/foo";
 
 @tagName("div")
 @classNames(["test-class", "custom-class"])
@@ -159,5 +158,5 @@ class Foo extends EmberObject {
   lName5;
 }
 
-@layout(layout)
+@layout(templateLayout)
 class Foo extends EmberObject {}

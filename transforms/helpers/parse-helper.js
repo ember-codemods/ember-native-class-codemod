@@ -3,19 +3,20 @@ const camelCase = require("camelcase");
 const {
   get,
   getOptions,
-  shouldImportVolatile,
-  shouldImportReadOnly,
   capitalizeFirstLetter,
   startsWithUpperCaseLetter,
   DECORATOR_PATHS,
+  LAYOUT_IMPORT_SPECIFIER,
   METHOD_DECORATORS,
-  META_DECORATORS
+  META_DECORATORS,
+  EMBER_DECORATOR_SPECIFIERS
 } = require("./util");
 const { hasValidProps, isFileOfType } = require("./validation-helper");
 const {
   withComments,
   createClass,
-  createImportDeclaration
+  createImportDeclaration,
+  createEmberDecoratorSpecifiers
 } = require("./transform-helper");
 const EOProp = require("./EOProp");
 const logger = require("./log-helper");
@@ -55,6 +56,9 @@ function getEmberObjectProps(j, eoExpression, importedDecoratedProps = {}) {
     } else {
       prop.setDecorators(importedDecoratedProps);
       instanceProps.push(prop);
+    }
+    if (prop.isLayout) {
+      prop.setLayoutValue(LAYOUT_IMPORT_SPECIFIER);
     }
   });
 
@@ -204,55 +208,25 @@ function getDecoratorImports(j, root) {
 }
 
 /**
- * Create the import declarations for `readOnly` in `computed(...).readOnly()` and `volatile` in `computed(...).volatile()`.
- * It will import from these specifiers from `@ember-decorators/object`
+ * Get the map of decorators to import other than the computed props, services etc
+ * which already have imports in the code
  *
- * @param {Object} j - jscodeshift lib reference
- * @param {Boolean} param.importVolatile if true import `volatile`
- * @param {Boolean} param.importReadOnly if true import `readOnly`
+ * @param {EOProp[]} instanceProps
+ * @param {Object} decoratorsMap
  */
-function createVolatileReadOnlyImportDeclarations(
-  j,
-  { importVolatile = false, importReadOnly = false } = {}
-) {
-  const specifiers = [];
-  if (importVolatile) {
-    specifiers.push(j.importSpecifier(j.identifier("volatile")));
-  }
-  if (importReadOnly) {
-    specifiers.push(j.importSpecifier(j.identifier("readOnly")));
-  }
-  if (specifiers.length) {
-    return createImportDeclaration(j, specifiers, "@ember-decorators/object");
-  }
-}
-
-/**
- * Create and insert the import declarations for `computed(...).volatile()` and `computed(...).readOnly()`
- *
- * @param {Object} j - jscodeshift lib reference
- * @param {File} root
- * @param {Boolean} param.importVolatile if true import `volatile`
- * @param {Boolean} param.importReadOnly if true import `readOnly`
- */
-function insertVolatileReadOnlyImportDeclarations(
-  j,
-  root,
-  { importVolatile, importReadOnly }
-) {
-  const vroImportDeclaration = createVolatileReadOnlyImportDeclarations(j, {
-    importVolatile,
-    importReadOnly
-  });
-  if (!vroImportDeclaration) {
-    return;
-  }
-  const importDeclarations = root.find(j.ImportDeclaration);
-  if (importDeclarations.length) {
-    importDeclarations.at(-1).insertAfter(vroImportDeclaration);
-  } else {
-    root.get().node.program.body.unshift(vroImportDeclaration);
-  }
+function getDecoratorsToImport(instanceProps, decoratorsMap = {}) {
+  return instanceProps.reduce((specs, prop) => {
+    return {
+      attribute: specs.attribute || prop.hasAttributeDecorator,
+      readOnly: specs.readOnly || prop.hasReadOnly,
+      action: specs.action || prop.isAction,
+      layout: specs.layout || prop.isLayout,
+      tagName: specs.tagName || prop.isTagName,
+      className: specs.className || prop.hasClassNameDecorator,
+      classNames: specs.classNames || prop.isClassNames,
+      volatile: specs.volatile || prop.hasVolatile
+    };
+  }, decoratorsMap);
 }
 
 /**
@@ -262,17 +236,24 @@ function insertVolatileReadOnlyImportDeclarations(
  * @param {File} root
  * @returns {Object}
  */
-function createDecoratorImportDeclarations(
-  j,
-  root,
-  { importVolatile = false, importReadOnly = false } = {}
-) {
+function createDecoratorImportDeclarations(j, root, decoratorsToImport = []) {
+  // create a copy - we need to mutate the object later
+  const edSpecifiers = Object.assign({}, EMBER_DECORATOR_SPECIFIERS);
   getDecoratorImports(j, root).forEach(decoratorImport => {
     const { importPropDecoratorMap, decoratorPath } = DECORATOR_PATHS[
       get(decoratorImport, "value.source.value")
     ];
+    const pathSpecifiers = edSpecifiers[decoratorPath] || [];
+    if (pathSpecifiers.length) {
+      // delete the visited path to avoid duplicate imports
+      delete edSpecifiers[decoratorPath];
+    }
+    const decoratedSpecifiers = createEmberDecoratorSpecifiers(
+      j,
+      pathSpecifiers,
+      decoratorsToImport
+    );
 
-    const decoratedSpecifiers = [];
     const specifiers = get(decoratorImport, "value.specifiers") || [];
 
     for (let i = specifiers.length - 1; i >= 0; i -= 1) {
@@ -311,10 +292,25 @@ function createDecoratorImportDeclarations(
     }
   });
 
-  insertVolatileReadOnlyImportDeclarations(j, root, {
-    importVolatile,
-    importReadOnly
-  });
+  const edSpecifierPaths = Object.keys(edSpecifiers);
+  if (edSpecifierPaths.length) {
+    edSpecifierPaths.forEach(path => {
+      const specifiers = createEmberDecoratorSpecifiers(
+        j,
+        edSpecifiers[path],
+        decoratorsToImport
+      );
+
+      if (specifiers.length) {
+        j(
+          root
+            .find(j.Declaration)
+            .at(0)
+            .get()
+        ).insertBefore(createImportDeclaration(j, specifiers, path));
+      }
+    });
+  }
 }
 
 /**
@@ -364,6 +360,45 @@ function getEmberObjectCallExpressions(j, root) {
         ) &&
         get(eoCallExpression, "parentPath.value.type") !== "ClassDeclaration"
     );
+}
+
+/**
+ * Extracts the layout property name
+ *
+ * @param {Object} j - jscodeshift lib reference
+ * @param {File} root
+ * @returns {String} Name of the layout property
+ */
+function getLayoutPropertyName(j, root) {
+  const layoutPropCollection = root.find(j.Property, {
+    key: {
+      type: "Identifier",
+      name: "layout"
+    }
+  });
+  if (layoutPropCollection.length) {
+    const layoutProp = layoutPropCollection.get();
+    return get(layoutProp, "value.value.name");
+  }
+}
+
+/**
+ * Update the layout import name
+ *
+ * @param {Object} j - jscodeshift lib reference
+ * @param {File} root
+ */
+function updateLayoutImportDeclaration(j, root, layoutName) {
+  if (!layoutName) {
+    return;
+  }
+  const layoutIdentifier = root
+    .find(j.ImportDefaultSpecifier, { local: { name: layoutName } })
+    .find(j.Identifier);
+
+  if (layoutIdentifier.length) {
+    layoutIdentifier.get().value.name = LAYOUT_IMPORT_SPECIFIER;
+  }
 }
 
 /**
@@ -466,9 +501,9 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
   }
   // Parse the import statements
   const importedDecoratedProps = getImportedDecoratedProps(j, root);
+  const layoutName = getLayoutPropertyName(j, root);
   let transformed = false;
-  let importVolatile = false;
-  let importReadOnly = false;
+  let decoratorsToImportMap = {};
 
   getEmberObjectCallExpressions(j, root).forEach(eoCallExpression => {
     const { eoExpression, mixins } = parseEmberObjectCallExpression(
@@ -480,6 +515,7 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
       eoExpression,
       importedDecoratedProps
     );
+
     const errors = hasValidProps(eoProps, getOptions(options));
     if (errors.length) {
       logger.warn(
@@ -504,20 +540,21 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
 
     transformed = true;
 
-    importVolatile =
-      importVolatile || shouldImportVolatile(eoProps.instanceProps);
-    importReadOnly =
-      importReadOnly || shouldImportReadOnly(eoProps.instanceProps);
-
-    logger.info(`[${filePath}]: SUCCESS`);
+    decoratorsToImportMap = getDecoratorsToImport(
+      eoProps.instanceProps,
+      decoratorsToImportMap
+    );
   });
+
   // Need to find another way, as there might be a case where
   // one object from a file is transformed and other is not
   if (transformed) {
-    createDecoratorImportDeclarations(j, root, {
-      importVolatile,
-      importReadOnly
-    });
+    const decoratorsToImport = Object.keys(decoratorsToImportMap).filter(
+      key => decoratorsToImportMap[key]
+    );
+    createDecoratorImportDeclarations(j, root, decoratorsToImport);
+    updateLayoutImportDeclaration(j, root, layoutName);
+    logger.info(`[${filePath}]: SUCCESS`);
   }
 }
 

@@ -29,6 +29,17 @@ const DECORATOR_PATHS = {
   }
 };
 
+const EMBER_DECORATOR_SPECIFIERS = {
+  "@ember-decorators/object": ["action", "readOnly", "volatile"],
+  "@ember-decorators/component": [
+    "layout",
+    "className",
+    "classNames",
+    "tagName",
+    "attribute"
+  ]
+};
+
 const METHOD_DECORATORS = ["action", "on", "observer"];
 
 const META_DECORATORS = {
@@ -41,6 +52,8 @@ const DEFAULT_OPTIONS = {
   decorators: false,
   classFields: true
 };
+
+const LAYOUT_IMPORT_SPECIFIER = "templateLayout";
 
 /**
  * Get a property from and object, useful to get nested props without checking for null values
@@ -158,38 +171,20 @@ function getModifier(calleeObject) {
   };
 }
 
-/**
- * Iterates over props to find if `import { volatile } from '@ember-decorators/object'` is needed
- *
- * @param {EOProp[]} props
- */
-function shouldImportVolatile(props = []) {
-  return props.some(prop => prop.hasVolatile);
-}
-
-/**
- * Iterates over props to find if `import { readOnly } from '@ember-decorators/object'` is needed
- *
- * @param {EOProp[]} props
- */
-function shouldImportReadOnly(props = []) {
-  return props.some(prop => prop.hasReadOnly);
-}
-
 module.exports = {
-  DECORATOR_PATHS,
-  METHOD_DECORATORS,
-  META_DECORATORS,
   capitalizeFirstLetter,
+  DECORATOR_PATHS,
+  EMBER_DECORATOR_SPECIFIERS,
   get,
-  getOptions,
-  getPropName,
   getModifier,
-  getPropType,
-  shouldSetValue,
-  shouldImportVolatile,
-  shouldImportReadOnly,
+  getOptions,
   getPropCalleeName,
-  startsWithUpperCaseLetter,
-  isClassDecoratorProp
+  getPropName,
+  getPropType,
+  isClassDecoratorProp,
+  LAYOUT_IMPORT_SPECIFIER,
+  META_DECORATORS,
+  METHOD_DECORATORS,
+  shouldSetValue,
+  startsWithUpperCaseLetter
 };
