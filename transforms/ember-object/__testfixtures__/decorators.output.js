@@ -5,7 +5,7 @@ import { readOnly, volatile, computed, observes as watcher } from "@ember-decora
 import { controller } from "@ember-decorators/controller";
 import { service } from "@ember-decorators/service";
 import { on } from "@ember-decorators/object/evented";
-import layout from "components/templates/foo";
+import templateLayout from "components/templates/foo";
 
 @tagName("div")
 @classNames(["test-class", "custom-class"])
@@ -158,5 +158,5 @@ class Foo extends EmberObject {
   lName5;
 }
 
-@layout(layout)
+@layout(templateLayout)
 class Foo extends EmberObject {}

@@ -53,6 +53,8 @@ const DEFAULT_OPTIONS = {
   classFields: true
 };
 
+const LAYOUT_IMPORT_SPECIFIER = "templateLayout";
+
 /**
  * Get a property from and object, useful to get nested props without checking for null values
  *
@@ -180,6 +182,7 @@ module.exports = {
   getPropName,
   getPropType,
   isClassDecoratorProp,
+  LAYOUT_IMPORT_SPECIFIER,
   META_DECORATORS,
   METHOD_DECORATORS,
   shouldSetValue,

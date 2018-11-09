@@ -6,6 +6,7 @@ const {
   capitalizeFirstLetter,
   startsWithUpperCaseLetter,
   DECORATOR_PATHS,
+  LAYOUT_IMPORT_SPECIFIER,
   METHOD_DECORATORS,
   META_DECORATORS,
   EMBER_DECORATOR_SPECIFIERS
@@ -55,6 +56,9 @@ function getEmberObjectProps(j, eoExpression, importedDecoratedProps = {}) {
     } else {
       prop.setDecorators(importedDecoratedProps);
       instanceProps.push(prop);
+    }
+    if (prop.isLayout) {
+      prop.setLayoutValue(LAYOUT_IMPORT_SPECIFIER);
     }
   });
 
@@ -286,6 +290,7 @@ function createDecoratorImportDeclarations(j, root, decoratorsToImport = []) {
       }
     }
   });
+
   const edSpecifierPaths = Object.keys(edSpecifiers);
   if (edSpecifierPaths.length) {
     edSpecifierPaths.forEach(path => {
@@ -354,6 +359,45 @@ function getEmberObjectCallExpressions(j, root) {
         ) &&
         get(eoCallExpression, "parentPath.value.type") !== "ClassDeclaration"
     );
+}
+
+/**
+ * Extracts the layout property name
+ *
+ * @param {Object} j - jscodeshift lib reference
+ * @param {File} root
+ * @returns {String} Name of the layout property
+ */
+function getLayoutPropertyName(j, root) {
+  const layoutPropCollection = root.find(j.Property, {
+    key: {
+      type: "Identifier",
+      name: "layout"
+    }
+  });
+  if (layoutPropCollection.length) {
+    const layoutProp = layoutPropCollection.get();
+    return get(layoutProp, "value.value.name");
+  }
+}
+
+/**
+ * Update the layout import name
+ *
+ * @param {Object} j - jscodeshift lib reference
+ * @param {File} root
+ */
+function updateLayoutImportDeclaration(j, root, layoutName) {
+  if (!layoutName) {
+    return;
+  }
+  const layoutIdentifier = root
+    .find(j.ImportDefaultSpecifier, { local: { name: layoutName } })
+    .find(j.Identifier);
+
+  if (layoutIdentifier.length) {
+    layoutIdentifier.get().value.name = LAYOUT_IMPORT_SPECIFIER;
+  }
 }
 
 /**
@@ -456,6 +500,7 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
   }
   // Parse the import statements
   const importedDecoratedProps = getImportedDecoratedProps(j, root);
+  const layoutName = getLayoutPropertyName(j, root);
   let transformed = false;
   let decoratorsToImportMap = {};
 
@@ -469,6 +514,7 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
       eoExpression,
       importedDecoratedProps
     );
+
     const errors = hasValidProps(eoProps, getOptions(options));
     if (errors.length) {
       logger.warn(
@@ -502,11 +548,12 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
   // Need to find another way, as there might be a case where
   // one object from a file is transformed and other is not
   if (transformed) {
-    logger.info(`[${filePath}]: SUCCESS`);
     const decoratorsToImport = Object.keys(decoratorsToImportMap).filter(
       key => decoratorsToImportMap[key]
     );
     createDecoratorImportDeclarations(j, root, decoratorsToImport);
+    updateLayoutImportDeclaration(j, root, layoutName);
+    logger.info(`[${filePath}]: SUCCESS`);
   }
 }
 

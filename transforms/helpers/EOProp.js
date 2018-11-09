@@ -152,6 +152,12 @@ class EOProp {
       this.propList = classNameBindingsProps[this.name];
     }
   }
+
+  setLayoutValue(value) {
+    if (this.type === "Identifier") {
+      this.value.name = value;
+    }
+  }
 }
 
 module.exports = EOProp;
