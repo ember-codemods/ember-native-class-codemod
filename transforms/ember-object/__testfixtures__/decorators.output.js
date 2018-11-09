@@ -7,7 +7,7 @@ import { on } from "@ember-decorators/object/evented";
 import layout from "components/templates/foo";
 
 @tagName("div")
-@classNames(["test-class", "custom-class"])
+@classNames("test-class", "custom-class")
 class Foo extends EmberObject {
   a = "";
 
@@ -35,7 +35,9 @@ class Foo extends EmberObject {
 
   @action
   baz() {
-    super.baz(...arguments);
+    if (super.baz) {
+      super.baz(...arguments);
+    }
   }
 
   @action

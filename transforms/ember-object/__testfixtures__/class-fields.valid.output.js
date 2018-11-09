@@ -20,6 +20,8 @@ class Foo extends Test {
   }
 
   anotherMethod() {
-    super.anotherMethod(...arguments);
+    if (super.anotherMethod) {
+      super.anotherMethod(...arguments);
+    }
   }
 }

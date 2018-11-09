@@ -30,7 +30,9 @@ class Foo extends Test.extend(MyMixin) {
   }
 
   anotherMethod() {
-    super.anotherMethod(...arguments);
+    if (super.anotherMethod) {
+      super.anotherMethod(...arguments);
+    }
   }
 }
 

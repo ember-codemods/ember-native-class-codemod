@@ -78,13 +78,11 @@ function replaceSuperExpressions(j, methodDefinition) {
   }
   superExprs.forEach(superExpr => {
     const superMethodArgs = get(superExpr, "value.expression.arguments") || [];
-    const superMethodCall = j.expressionStatement(
-      j.callExpression(
-        j.memberExpression(j.super(), methodDefinition.key),
-        superMethodArgs
-      )
-    );
-    j(superExpr).replaceWith(superMethodCall);
+    const test = j.memberExpression(j.super(), methodDefinition.key);
+    const blk = j.blockStatement([
+      j.expressionStatement(j.callExpression(test, superMethodArgs))
+    ]);
+    j(superExpr).replaceWith(j.ifStatement(test, blk));
   });
 
   return methodDefinition;
