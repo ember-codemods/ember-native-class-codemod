@@ -312,11 +312,36 @@ function createImportDeclaration(j, specifiers, path) {
   return j.importDeclaration(specifiers, j.literal(path));
 }
 
+/**
+ * Matches the decorators for the current path with the `decoratorsToImport`,
+ * and creates import specifiers for the matching decorators
+ *
+ * @param {Object} j - jscodeshift lib reference
+ * @param {String[]} pathSpecifiers
+ * @param {String[]} decoratorsToImport
+ * @returns {ImportSpecifier}
+ */
+function createEmberDecoratorSpecifiers(
+  j,
+  pathSpecifiers = [],
+  decoratorsToImport = []
+) {
+  return pathSpecifiers
+    .filter(specifier => decoratorsToImport.includes(specifier))
+    .map(specifier => {
+      return j.importSpecifier(
+        j.identifier(specifier),
+        j.identifier(specifier)
+      );
+    });
+}
+
 module.exports = {
   withComments,
   instancePropsToExpressions,
   createSuperExpressionStatement,
   createConstructor,
   createClass,
-  createImportDeclaration
+  createImportDeclaration,
+  createEmberDecoratorSpecifiers
 };

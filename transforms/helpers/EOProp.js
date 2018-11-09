@@ -94,6 +94,30 @@ class EOProp {
     return this.modifiers.length === 2 && this.hasVolatile && this.hasReadOnly;
   }
 
+  get isLayout() {
+    return this.name === "layout";
+  }
+
+  get isTagName() {
+    return this.name === "tagName";
+  }
+
+  get isClassNames() {
+    return this.name === "classNames";
+  }
+
+  get hasActionDecorator() {
+    return this.decoratorNames.includes("action");
+  }
+
+  get hasClassNameDecorator() {
+    return this.decoratorNames.includes("className");
+  }
+
+  get hasAttributeDecorator() {
+    return this.decoratorNames.includes("attribute");
+  }
+
   setCallExpressionProps() {
     let calleeObject = get(this._prop, "value");
     const modifiers = [getModifier(calleeObject)];
