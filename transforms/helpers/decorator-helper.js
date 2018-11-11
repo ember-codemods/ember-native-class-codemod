@@ -21,10 +21,14 @@ function withDecorators(to, decorators = []) {
  * @returns {Decorator[]}
  */
 function createClassDecorator(j, classDecoratorProp) {
+  let decoratorArgs = [];
+  if (classDecoratorProp.type === "ArrayExpression") {
+    decoratorArgs = classDecoratorProp.value.elements;
+  } else {
+    decoratorArgs = [classDecoratorProp.value];
+  }
   return j.decorator(
-    j.callExpression(j.identifier(classDecoratorProp.key.name), [
-      classDecoratorProp.value
-    ])
+    j.callExpression(j.identifier(classDecoratorProp.name), [...decoratorArgs])
   );
 }
 

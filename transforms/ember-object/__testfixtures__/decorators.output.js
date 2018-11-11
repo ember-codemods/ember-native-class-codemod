@@ -8,7 +8,7 @@ import { on } from "@ember-decorators/object/evented";
 import templateLayout from "components/templates/foo";
 
 @tagName("div")
-@classNames(["test-class", "custom-class"])
+@classNames("test-class", "custom-class")
 class Foo extends EmberObject {
   a = "";
 
