@@ -71,8 +71,8 @@ function createCallExpressionDecorators(j, decoratorName, instanceProp) {
  * @param {Object} j - jscodeshift lib reference
  * @returns {Decorator[]}
  */
-function createActionDecorators(j) {
-  return [j.decorator(j.identifier("action"))];
+function createIdentifierDecorators(j, identifier = "action") {
+  return [j.decorator(j.identifier(identifier))];
 }
 
 /**
@@ -111,6 +111,9 @@ function createInstancePropDecorators(j, instanceProp) {
         createBindingDecorators(j, decoratorName, instanceProp)
       );
     }
+    if (decoratorName === "off" || decoratorName === "unobserves") {
+      return decorators.concat(createIdentifierDecorators(j, decoratorName));
+    }
     return decorators.concat(
       createCallExpressionDecorators(j, decoratorName, instanceProp)
     );
@@ -120,7 +123,7 @@ function createInstancePropDecorators(j, instanceProp) {
 module.exports = {
   withDecorators,
   createClassDecorator,
-  createActionDecorators,
+  createIdentifierDecorators,
   createCallExpressionDecorators,
   createInstancePropDecorators
 };

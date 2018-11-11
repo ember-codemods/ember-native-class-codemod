@@ -3,7 +3,7 @@ const {
   withDecorators,
   createClassDecorator,
   createInstancePropDecorators,
-  createActionDecorators
+  createIdentifierDecorators
 } = require("./decorator-helper");
 
 /**
@@ -59,16 +59,13 @@ function createSuperExpressionStatement(j) {
  * @param {MethodDefinition} methodDefinition - MethodDefinition to replce instances from
  * @returns {MethodDefinition}
  */
-function replaceSuperExpressions(j, methodDefinition) {
-  const superExprs = j(methodDefinition).find(j.ExpressionStatement, {
-    expression: {
-      type: "CallExpression",
-      callee: {
-        type: "MemberExpression",
-        property: {
-          type: "Identifier",
-          name: "_super"
-        }
+function replaceSuperExpressions(j, methodDefinition, replaceWithUndefined) {
+  const superExprs = j(methodDefinition).find(j.CallExpression, {
+    callee: {
+      type: "MemberExpression",
+      property: {
+        type: "Identifier",
+        name: "_super"
       }
     }
   });
@@ -77,14 +74,16 @@ function replaceSuperExpressions(j, methodDefinition) {
     return methodDefinition;
   }
   superExprs.forEach(superExpr => {
-    const superMethodArgs = get(superExpr, "value.expression.arguments") || [];
-    const superMethodCall = j.expressionStatement(
-      j.callExpression(
+    if (replaceWithUndefined) {
+      j(superExpr).replaceWith(j.identifier("undefined"));
+    } else {
+      const superMethodArgs = get(superExpr, "value.arguments") || [];
+      const superMethodCall = j.callExpression(
         j.memberExpression(j.super(), methodDefinition.key),
         superMethodArgs
-      )
-    );
-    j(superExpr).replaceWith(superMethodCall);
+      );
+      j(superExpr).replaceWith(superMethodCall);
+    }
   });
 
   return methodDefinition;
@@ -100,13 +99,22 @@ function replaceSuperExpressions(j, methodDefinition) {
  * @param {Decorator[]} decorators
  * @returns {MethodDefinition[]}
  */
-function createMethodProp(j, functionProp, decorators = []) {
+function createMethodProp(
+  j,
+  functionProp,
+  decorators = [],
+  replaceWithUndefined = false
+) {
   const propKind = functionProp.kind === "init" ? "method" : functionProp.kind;
+  if (functionProp.runtimeType) {
+    replaceWithUndefined = !functionProp.isOverridden;
+  }
   return withDecorators(
     withComments(
       replaceSuperExpressions(
         j,
-        j.methodDefinition(propKind, functionProp.key, functionProp.value)
+        j.methodDefinition(propKind, functionProp.key, functionProp.value),
+        replaceWithUndefined
       ),
       functionProp
     ),
@@ -139,7 +147,6 @@ function createConstructor(j, instanceProps = []) {
       )
     ];
   }
-
   return [];
 }
 
@@ -189,9 +196,16 @@ function createClassProp(j, instanceProp) {
  */
 function createActionDecoratedProps(j, actionsProp) {
   const actionProps = get(actionsProp, "value.properties");
-  const actionDecorators = createActionDecorators(j);
+  const overriddenActions = get(actionsProp, "overriddenActions") || [];
+  const actionDecorators = createIdentifierDecorators(j);
   return actionProps.map(actionProp =>
-    createMethodProp(j, actionProp, actionDecorators)
+    createMethodProp(
+      j,
+      actionProp,
+      actionDecorators,
+      actionsProp.runtimeType &&
+        !overriddenActions.includes(actionProp.key.name)
+    )
   );
 }
 

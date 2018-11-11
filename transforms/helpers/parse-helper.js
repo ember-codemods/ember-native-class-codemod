@@ -34,7 +34,12 @@ const logger = require("./log-helper");
  * @param {ObjectExpression} emberObjectExpression
  * @returns {Object} Object of instance and function properties
  */
-function getEmberObjectProps(j, eoExpression, importedDecoratedProps = {}) {
+function getEmberObjectProps(
+  j,
+  eoExpression,
+  importedDecoratedProps = {},
+  runtimeData = {}
+) {
   const objProps = get(eoExpression, "properties") || [];
 
   const instanceProps = [];
@@ -55,6 +60,7 @@ function getEmberObjectProps(j, eoExpression, importedDecoratedProps = {}) {
       );
     } else {
       prop.setDecorators(importedDecoratedProps);
+      prop.setRuntimeData(runtimeData);
       instanceProps.push(prop);
     }
     if (prop.isLayout) {
@@ -224,6 +230,8 @@ function getDecoratorsToImport(instanceProps, decoratorsMap = {}) {
       tagName: specs.tagName || prop.isTagName,
       className: specs.className || prop.hasClassNameDecorator,
       classNames: specs.classNames || prop.isClassNames,
+      unobserves: specs.unobserves || prop.hasUnobservesDecorator,
+      off: specs.off || prop.hasOffDecorator,
       volatile: specs.volatile || prop.hasVolatile
     };
   }, decoratorsMap);
@@ -513,7 +521,8 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
     const eoProps = getEmberObjectProps(
       j,
       eoExpression,
-      importedDecoratedProps
+      importedDecoratedProps,
+      options.runtimeData
     );
 
     const errors = hasValidProps(eoProps, getOptions(options));

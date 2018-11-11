@@ -118,6 +118,14 @@ class EOProp {
     return this.decoratorNames.includes("attribute");
   }
 
+  get hasUnobservesDecorator() {
+    return this.decoratorNames.includes("unobserves");
+  }
+
+  get hasOffDecorator() {
+    return this.decoratorNames.includes("unobserves");
+  }
+
   setCallExpressionProps() {
     let calleeObject = get(this._prop, "value");
     const modifiers = [getModifier(calleeObject)];
@@ -157,6 +165,34 @@ class EOProp {
     if (this.type === "Identifier") {
       this.value.name = value;
     }
+  }
+
+  setRuntimeData({
+    // computedProperties = [],
+    // observedProperties = [],
+    // observerProperties = {},
+    offProperties = [],
+    overriddenActions = [],
+    overriddenProperties = [],
+    // ownProperties = [],
+    type = "",
+    unobservedProperties = []
+  }) {
+    if (!type) {
+      return;
+    }
+    const name = this.name;
+    if (unobservedProperties.includes(name)) {
+      this.decoratorNames.push("unobserves");
+    }
+    if (offProperties.includes(name)) {
+      this.decoratorNames.push("off");
+    }
+    if (this.isAction) {
+      this.overriddenActions = overriddenActions;
+    }
+    this.isOverridden = overriddenProperties.includes(name);
+    this.runtimeType = type;
   }
 }
 

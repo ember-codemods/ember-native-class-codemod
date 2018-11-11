@@ -1,4 +1,4 @@
-import { layout, className, classNames, tagName, attribute } from "@ember-decorators/component";
+import { attribute, className, classNames, layout, tagName } from "@ember-decorators/component";
 import { sum as add, overridableReads as enoWay, overridableReads, reads, alias } from "@ember-decorators/object/computed";
 import { get, set } from "@ember/object";
 import { action, readOnly, volatile, computed, observes as watcher } from "@ember-decorators/object";
