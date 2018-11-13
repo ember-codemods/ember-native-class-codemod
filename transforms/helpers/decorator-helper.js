@@ -65,6 +65,17 @@ function createCallExpressionDecorators(j, decoratorName, instanceProp) {
   );
 }
 
+function createDecoratorsWithArgs(j, identifier, args) {
+  return [
+    j.decorator(
+      j.callExpression(
+        j.identifier(identifier),
+        args.map(arg => j.literal(arg))
+      )
+    )
+  ];
+}
+
 /**
  * Create `@action` decorator
  *
@@ -102,20 +113,31 @@ function createBindingDecorators(j, decoratorName, instanceProp) {
  * @returns {Decorator[]}
  */
 function createInstancePropDecorators(j, instanceProp) {
-  return instanceProp.decoratorNames.reduce((decorators, decoratorName) => {
-    if (!decoratorName) {
+  return instanceProp.decoratorNames.reduce((decorators, decorator) => {
+    if (!decorator) {
       return decorators;
     }
-    if (decoratorName === "className" || decoratorName === "attribute") {
+    if (decorator === "className" || decorator === "attribute") {
       return decorators.concat(
-        createBindingDecorators(j, decoratorName, instanceProp)
+        createBindingDecorators(j, decorator, instanceProp)
       );
     }
-    if (decoratorName === "off" || decoratorName === "unobserves") {
-      return decorators.concat(createIdentifierDecorators(j, decoratorName));
+    if (decorator === "off" || decorator === "unobserves") {
+      return decorators.concat(
+        createDecoratorsWithArgs(
+          j,
+          decorator,
+          instanceProp.decoratorArgs[decorator]
+        )
+      );
     }
     return decorators.concat(
-      createCallExpressionDecorators(j, decoratorName, instanceProp)
+      createCallExpressionDecorators(
+        j,
+        decorator,
+        instanceProp,
+        instanceProp.decoratorArgs[decorator]
+      )
     );
   }, []);
 }

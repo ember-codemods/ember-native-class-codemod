@@ -64,6 +64,15 @@ const DEFAULT_OPTIONS = {
 
 const LAYOUT_IMPORT_SPECIFIER = "templateLayout";
 
+const ACTION_SUPER_EXPRESSION_COMMENT = [
+  " TODO: This call to super is within an action, and has to refer to the parent",
+  " class's actions to be safe. This should be refactored to call a normal method",
+  " on the parent class. If the parent class has not been converted to native",
+  " classes, it may need to be refactored as well. See",
+  " https: //github.com/scalvert/ember-es6-class-codemod/blob/master/README.md",
+  " for more details."
+];
+
 /**
  * Get a property from and object, useful to get nested props without checking for null values
  *
@@ -205,6 +214,7 @@ function getRuntimeData(configConfigPath, filePath) {
 }
 
 module.exports = {
+  ACTION_SUPER_EXPRESSION_COMMENT,
   capitalizeFirstLetter,
   DECORATOR_PATHS,
   EMBER_DECORATOR_SPECIFIERS,

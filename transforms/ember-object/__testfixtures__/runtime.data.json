@@ -5,12 +5,12 @@
         "computedProperties": [],
         "observedProperties": [],
         "observerProperties": {},
-        "offProperties": ["offProp"],
+        "offProperties": { "offProp": ["prop1", "prop2"] },
         "overriddenActions": ["overriddenActionMethod"],
         "overriddenProperties": ["overriddenMethod"],
         "ownProperties": [],
         "type": "EmberObject",
-        "unobservedProperties": ["unobservedProp"]
+        "unobservedProperties": { "unobservedProp": ["prop3", "prop4"] }
       }
     }
   ]
