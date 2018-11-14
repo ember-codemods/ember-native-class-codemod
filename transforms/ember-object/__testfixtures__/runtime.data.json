@@ -1,0 +1,17 @@
+{
+  "data": [
+    {
+      "./transforms/ember-object/__testfixtures__/runtime.input.js": {
+        "computedProperties": [],
+        "observedProperties": [],
+        "observerProperties": {},
+        "offProperties": { "offProp": ["prop1", "prop2"] },
+        "overriddenActions": ["overriddenActionMethod"],
+        "overriddenProperties": ["overriddenMethod"],
+        "ownProperties": [],
+        "type": "EmberObject",
+        "unobservedProperties": { "unobservedProp": ["prop3", "prop4"] }
+      }
+    }
+  ]
+}

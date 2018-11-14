@@ -1,4 +1,4 @@
-import { layout, className, classNames, tagName, attribute } from "@ember-decorators/component";
+import { attribute, className, classNames, layout, tagName } from "@ember-decorators/component";
 import { sum as add, overridableReads as enoWay, overridableReads, reads, alias } from "@ember-decorators/object/computed";
 import { get, set } from "@ember/object";
 import { action, readOnly, volatile, computed, observes as watcher } from "@ember-decorators/object";
@@ -36,7 +36,13 @@ class Foo extends EmberObject {
 
   @action
   baz() {
-    super.baz(...arguments);
+    // TODO: This call to super is within an action, and has to refer to the parent
+    // class's actions to be safe. This should be refactored to call a normal method
+    // on the parent class. If the parent class has not been converted to native
+    // classes, it may need to be refactored as well. See
+    // https: //github.com/scalvert/ember-es6-class-codemod/blob/master/README.md
+    // for more details.
+    super.actions.baz.call(this, ...arguments);
   }
 
   @action

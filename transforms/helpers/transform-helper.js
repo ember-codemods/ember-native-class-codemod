@@ -1,9 +1,14 @@
-const { get, getPropName, shouldSetValue } = require("./util");
+const {
+  ACTION_SUPER_EXPRESSION_COMMENT,
+  get,
+  getPropName,
+  shouldSetValue
+} = require("./util");
 const {
   withDecorators,
   createClassDecorator,
   createInstancePropDecorators,
-  createActionDecorators
+  createIdentifierDecorators
 } = require("./decorator-helper");
 
 /**
@@ -16,6 +21,10 @@ const {
 function withComments(to, from) {
   to.comments = from.comments;
   return to;
+}
+
+function createLineComments(j, lines = []) {
+  return lines.map(line => j.commentLine(line));
 }
 
 /**
@@ -59,16 +68,18 @@ function createSuperExpressionStatement(j) {
  * @param {MethodDefinition} methodDefinition - MethodDefinition to replce instances from
  * @returns {MethodDefinition}
  */
-function replaceSuperExpressions(j, methodDefinition) {
-  const superExprs = j(methodDefinition).find(j.ExpressionStatement, {
-    expression: {
-      type: "CallExpression",
-      callee: {
-        type: "MemberExpression",
-        property: {
-          type: "Identifier",
-          name: "_super"
-        }
+function replaceSuperExpressions(
+  j,
+  methodDefinition,
+  replaceWithUndefined,
+  isAction = false
+) {
+  const superExprs = j(methodDefinition).find(j.CallExpression, {
+    callee: {
+      type: "MemberExpression",
+      property: {
+        type: "Identifier",
+        name: "_super"
       }
     }
   });
@@ -77,14 +88,34 @@ function replaceSuperExpressions(j, methodDefinition) {
     return methodDefinition;
   }
   superExprs.forEach(superExpr => {
-    const superMethodArgs = get(superExpr, "value.expression.arguments") || [];
-    const superMethodCall = j.expressionStatement(
-      j.callExpression(
-        j.memberExpression(j.super(), methodDefinition.key),
-        superMethodArgs
-      )
-    );
-    j(superExpr).replaceWith(superMethodCall);
+    if (replaceWithUndefined) {
+      j(superExpr).replaceWith(j.identifier("undefined"));
+    } else {
+      let superMethodCall;
+      const superMethodArgs = get(superExpr, "value.arguments") || [];
+      if (isAction) {
+        superMethodCall = j.callExpression(
+          j.memberExpression(
+            j.memberExpression(
+              j.memberExpression(j.super(), j.identifier("actions")),
+              methodDefinition.key
+            ),
+            j.identifier("call")
+          ),
+          [].concat(j.thisExpression(), ...superMethodArgs)
+        );
+        superMethodCall.comments = createLineComments(
+          j,
+          ACTION_SUPER_EXPRESSION_COMMENT
+        );
+      } else {
+        superMethodCall = j.callExpression(
+          j.memberExpression(j.super(), methodDefinition.key),
+          superMethodArgs
+        );
+      }
+      j(superExpr).replaceWith(superMethodCall);
+    }
   });
 
   return methodDefinition;
@@ -100,13 +131,24 @@ function replaceSuperExpressions(j, methodDefinition) {
  * @param {Decorator[]} decorators
  * @returns {MethodDefinition[]}
  */
-function createMethodProp(j, functionProp, decorators = []) {
+function createMethodProp(
+  j,
+  functionProp,
+  decorators = [],
+  replaceWithUndefined = false,
+  isAction = false
+) {
   const propKind = functionProp.kind === "init" ? "method" : functionProp.kind;
+  if (functionProp.hasRuntimeData) {
+    replaceWithUndefined = !functionProp.isOverridden;
+  }
   return withDecorators(
     withComments(
       replaceSuperExpressions(
         j,
-        j.methodDefinition(propKind, functionProp.key, functionProp.value)
+        j.methodDefinition(propKind, functionProp.key, functionProp.value),
+        replaceWithUndefined,
+        isAction
       ),
       functionProp
     ),
@@ -139,7 +181,6 @@ function createConstructor(j, instanceProps = []) {
       )
     ];
   }
-
   return [];
 }
 
@@ -189,9 +230,17 @@ function createClassProp(j, instanceProp) {
  */
 function createActionDecoratedProps(j, actionsProp) {
   const actionProps = get(actionsProp, "value.properties");
-  const actionDecorators = createActionDecorators(j);
+  const overriddenActions = get(actionsProp, "overriddenActions") || [];
+  const actionDecorators = createIdentifierDecorators(j);
   return actionProps.map(actionProp =>
-    createMethodProp(j, actionProp, actionDecorators)
+    createMethodProp(
+      j,
+      actionProp,
+      actionDecorators,
+      actionsProp.hasRuntimeData &&
+        !overriddenActions.includes(actionProp.key.name),
+      true
+    )
   );
 }
 

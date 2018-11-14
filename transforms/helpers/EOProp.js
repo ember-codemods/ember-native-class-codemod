@@ -16,6 +16,7 @@ class EOProp {
     this._prop = eoProp;
     this.decoratorNames = [];
     this.modifiers = [];
+    this.decoratorArgs = {};
   }
 
   get value() {
@@ -118,6 +119,18 @@ class EOProp {
     return this.decoratorNames.includes("attribute");
   }
 
+  get hasUnobservesDecorator() {
+    return this.decoratorNames.includes("unobserves");
+  }
+
+  get hasOffDecorator() {
+    return this.decoratorNames.includes("off");
+  }
+
+  get hasRuntimeData() {
+    return !!this.runtimeType;
+  }
+
   setCallExpressionProps() {
     let calleeObject = get(this._prop, "value");
     const modifiers = [getModifier(calleeObject)];
@@ -157,6 +170,36 @@ class EOProp {
     if (this.type === "Identifier") {
       this.value.name = value;
     }
+  }
+
+  setRuntimeData({
+    // computedProperties = [],
+    // observedProperties = [],
+    // observerProperties = {},
+    offProperties = {},
+    overriddenActions = [],
+    overriddenProperties = [],
+    // ownProperties = [],
+    type = "",
+    unobservedProperties = {}
+  }) {
+    if (!type) {
+      return;
+    }
+    const name = this.name;
+    if (Object.keys(unobservedProperties).includes(name)) {
+      this.decoratorNames.push("unobserves");
+      this.decoratorArgs["unobserves"] = unobservedProperties[name];
+    }
+    if (Object.keys(offProperties).includes(name)) {
+      this.decoratorNames.push("off");
+      this.decoratorArgs["off"] = offProperties[name];
+    }
+    if (this.isAction) {
+      this.overriddenActions = overriddenActions;
+    }
+    this.isOverridden = overriddenProperties.includes(name);
+    this.runtimeType = type;
   }
 }
 

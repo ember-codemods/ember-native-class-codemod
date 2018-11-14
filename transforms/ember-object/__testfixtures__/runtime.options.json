@@ -1,0 +1,4 @@
+{
+  "decorators": true,
+  "runtime-config-path": "./transforms/ember-object/__testfixtures__/runtime.data.json"
+}

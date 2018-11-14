@@ -1,16 +1,23 @@
 const { getOptions } = require("codemod-cli");
 const { replaceEmberObjectExpressions } = require("../helpers/parse-helper");
+const { getRuntimeData } = require("../helpers/util");
 
-module.exports = function transformer(file, api, options) {
+module.exports = function transformer(file, api, opts) {
   const j = api.jscodeshift;
-  const root = j(file.source);
+  const options = Object.assign({}, opts, getOptions());
+  let { source, path } = file;
+  const runtimeConfigPath = options["runtime-config-path"];
 
-  replaceEmberObjectExpressions(
-    j,
-    root,
-    file.path,
-    Object.assign({}, options, getOptions())
-  );
+  if (runtimeConfigPath) {
+    options.runtimeData = getRuntimeData(runtimeConfigPath, path);
+    if (!options.runtimeData) {
+      return;
+    }
+  }
+
+  const root = j(source);
+
+  replaceEmberObjectExpressions(j, root, path, options);
 
   return root.toSource();
 };

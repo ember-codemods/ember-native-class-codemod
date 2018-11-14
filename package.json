@@ -9,6 +9,7 @@
   "keywords": [
     "codemod-cli"
   ],
+  "license": "MIT",
   "dependencies": {
     "codemod-cli": "ssutar/codemod-cli",
     "minimatch": "^3.0.4",
