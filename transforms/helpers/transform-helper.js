@@ -68,12 +68,10 @@ function createSuperExpressionStatement(j) {
  * @param {MethodDefinition} methodDefinition - MethodDefinition to replce instances from
  * @returns {MethodDefinition}
  */
-function replaceSuperExpressions(
-  j,
-  methodDefinition,
-  replaceWithUndefined,
-  isAction = false
-) {
+function replaceSuperExpressions(j, methodDefinition, functionProp) {
+  const replaceWithUndefined = functionProp.hasRuntimeData
+    ? !functionProp.isOverridden
+    : false;
   const superExprs = j(methodDefinition).find(j.CallExpression, {
     callee: {
       type: "MemberExpression",
@@ -93,7 +91,9 @@ function replaceSuperExpressions(
     } else {
       let superMethodCall;
       const superMethodArgs = get(superExpr, "value.arguments") || [];
-      if (isAction) {
+      if (functionProp.isComputed) {
+        superMethodCall = j.memberExpression(j.super(), functionProp.key);
+      } else if (functionProp.isAction) {
         superMethodCall = j.callExpression(
           j.memberExpression(
             j.memberExpression(
@@ -131,24 +131,15 @@ function replaceSuperExpressions(
  * @param {Decorator[]} decorators
  * @returns {MethodDefinition[]}
  */
-function createMethodProp(
-  j,
-  functionProp,
-  decorators = [],
-  replaceWithUndefined = false,
-  isAction = false
-) {
+function createMethodProp(j, functionProp, decorators = []) {
   const propKind = functionProp.kind === "init" ? "method" : functionProp.kind;
-  if (functionProp.hasRuntimeData) {
-    replaceWithUndefined = !functionProp.isOverridden;
-  }
+
   return withDecorators(
     withComments(
       replaceSuperExpressions(
         j,
         j.methodDefinition(propKind, functionProp.key, functionProp.value),
-        replaceWithUndefined,
-        isAction
+        functionProp
       ),
       functionProp
     ),
@@ -232,16 +223,12 @@ function createActionDecoratedProps(j, actionsProp) {
   const actionProps = get(actionsProp, "value.properties");
   const overriddenActions = get(actionsProp, "overriddenActions") || [];
   const actionDecorators = createIdentifierDecorators(j);
-  return actionProps.map(actionProp =>
-    createMethodProp(
-      j,
-      actionProp,
-      actionDecorators,
-      actionsProp.hasRuntimeData &&
-        !overriddenActions.includes(actionProp.key.name),
-      true
-    )
-  );
+  return actionProps.map(actionProp => {
+    actionProp.isAction = true;
+    actionProp.hasRuntimeData = actionsProp.hasRuntimeData;
+    actionProp.isOverridden = overriddenActions.includes(actionProp.key.name);
+    return createMethodProp(j, actionProp, actionDecorators);
+  });
 }
 
 /**
@@ -258,6 +245,7 @@ function createCallExpressionProp(j, callExprProp) {
 
   if (lastArgType === "FunctionExpression") {
     const functionExpr = {
+      isComputed: true,
       kind: callExprProp.kind,
       key: callExprProp.key,
       value: callExprLastArg,
@@ -272,6 +260,7 @@ function createCallExpressionProp(j, callExprProp) {
     ];
   } else if (lastArgType === "ObjectExpression") {
     const callExprMethods = callExprLastArg.properties.map(callExprFunction => {
+      callExprFunction.isComputed = true;
       callExprFunction.kind = getPropName(callExprFunction);
       callExprFunction.key = callExprProp.key;
       callExprFunction.value.params.shift();
