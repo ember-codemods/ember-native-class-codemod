@@ -57,7 +57,10 @@ const Foo = EmberObject.extend({
   */
   fullName: computed("firstName", "lastName", {
     get(key) {
-      return `${this.get("firstName")} ${this.get("lastName")}`;
+      return (
+        this._super(...arguments) &&
+        `${this.get("firstName")} ${this.get("lastName")}`
+      );
     },
     set(key, value) {
       let [firstName, lastName] = value.split(/\s+/);
@@ -70,6 +73,10 @@ const Foo = EmberObject.extend({
   Computed description
   */
   description: computed("fullName", "age", "country", function() {
+    const desc = this._super(...arguments);
+    if (desc) {
+      return desc;
+    }
     return `${this.get(
       "fullName"
     )}; Age: ${this.get("age")}; Country: ${this.get("country")}`;

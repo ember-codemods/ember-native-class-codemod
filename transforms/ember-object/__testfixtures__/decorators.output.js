@@ -76,7 +76,8 @@ class Foo extends EmberObject {
   @computed("firstName", "lastName")
   @readOnly
   get fullName() {
-    return `${this.get("firstName")} ${this.get("lastName")}`;
+    return super.fullName &&
+    `${this.get("firstName")} ${this.get("lastName")}`;
   }
 
   set fullName(value) {
@@ -90,6 +91,10 @@ class Foo extends EmberObject {
   Computed description
   */
   get description() {
+    const desc = super.description;
+    if (desc) {
+      return desc;
+    }
     return `${this.get(
       "fullName"
     )}; Age: ${this.get("age")}; Country: ${this.get("country")}`;
