@@ -19,6 +19,8 @@ ember-es6-class-codemod <TRANSFORM NAME> path/of/files/ or/some**/*glob.js
 ## Transforms
 
 <!--TRANSFORMS_START-->
+* [ember-object](transforms/ember-object/README.md)
+* [helpers](transforms/helpers/README.md)
 <!--TRANSFORMS_END-->
 
 ## Contributing
