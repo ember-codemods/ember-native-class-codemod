@@ -1,9 +1,10 @@
 import { action, off, unobserves } from "@ember-decorators/object";
+import RuntimeInput from "common/runtime/input";
 
 /**
  * Program comments
  */
-class Foo extends Test.extend(MyMixin) {
+export default class RuntimeInputEmberObject extends RuntimeInput.extend(MyMixin) {
   /**
    * Property comments
    */

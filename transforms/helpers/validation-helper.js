@@ -13,6 +13,26 @@ const TYPE_PATTERNS = {
   routes: "**/routes/**/*.js"
 };
 
+const TEST_FILE_PATTERN = "**/*-test.js";
+
+/**
+ * Returns true if the specified file is a test file
+ *
+ * @param {String} file file path
+ * @returns {Boolean}
+ */
+function isTestFile(file) {
+  return minimatch(file, TEST_FILE_PATTERN);
+}
+
+/**
+ * Returns true if the given path matches the type of ember object
+ * The globa patterns are specified by `TYPE_PATTERNS`
+ *
+ * @param {String} file file path
+ * @param {String} type The type of ember object to check against
+ * @returns {Boolean}
+ */
 function isFileOfType(file, type) {
   if (!type || !TYPE_PATTERNS[type]) {
     return true;
@@ -25,7 +45,7 @@ function isFileOfType(file, type) {
  *
  * @param {Object} { instanceProps } map of object properties
  * @param {Object} { decorators }
- * @returns Boolean
+ * @returns {Boolean}
  */
 function hasValidProps(
   { instanceProps = [] } = {},
@@ -55,7 +75,13 @@ function hasValidProps(
       unsupportedPropNames.includes(instanceProp.name) ||
       (instanceProp.isCallExpression && !instanceProp.hasDecorators)
     ) {
-      errors.push(`[${instanceProp.name}]: Need option '--decorators=true'`);
+      errors.push(
+        `[${
+          instanceProp.name
+        }]: Transform not supported - need option '--decorators=true' or the property type ${
+          instanceProp.type
+        } can not be transformed`
+      );
     }
 
     if (instanceProp.hasModifierWithArgs) {
@@ -82,9 +108,10 @@ function hasValidProps(
  *
  * @param {Object} j - jscodeshift lib reference
  * @param {Object} varDeclaration - VariableDeclaration
+ * @returns {Boolean}
  */
 function isExtendsMixin(j, eoCallExpression) {
   return j(eoCallExpression).get("arguments").value.length > 1;
 }
 
-module.exports = { isFileOfType, hasValidProps, isExtendsMixin };
+module.exports = { isFileOfType, hasValidProps, isExtendsMixin, isTestFile };

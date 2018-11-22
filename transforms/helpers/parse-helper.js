@@ -1,22 +1,27 @@
 const path = require("path");
 const camelCase = require("camelcase");
 const {
+  capitalizeFirstLetter,
+  DECORATOR_PATHS,
+  EMBER_DECORATOR_SPECIFIERS,
   get,
   getOptions,
-  capitalizeFirstLetter,
-  startsWithUpperCaseLetter,
-  DECORATOR_PATHS,
+  getRuntimeData,
   LAYOUT_IMPORT_SPECIFIER,
-  METHOD_DECORATORS,
   META_DECORATORS,
-  EMBER_DECORATOR_SPECIFIERS
+  METHOD_DECORATORS,
+  startsWithUpperCaseLetter
 } = require("./util");
-const { hasValidProps, isFileOfType } = require("./validation-helper");
 const {
-  withComments,
+  hasValidProps,
+  isFileOfType,
+  isTestFile
+} = require("./validation-helper");
+const {
   createClass,
+  createEmberDecoratorSpecifiers,
   createImportDeclaration,
-  createEmberDecoratorSpecifiers
+  withComments
 } = require("./transform-helper");
 const EOProp = require("./EOProp");
 const logger = require("./log-helper");
@@ -131,11 +136,11 @@ function getDecoratorInfo(specifier, importPropDecoratorMap) {
   const isMethodDecorator = METHOD_DECORATORS.includes(importedName);
   return {
     decoratorName,
-    localName,
     importedName,
     isImportedAs,
     isMetaDecorator,
-    isMethodDecorator
+    isMethodDecorator,
+    localName
   };
 }
 
@@ -223,15 +228,15 @@ function getDecoratorImports(j, root) {
 function getDecoratorsToImport(instanceProps, decoratorsMap = {}) {
   return instanceProps.reduce((specs, prop) => {
     return {
-      attribute: specs.attribute || prop.hasAttributeDecorator,
-      readOnly: specs.readOnly || prop.hasReadOnly,
       action: specs.action || prop.isAction,
-      layout: specs.layout || prop.isLayout,
-      tagName: specs.tagName || prop.isTagName,
+      attribute: specs.attribute || prop.hasAttributeDecorator,
       className: specs.className || prop.hasClassNameDecorator,
       classNames: specs.classNames || prop.isClassNames,
-      unobserves: specs.unobserves || prop.hasUnobservesDecorator,
+      layout: specs.layout || prop.isLayout,
       off: specs.off || prop.hasOffDecorator,
+      readOnly: specs.readOnly || prop.hasReadOnly,
+      tagName: specs.tagName || prop.isTagName,
+      unobserves: specs.unobserves || prop.hasUnobservesDecorator,
       volatile: specs.volatile || prop.hasVolatile
     };
   }, decoratorsMap);
@@ -460,11 +465,21 @@ function getExpressionToReplace(j, eoCallExpression) {
  * @param {String} filePath
  * @return {String}
  */
-function getClassName(j, eoCallExpression, filePath) {
+function getClassName(
+  j,
+  eoCallExpression,
+  filePath,
+  superClassName,
+  type = "EmberObject"
+) {
   const varDeclaration = getClosetVariableDeclaration(j, eoCallExpression);
   const className =
     getVariableName(varDeclaration) || camelCase(path.basename(filePath, "js"));
-  return capitalizeFirstLetter(className);
+  let capitalizedClassName = capitalizeFirstLetter(className);
+  if (capitalizedClassName === superClassName) {
+    capitalizedClassName += capitalizeFirstLetter(type);
+  }
+  return capitalizedClassName;
 }
 
 /**
@@ -499,6 +514,24 @@ function parseEmberObjectCallExpression(eoCallExpression) {
  */
 function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
   logger.info(`[${filePath}]: BEGIN`);
+
+  const runtimeConfigPath = options["runtime-config-path"];
+
+  if (runtimeConfigPath) {
+    options.runtimeData = getRuntimeData(runtimeConfigPath, filePath);
+    if (!options.runtimeData) {
+      logger.warn(
+        `${filePath} SKIPPED Cound not find runtime data NO_RUNTIME_DATA`
+      );
+      return;
+    }
+  }
+
+  if (isTestFile(filePath)) {
+    logger.warn(`[${filePath}]: Skipping test file`);
+    return;
+  }
+
   if (options.type && !isFileOfType(filePath, options.type)) {
     logger.warn(
       `[${filePath}]: FAILURE Type mismatch, expected type '${
@@ -536,7 +569,13 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
     const superClassName = get(eoCallExpression, "value.callee.object.name");
     const es6ClassDeclaration = createClass(
       j,
-      getClassName(j, eoCallExpression, filePath),
+      getClassName(
+        j,
+        eoCallExpression,
+        filePath,
+        superClassName,
+        get(options, "runtimeData.type")
+      ),
       eoProps,
       superClassName,
       mixins
@@ -568,11 +607,11 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
 }
 
 module.exports = {
-  getVariableName,
-  getEmberObjectProps,
-  getEmberObjectCallExpressions,
+  getClassName,
   getClosetVariableDeclaration,
+  getEmberObjectCallExpressions,
+  getEmberObjectProps,
   getExpressionToReplace,
-  replaceEmberObjectExpressions,
-  getClassName
+  getVariableName,
+  replaceEmberObjectExpressions
 };

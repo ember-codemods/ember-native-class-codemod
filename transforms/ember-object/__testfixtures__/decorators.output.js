@@ -6,6 +6,7 @@ import { controller } from "@ember-decorators/controller";
 import { service } from "@ember-decorators/service";
 import { on } from "@ember-decorators/object/evented";
 import templateLayout from "components/templates/foo";
+import { someActionUtil } from "some/action/util";
 
 @tagName("div")
 @classNames("test-class", "custom-class")
@@ -26,6 +27,11 @@ class Foo extends EmberObject {
   @on("click")
   event() {
     return "abc";
+  }
+
+  @action
+  someActionUtil() {
+    return someActionUtil.call(this, ...arguments);
   }
 
   /**

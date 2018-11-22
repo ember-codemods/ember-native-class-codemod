@@ -10,6 +10,7 @@ const Foo = Test.extend(MyMixin, {
   numProp: 123,
   [MY_VAL]: "val",
   queryParams: {},
+  someVal,
 
   /**
    * Method comments

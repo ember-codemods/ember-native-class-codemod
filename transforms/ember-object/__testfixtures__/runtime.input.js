@@ -1,7 +1,9 @@
+import RuntimeInput from "common/runtime/input";
+
 /**
  * Program comments
  */
-const Foo = Test.extend(MyMixin, {
+export default RuntimeInput.extend(MyMixin, {
   /**
    * Property comments
    */

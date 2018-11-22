@@ -10,6 +10,7 @@ import { inject as controller } from "@ember/controller";
 import { inject as service } from "@ember/service";
 import { on } from "@ember/object/evented";
 import layout from "components/templates/foo";
+import { someActionUtil } from "some/action/util";
 
 const Foo = EmberObject.extend({
   tagName: "div",
@@ -25,6 +26,7 @@ const Foo = EmberObject.extend({
   }),
 
   actions: {
+    someActionUtil,
     /**
     Comments
     */

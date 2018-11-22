@@ -11,6 +11,7 @@ class Foo extends Test.extend(MyMixin) {
   numProp = 123;
   [MY_VAL] = "val";
   queryParams = {};
+  someVal = someVal;
 
   /**
    * Method comments
