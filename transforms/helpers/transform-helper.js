@@ -306,7 +306,10 @@ function createActionDecoratedProps(j, actionsProp) {
 function createCallExpressionProp(j, callExprProp) {
   const callExprArgs = callExprProp.callExprArgs.slice(0);
   const callExprLastArg = callExprArgs.pop();
-  const lastArgType = get(callExprLastArg, "type");
+  const lastArgType =
+    !callExprProp.hasMapDecorator && !callExprProp.hasFilterDecorator
+      ? get(callExprLastArg, "type")
+      : "";
 
   if (lastArgType === "FunctionExpression") {
     const functionExpr = {

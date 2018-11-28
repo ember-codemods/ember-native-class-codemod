@@ -42,9 +42,12 @@ function createClassDecorator(j, classDecoratorProp) {
  * @returns {Decorator[]}
  */
 function createCallExpressionDecorators(j, decoratorName, instanceProp) {
-  const decoratorArgs = instanceProp.hasNonLiteralArg
-    ? instanceProp.callExprArgs.slice(0, -1)
-    : instanceProp.callExprArgs.slice(0);
+  const decoratorArgs =
+    !instanceProp.hasMapDecorator &&
+    !instanceProp.hasFilterDecorator &&
+    instanceProp.hasNonLiteralArg
+      ? instanceProp.callExprArgs.slice(0, -1)
+      : instanceProp.callExprArgs.slice(0);
 
   if (instanceProp.isVolatileReadOnly) {
     return [];
