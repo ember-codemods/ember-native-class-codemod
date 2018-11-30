@@ -23,6 +23,13 @@ function withComments(to, from) {
   return to;
 }
 
+/**
+ * Creates line comments from passed lines
+ *
+ * @param {Object} j - jscodeshift lib reference
+ * @param {String[]} lines line comments
+ * @returns {CommentLine[]}
+ */
 function createLineComments(j, lines = []) {
   return lines.map(line => j.commentLine(line));
 }
@@ -65,7 +72,8 @@ function createSuperExpressionStatement(j) {
  * Replace instances of `this._super(...arguments)` to `super.methodName(...arguments)`
  *
  * @param {Object} j - jscodeshift lib reference
- * @param {MethodDefinition} methodDefinition - MethodDefinition to replce instances from
+ * @param {MethodDefinition} methodDefinition - MethodDefinition to replace instances from
+ * @param {FunctionExpression|EOProp} functionProp - Function expression to get the runtime data
  * @returns {MethodDefinition}
  */
 function replaceSuperExpressions(j, methodDefinition, functionProp) {
@@ -129,7 +137,7 @@ function replaceSuperExpressions(j, methodDefinition, functionProp) {
  * @param {Object} j - jscodeshift lib reference
  * @param {EOProp} functionProp
  * @param {Decorator[]} decorators
- * @returns {MethodDefinition[]}
+ * @returns {MethodDefinition}
  */
 function createMethodProp(j, functionProp, decorators = []) {
   const propKind = functionProp.kind === "init" ? "method" : functionProp.kind;
@@ -180,10 +188,13 @@ function createConstructor(j, instanceProps = []) {
  *
  * @param {Object} j - jscodeshift lib reference
  * @param {EOProp} instanceProp
+ * @param {Decorator[]} decorators
  * @returns {ClassProperty}
  */
-function createClassProp(j, instanceProp) {
-  const decorators = createInstancePropDecorators(j, instanceProp);
+function createClassProp(j, instanceProp, decorators = []) {
+  if (!decorators.length) {
+    decorators = createInstancePropDecorators(j, instanceProp);
+  }
 
   const classProp = withDecorators(
     withComments(
@@ -201,20 +212,70 @@ function createClassProp(j, instanceProp) {
 }
 
 /**
- * Create action decorators
+ * Actions with identifier converted to method definition
  *
+ * For example in case of following action
+ * ```
+ * import someActionUtil from 'some/action/util';
+ *
+ * const Foo = Component.extend({
+ *   actions: {
+ *     someActionUtil
+ *   }
+ * });
+ * ```
+ *
+ * will be transformed to:
+ *
+ * ```
+ * import someActionUtil from 'some/action/util';
+ *
+ * const Foo = Component.extend({
+ *   @action
+ *   someActionUtil() {
+ *     return someActionUtil.call(this, ...arguments);
+ *   }
+ * });
+ * ```
+ * @param {Object} j - jscodeshift lib reference
+ * @param {EOProp} idAction
+ * @param {Decorator[]} decorators
+ * @returns {MethodDefinition}
+ */
+function convertIdentifierActionToMethod(j, idAction, decorators = []) {
+  const returnBlock = j.blockStatement([
+    j.returnStatement(
+      j.callExpression(
+        j.memberExpression(idAction.value, j.identifier("call")),
+        [j.thisExpression(), j.spreadElement(j.identifier("arguments"))]
+      )
+    )
+  ]);
+  const expr = j.functionExpression(null, [], returnBlock);
+
+  return withDecorators(
+    withComments(j.methodDefinition("method", idAction.key, expr), idAction),
+    decorators
+  );
+}
+
+/**
+ * Create action decorators
+ * ```
  * Converts
  * {
  *  actions: {
  *    foo() {}
  *  }
  * }
+ * ```
  * to
+ * ```
  * {
  *  @action
  *  foo(){ }
  * }
- *
+ * ```
  * @param {Object} j - jscodeshift lib reference
  * @param {EOProp} actionsProp
  * @returns {MethodDefinition[]}
@@ -224,10 +285,14 @@ function createActionDecoratedProps(j, actionsProp) {
   const overriddenActions = get(actionsProp, "overriddenActions") || [];
   const actionDecorators = createIdentifierDecorators(j);
   return actionProps.map(actionProp => {
-    actionProp.isAction = true;
-    actionProp.hasRuntimeData = actionsProp.hasRuntimeData;
-    actionProp.isOverridden = overriddenActions.includes(actionProp.key.name);
-    return createMethodProp(j, actionProp, actionDecorators);
+    if (get(actionProp, "value.type") === "Identifier") {
+      return convertIdentifierActionToMethod(j, actionProp, actionDecorators);
+    } else {
+      actionProp.isAction = true;
+      actionProp.hasRuntimeData = actionsProp.hasRuntimeData;
+      actionProp.isOverridden = overriddenActions.includes(actionProp.key.name);
+      return createMethodProp(j, actionProp, actionDecorators);
+    }
   });
 }
 
@@ -357,7 +422,7 @@ function createImportDeclaration(j, specifiers, path) {
  * @param {Object} j - jscodeshift lib reference
  * @param {String[]} pathSpecifiers
  * @param {String[]} decoratorsToImport
- * @returns {ImportSpecifier}
+ * @returns {ImportSpecifier[]}
  */
 function createEmberDecoratorSpecifiers(
   j,

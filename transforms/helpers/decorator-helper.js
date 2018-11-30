@@ -65,6 +65,14 @@ function createCallExpressionDecorators(j, decoratorName, instanceProp) {
   );
 }
 
+/**
+ * Create decorators which need arguments
+ *
+ * @param {Object} j - jscodeshift lib reference
+ * @param {String} identifier
+ * @param {String[]} args
+ * @returns {Decorator[]}
+ */
 function createDecoratorsWithArgs(j, identifier, args) {
   return [
     j.decorator(
@@ -80,6 +88,7 @@ function createDecoratorsWithArgs(j, identifier, args) {
  * Create `@action` decorator
  *
  * @param {Object} j - jscodeshift lib reference
+ * @param {String} identifier
  * @returns {Decorator[]}
  */
 function createIdentifierDecorators(j, identifier = "action") {
@@ -132,12 +141,7 @@ function createInstancePropDecorators(j, instanceProp) {
       );
     }
     return decorators.concat(
-      createCallExpressionDecorators(
-        j,
-        decorator,
-        instanceProp,
-        instanceProp.decoratorArgs[decorator]
-      )
+      createCallExpressionDecorators(j, decorator, instanceProp)
     );
   }, []);
 }
