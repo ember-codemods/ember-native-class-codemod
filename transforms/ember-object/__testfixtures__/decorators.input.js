@@ -3,7 +3,9 @@ import {
   readOnly,
   reads,
   oneWay as enoWay,
-  sum as add
+  sum as add,
+  map as computedMap,
+  filter
 } from "@ember/object/computed";
 import { get, set, observer as watcher, computed } from "@ember/object";
 import { inject as controller } from "@ember/controller";
@@ -23,6 +25,12 @@ const Foo = EmberObject.extend({
   }),
   event: on("click", function() {
     return "abc";
+  }),
+  excitingChores: computedMap("chores", function(chore, index) {
+    return chore.toUpperCase() + "!";
+  }),
+  remainingChores: filter("chores", function(chore, index, array) {
+    return !chore.done;
   }),
 
   actions: {

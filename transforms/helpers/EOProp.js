@@ -146,9 +146,15 @@ class EOProp {
   setDecorators(importedDecoratedProps) {
     if (this.isCallExpression) {
       this.setCallExpressionProps();
-      const { decoratorName, isMethodDecorator, isMetaDecorator } =
-        importedDecoratedProps[this.calleeName] || {};
+      const {
+        decoratorName,
+        isMethodDecorator,
+        isMetaDecorator,
+        importedName
+      } = importedDecoratedProps[this.calleeName] || {};
       if (decoratorName) {
+        this.hasMapDecorator = importedName === "map";
+        this.hasFilterDecorator = importedName === "filter";
         this.hasMethodDecorator = isMethodDecorator;
         this.hasMetaDecorator = isMetaDecorator;
         this.decoratorNames.push(decoratorName);

@@ -1,5 +1,15 @@
 import { attribute, className, classNames, layout, tagName } from "@ember-decorators/component";
-import { sum as add, overridableReads as enoWay, overridableReads, reads, alias } from "@ember-decorators/object/computed";
+
+import {
+  filter,
+  map as computedMap,
+  sum as add,
+  overridableReads as enoWay,
+  overridableReads,
+  reads,
+  alias,
+} from "@ember-decorators/object/computed";
+
 import { get, set } from "@ember/object";
 import { action, readOnly, volatile, computed, observes as watcher } from "@ember-decorators/object";
 import { controller } from "@ember-decorators/controller";
@@ -28,6 +38,16 @@ class Foo extends EmberObject {
   event() {
     return "abc";
   }
+
+  @computedMap("chores", function(chore, index) {
+    return chore.toUpperCase() + "!";
+  })
+  excitingChores;
+
+  @filter("chores", function(chore, index, array) {
+    return !chore.done;
+  })
+  remainingChores;
 
   @action
   someActionUtil() {
