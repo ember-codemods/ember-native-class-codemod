@@ -1200,9 +1200,10 @@ code-point-at@^1.0.0:
   resolved "https://registry.yarnpkg.com/code-point-at/-/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
   integrity sha1-DQcLTQQ6W+ozovGkDi7bPZpMz3c=
 
-codemod-cli@ssutar/codemod-cli:
-  version "0.2.7"
-  resolved "https://codeload.github.com/ssutar/codemod-cli/tar.gz/dd57dbaa2dade9f68aaeeed0410b9a2ae0d6046b"
+codemod-cli@^0.2.8:
+  version "0.2.8"
+  resolved "https://registry.yarnpkg.com/codemod-cli/-/codemod-cli-0.2.8.tgz#b6ed0e13c3de65148f88c6d064c90d15817876e1"
+  integrity sha512-hTqiUoDAF6k85rP/bnlX34ZI4CusShGNt2gDDvg3Yq4PLvjC5PC0eeS4Nb8m3HM+pmLfA2A6Ydv1BwFEB3ykqw==
   dependencies:
     "@babel/parser" "^7.0.0-beta.53"
     chalk "^2.4.1"
