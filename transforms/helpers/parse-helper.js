@@ -470,14 +470,16 @@ function getClassName(
   eoCallExpression,
   filePath,
   superClassName,
-  type = "EmberObject"
+  type = ""
 ) {
   const varDeclaration = getClosetVariableDeclaration(j, eoCallExpression);
   const className =
     getVariableName(varDeclaration) || camelCase(path.basename(filePath, "js"));
-  let capitalizedClassName = capitalizeFirstLetter(className);
+  let capitalizedClassName = `${capitalizeFirstLetter(
+    className
+  )}${capitalizeFirstLetter(type)}`;
   if (capitalizedClassName === superClassName) {
-    capitalizedClassName += capitalizeFirstLetter(type);
+    capitalizedClassName = capitalizeFirstLetter(className);
   }
   return capitalizedClassName;
 }
