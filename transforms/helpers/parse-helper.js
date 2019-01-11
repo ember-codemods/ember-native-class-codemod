@@ -606,6 +606,7 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
     updateLayoutImportDeclaration(j, root, layoutName);
     logger.info(`[${filePath}]: SUCCESS`);
   }
+  return transformed;
 }
 
 module.exports = {
