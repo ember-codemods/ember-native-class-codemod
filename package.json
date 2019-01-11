@@ -1,6 +1,6 @@
 {
   "name": "ember-es6-class-codemod",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "scripts": {
     "test": "eslint . && codemod-cli test",
     "update-docs": "codemod-cli update-docs"
