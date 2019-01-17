@@ -1,5 +1,6 @@
 const path = require("path");
 const camelCase = require("camelcase");
+const pluralize = require("pluralize");
 const {
   capitalizeFirstLetter,
   DECORATOR_PATHS,
@@ -473,8 +474,45 @@ function getClassName(
   type = ""
 ) {
   const varDeclaration = getClosetVariableDeclaration(j, eoCallExpression);
+  const filePathSplit = filePath.startsWith("app/")
+    ? filePath.split("app/")
+    : filePath.split("/app/");
+  let normalizedName;
+
+  // Has app in path
+  if (filePathSplit.length === 2) {
+    const appFilePath = filePathSplit[1];
+    const dirWithoutFile = path.dirname(appFilePath);
+    // Only keep no more then the last two directories
+    // Ignore any that are plural of the superclass name
+    // debugger;
+    const lastTwoDirsOrLess = dirWithoutFile
+      .split("/")
+      .slice(-2)
+      .filter(
+        dir =>
+          capitalizeFirstLetter(camelCase(dir)) !== pluralize(superClassName)
+      );
+
+    const fileNameWithoutExt = path.basename(appFilePath, "js");
+    const superClassNameNotInPath =
+      superClassName &&
+      capitalizeFirstLetter(camelCase(fileNameWithoutExt)) !== superClassName;
+
+    lastTwoDirsOrLess.push(fileNameWithoutExt);
+
+    // file name isn't already the type so add thetype to the name it
+    if (superClassNameNotInPath) {
+      lastTwoDirsOrLess.push(superClassName);
+    }
+
+    normalizedName = lastTwoDirsOrLess.join("-");
+  } else {
+    normalizedName = path.basename(filePath, "js");
+  }
+
   const className =
-    getVariableName(varDeclaration) || camelCase(path.basename(filePath, "js"));
+    getVariableName(varDeclaration) || camelCase(normalizedName);
   let capitalizedClassName = `${capitalizeFirstLetter(
     className
   )}${capitalizeFirstLetter(type)}`;
@@ -569,6 +607,7 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
     }
 
     const superClassName = get(eoCallExpression, "value.callee.object.name");
+
     const es6ClassDeclaration = createClass(
       j,
       getClassName(
