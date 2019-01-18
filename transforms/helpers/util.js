@@ -51,12 +51,6 @@ const EMBER_DECORATOR_SPECIFIERS = {
 
 const METHOD_DECORATORS = ["action", "on", "observer"];
 
-const META_DECORATORS = {
-  readOnly: "reads",
-  reads: "overridableReads",
-  oneWay: "overridableReads"
-};
-
 const DEFAULT_OPTIONS = {
   decorators: false,
   classFields: true
@@ -227,7 +221,6 @@ module.exports = {
   getRuntimeData,
   isClassDecoratorProp,
   LAYOUT_IMPORT_SPECIFIER,
-  META_DECORATORS,
   METHOD_DECORATORS,
   shouldSetValue,
   startsWithUpperCaseLetter

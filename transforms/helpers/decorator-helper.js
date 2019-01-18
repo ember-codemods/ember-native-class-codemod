@@ -42,6 +42,10 @@ function createClassDecorator(j, classDecoratorProp) {
  * @returns {Decorator[]}
  */
 function createCallExpressionDecorators(j, decoratorName, instanceProp) {
+  if (instanceProp.isVolatileReadOnly) {
+    return [];
+  }
+
   const decoratorArgs =
     !instanceProp.hasMapDecorator &&
     !instanceProp.hasFilterDecorator &&
@@ -49,23 +53,22 @@ function createCallExpressionDecorators(j, decoratorName, instanceProp) {
       ? instanceProp.callExprArgs.slice(0, -1)
       : instanceProp.callExprArgs.slice(0);
 
-  if (instanceProp.isVolatileReadOnly) {
-    return [];
+  const decoratorExpr = instanceProp.modifiers.reduce(
+    (callExpr, modifier) =>
+      j.callExpression(
+        j.memberExpression(callExpr, modifier.prop),
+        modifier.args
+      ),
+    j.callExpression(j.identifier(decoratorName), decoratorArgs)
+  );
+
+  if (!instanceProp.modifiers.length) {
+    return j.decorator(decoratorExpr);
   }
 
-  return instanceProp.modifiers.reduce(
-    (decorators, modifier) => {
-      if (modifier.args.length !== 0) {
-        decorators.push(
-          j.decorator(j.callExpression(modifier.prop), modifier.args)
-        );
-      } else {
-        decorators.push(j.decorator(modifier.prop));
-      }
-      return decorators;
-    },
-    [j.decorator(j.callExpression(j.identifier(decoratorName), decoratorArgs))]
-  );
+  // If has modifiers wrap decorators in anonymous call expression
+  // it transforms @computed('').readOnly() => @(computed('').readOnly())
+  return j.decorator(j.callExpression(j.identifier(""), [decoratorExpr]));
 }
 
 /**

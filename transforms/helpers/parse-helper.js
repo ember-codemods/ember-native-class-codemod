@@ -8,7 +8,6 @@ const {
   getOptions,
   getRuntimeData,
   LAYOUT_IMPORT_SPECIFIER,
-  META_DECORATORS,
   METHOD_DECORATORS,
   startsWithUpperCaseLetter
 } = require("./util");
@@ -127,7 +126,7 @@ function getDecoratorInfo(specifier, importPropDecoratorMap) {
     decoratorName = localName;
   } else {
     if (isMetaDecorator) {
-      decoratorName = META_DECORATORS[importedName] || localName;
+      decoratorName = localName;
     } else {
       decoratorName = importPropDecoratorMap[importedName];
     }
@@ -175,18 +174,12 @@ function getSpecifierLocalIdentifier(specifier) {
  */
 function setSpecifierProps(specifier, importPropDecoratorMap) {
   const isMetaDecorator = !importPropDecoratorMap;
-  const importedName = get(specifier, "imported.name");
   const decoratorImportedName = get(
     importPropDecoratorMap,
     get(specifier, "imported.name")
   );
   specifier.local = getSpecifierLocalIdentifier(specifier);
-  if (isMetaDecorator) {
-    const metaDecoratorName = META_DECORATORS[importedName];
-    if (metaDecoratorName) {
-      specifier.imported.name = metaDecoratorName;
-    }
-  } else {
+  if (!isMetaDecorator) {
     specifier.imported.name = decoratorImportedName;
   }
   // Needed one more time as we changed the imported name
@@ -234,10 +227,8 @@ function getDecoratorsToImport(instanceProps, decoratorsMap = {}) {
       classNames: specs.classNames || prop.isClassNames,
       layout: specs.layout || prop.isLayout,
       off: specs.off || prop.hasOffDecorator,
-      readOnly: specs.readOnly || prop.hasReadOnly,
       tagName: specs.tagName || prop.isTagName,
-      unobserves: specs.unobserves || prop.hasUnobservesDecorator,
-      volatile: specs.volatile || prop.hasVolatile
+      unobserves: specs.unobserves || prop.hasUnobservesDecorator
     };
   }, decoratorsMap);
 }
