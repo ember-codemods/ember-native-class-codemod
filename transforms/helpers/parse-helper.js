@@ -485,7 +485,6 @@ function getClassName(
     const dirWithoutFile = path.dirname(appFilePath);
     // Only keep no more then the last two directories
     // Ignore any that are plural of the superclass name
-    // debugger;
     const lastTwoDirsOrLess = dirWithoutFile
       .split("/")
       .slice(-2)
