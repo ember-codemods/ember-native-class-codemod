@@ -1,5 +1,7 @@
 const {
   ACTION_SUPER_EXPRESSION_COMMENT,
+  LAYOUT_DECORATOR_LOCAL_NAME,
+  LAYOUT_DECORATOR_NAME,
   get,
   getPropName,
   shouldSetValue
@@ -435,8 +437,12 @@ function createEmberDecoratorSpecifiers(
   return pathSpecifiers
     .filter(specifier => decoratorsToImport.includes(specifier))
     .map(specifier => {
+      const importedSpecifier =
+        specifier === LAYOUT_DECORATOR_LOCAL_NAME
+          ? LAYOUT_DECORATOR_NAME
+          : specifier;
       return j.importSpecifier(
-        j.identifier(specifier),
+        j.identifier(importedSpecifier),
         j.identifier(specifier)
       );
     });

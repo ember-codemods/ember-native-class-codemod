@@ -28,7 +28,9 @@ function createClassDecorator(j, classDecoratorProp) {
     decoratorArgs = [classDecoratorProp.value];
   }
   return j.decorator(
-    j.callExpression(j.identifier(classDecoratorProp.name), [...decoratorArgs])
+    j.callExpression(j.identifier(classDecoratorProp.classDecoratorName), [
+      ...decoratorArgs
+    ])
   );
 }
 

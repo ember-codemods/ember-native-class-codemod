@@ -1,4 +1,4 @@
-import { attribute, className, classNames, layout, tagName } from "@ember-decorators/component";
+import { attribute, className, classNames, tagName, layout as templateLayout } from "@ember-decorators/component";
 
 import {
   filter,
@@ -15,7 +15,7 @@ import { action, computed, observes as watcher } from "@ember-decorators/object"
 import { controller } from "@ember-decorators/controller";
 import { service } from "@ember-decorators/service";
 import { on } from "@ember-decorators/object/evented";
-import templateLayout from "components/templates/foo";
+import layout from "components/templates/foo";
 import { someActionUtil } from "some/action/util";
 
 @tagName("div")
@@ -190,5 +190,5 @@ class Foo extends EmberObject {
   lName5;
 }
 
-@layout(templateLayout)
+@templateLayout(layout)
 class Foo extends EmberObject {}

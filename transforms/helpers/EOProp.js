@@ -3,7 +3,9 @@ const {
   getPropName,
   getPropType,
   getModifier,
-  isClassDecoratorProp
+  isClassDecoratorProp,
+  LAYOUT_DECORATOR_LOCAL_NAME,
+  LAYOUT_DECORATOR_NAME
 } = require("./util");
 
 /**
@@ -59,6 +61,24 @@ class EOProp {
     return isClassDecoratorProp(this.name);
   }
 
+  get classDecoratorName() {
+    if (
+      this.name === LAYOUT_DECORATOR_NAME &&
+      this.value.name === LAYOUT_DECORATOR_NAME
+    ) {
+      return LAYOUT_DECORATOR_LOCAL_NAME;
+    }
+    return this.name;
+  }
+
+  get isLayoutDecorator() {
+    return this.classDecoratorName === LAYOUT_DECORATOR_NAME;
+  }
+
+  get isTemplateLayoutDecorator() {
+    return this.classDecoratorName === LAYOUT_DECORATOR_LOCAL_NAME;
+  }
+
   get isCallExpression() {
     return this.type === "CallExpression";
   }
@@ -93,10 +113,6 @@ class EOProp {
 
   get isVolatileReadOnly() {
     return this.modifiers.length === 2 && this.hasVolatile && this.hasReadOnly;
-  }
-
-  get isLayout() {
-    return this.name === "layout";
   }
 
   get isTagName() {
@@ -169,12 +185,6 @@ class EOProp {
     } else if (classNameBindingsProps[this.name]) {
       this.decoratorNames.push("className");
       this.propList = classNameBindingsProps[this.name];
-    }
-  }
-
-  setLayoutValue(value) {
-    if (this.type === "Identifier") {
-      this.value.name = value;
     }
   }
 
