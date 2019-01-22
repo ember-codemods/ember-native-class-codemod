@@ -1,6 +1,9 @@
 const fs = require("fs");
 const fsPath = require("path");
 
+const LAYOUT_DECORATOR_NAME = "layout";
+const LAYOUT_DECORATOR_LOCAL_NAME = "templateLayout";
+
 const DECORATOR_PATHS = {
   "@ember/object": {
     importPropDecoratorMap: {
@@ -44,25 +47,18 @@ const EMBER_DECORATOR_SPECIFIERS = {
     "attribute",
     "className",
     "classNames",
-    "layout",
-    "tagName"
+    LAYOUT_DECORATOR_NAME,
+    "tagName",
+    LAYOUT_DECORATOR_LOCAL_NAME
   ]
 };
 
 const METHOD_DECORATORS = ["action", "on", "observer"];
 
-const META_DECORATORS = {
-  readOnly: "reads",
-  reads: "overridableReads",
-  oneWay: "overridableReads"
-};
-
 const DEFAULT_OPTIONS = {
   decorators: false,
   classFields: true
 };
-
-const LAYOUT_IMPORT_SPECIFIER = "templateLayout";
 
 const ACTION_SUPER_EXPRESSION_COMMENT = [
   " TODO: This call to super is within an action, and has to refer to the parent",
@@ -226,8 +222,8 @@ module.exports = {
   getPropType,
   getRuntimeData,
   isClassDecoratorProp,
-  LAYOUT_IMPORT_SPECIFIER,
-  META_DECORATORS,
+  LAYOUT_DECORATOR_LOCAL_NAME,
+  LAYOUT_DECORATOR_NAME,
   METHOD_DECORATORS,
   shouldSetValue,
   startsWithUpperCaseLetter

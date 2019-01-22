@@ -7,8 +7,6 @@ const {
   get,
   getOptions,
   getRuntimeData,
-  LAYOUT_IMPORT_SPECIFIER,
-  META_DECORATORS,
   METHOD_DECORATORS,
   startsWithUpperCaseLetter
 } = require("./util");
@@ -68,9 +66,6 @@ function getEmberObjectProps(
       prop.setRuntimeData(runtimeData);
       instanceProps.push(prop);
     }
-    if (prop.isLayout) {
-      prop.setLayoutValue(LAYOUT_IMPORT_SPECIFIER);
-    }
   });
 
   // Assign decoator names to the binding props if any
@@ -127,7 +122,7 @@ function getDecoratorInfo(specifier, importPropDecoratorMap) {
     decoratorName = localName;
   } else {
     if (isMetaDecorator) {
-      decoratorName = META_DECORATORS[importedName] || localName;
+      decoratorName = localName;
     } else {
       decoratorName = importPropDecoratorMap[importedName];
     }
@@ -175,18 +170,12 @@ function getSpecifierLocalIdentifier(specifier) {
  */
 function setSpecifierProps(specifier, importPropDecoratorMap) {
   const isMetaDecorator = !importPropDecoratorMap;
-  const importedName = get(specifier, "imported.name");
   const decoratorImportedName = get(
     importPropDecoratorMap,
     get(specifier, "imported.name")
   );
   specifier.local = getSpecifierLocalIdentifier(specifier);
-  if (isMetaDecorator) {
-    const metaDecoratorName = META_DECORATORS[importedName];
-    if (metaDecoratorName) {
-      specifier.imported.name = metaDecoratorName;
-    }
-  } else {
+  if (!isMetaDecorator) {
     specifier.imported.name = decoratorImportedName;
   }
   // Needed one more time as we changed the imported name
@@ -232,12 +221,11 @@ function getDecoratorsToImport(instanceProps, decoratorsMap = {}) {
       attribute: specs.attribute || prop.hasAttributeDecorator,
       className: specs.className || prop.hasClassNameDecorator,
       classNames: specs.classNames || prop.isClassNames,
-      layout: specs.layout || prop.isLayout,
+      layout: specs.layout || prop.isLayoutDecorator,
+      templateLayout: specs.templateLayout || prop.isTemplateLayoutDecorator,
       off: specs.off || prop.hasOffDecorator,
-      readOnly: specs.readOnly || prop.hasReadOnly,
       tagName: specs.tagName || prop.isTagName,
-      unobserves: specs.unobserves || prop.hasUnobservesDecorator,
-      volatile: specs.volatile || prop.hasVolatile
+      unobserves: specs.unobserves || prop.hasUnobservesDecorator
     };
   }, decoratorsMap);
 }
@@ -376,45 +364,6 @@ function getEmberObjectCallExpressions(j, root) {
 }
 
 /**
- * Extracts the layout property name
- *
- * @param {Object} j - jscodeshift lib reference
- * @param {File} root
- * @returns {String} Name of the layout property
- */
-function getLayoutPropertyName(j, root) {
-  const layoutPropCollection = root.find(j.Property, {
-    key: {
-      type: "Identifier",
-      name: "layout"
-    }
-  });
-  if (layoutPropCollection.length) {
-    const layoutProp = layoutPropCollection.get();
-    return get(layoutProp, "value.value.name");
-  }
-}
-
-/**
- * Update the layout import name
- *
- * @param {Object} j - jscodeshift lib reference
- * @param {File} root
- */
-function updateLayoutImportDeclaration(j, root, layoutName) {
-  if (!layoutName) {
-    return;
-  }
-  const layoutIdentifier = root
-    .find(j.ImportDefaultSpecifier, { local: { name: layoutName } })
-    .find(j.Identifier);
-
-  if (layoutIdentifier.length) {
-    layoutIdentifier.get().value.name = LAYOUT_IMPORT_SPECIFIER;
-  }
-}
-
-/**
  * Returns the variable name
  *
  * @param {VariableDeclaration} varDeclaration
@@ -544,7 +493,6 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
   }
   // Parse the import statements
   const importedDecoratedProps = getImportedDecoratedProps(j, root);
-  const layoutName = getLayoutPropertyName(j, root);
   let transformed = false;
   let decoratorsToImportMap = {};
 
@@ -603,7 +551,6 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
       key => decoratorsToImportMap[key]
     );
     createDecoratorImportDeclarations(j, root, decoratorsToImport);
-    updateLayoutImportDeclaration(j, root, layoutName);
     logger.info(`[${filePath}]: SUCCESS`);
   }
   return transformed;

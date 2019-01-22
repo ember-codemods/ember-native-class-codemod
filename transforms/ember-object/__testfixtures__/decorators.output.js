@@ -1,21 +1,21 @@
-import { attribute, className, classNames, layout, tagName } from "@ember-decorators/component";
+import { attribute, className, classNames, tagName, layout as templateLayout } from "@ember-decorators/component";
 
 import {
   filter,
   map as computedMap,
   sum as add,
-  overridableReads as enoWay,
-  overridableReads,
+  oneWay as enoWay,
   reads,
+  readOnly,
   alias,
 } from "@ember-decorators/object/computed";
 
 import { get, set } from "@ember/object";
-import { action, readOnly, volatile, computed, observes as watcher } from "@ember-decorators/object";
+import { action, computed, observes as watcher } from "@ember-decorators/object";
 import { controller } from "@ember-decorators/controller";
 import { service } from "@ember-decorators/service";
 import { on } from "@ember-decorators/object/evented";
-import templateLayout from "components/templates/foo";
+import layout from "components/templates/foo";
 import { someActionUtil } from "some/action/util";
 
 @tagName("div")
@@ -99,8 +99,7 @@ class Foo extends EmberObject {
   /**
   Computed fullname
   */
-  @computed("firstName", "lastName")
-  @readOnly
+  @(computed("firstName", "lastName").readOnly())
   get fullName() {
     return super.fullName &&
     `${this.get("firstName")} ${this.get("lastName")}`;
@@ -141,8 +140,7 @@ class Foo extends EmberObject {
   /**
    * Fname2
    */
-  @computed("firstName", "lastName")
-  @readOnly
+  @(computed("firstName", "lastName").readOnly())
   get fName2() {
     return true;
   }
@@ -150,8 +148,7 @@ class Foo extends EmberObject {
   /**
    * Fname3
    */
-  @computed("firstName", "lastName")
-  @volatile
+  @(computed("firstName", "lastName").volatile())
   get fName3() {
     return true;
   }
@@ -159,8 +156,7 @@ class Foo extends EmberObject {
   /**
    * Lname
    */
-  @alias("firstName", "lastName")
-  @readOnly
+  @(alias("firstName", "lastName").readOnly())
   lName;
 
   /**
@@ -172,13 +168,13 @@ class Foo extends EmberObject {
   /**
    * Lname2
    */
-  @reads("description")
+  @readOnly("description")
   lName2;
 
   /**
    * Lname3
    */
-  @overridableReads("description", "lastName")
+  @reads("description", "lastName")
   lName3;
 
   /**
@@ -190,10 +186,9 @@ class Foo extends EmberObject {
   /**
    * Lname5
    */
-  @add("description", "lastName")
-  @readOnly
+  @(add("description", "lastName").readOnly())
   lName5;
 }
 
-@layout(templateLayout)
+@templateLayout(layout)
 class Foo extends EmberObject {}
