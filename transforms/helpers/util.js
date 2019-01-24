@@ -69,6 +69,92 @@ const ACTION_SUPER_EXPRESSION_COMMENT = [
   " for more details."
 ];
 
+const LIFECYCLE_HOOKS = [
+  // Methods
+  "$",
+  "addObserver",
+  "cacheFor",
+  "decrementProperty",
+  "destroy",
+  "didReceiveAttrs",
+  "didRender",
+  "didUpdate",
+  "didUpdateAttrs",
+  "get",
+  "getProperties",
+  "getWithDefault",
+  "has",
+  "incrementProperty",
+  "init",
+  "notifyPropertyChange",
+  "off",
+  "on",
+  "one",
+  "readDOMAttr",
+  "removeObserver",
+  "rerender",
+  "send",
+  "set",
+  "setProperties",
+  "toString",
+  "toggleProperty",
+  "trigger",
+  "willDestroy",
+  "willRender",
+  "willUpdate",
+
+  // Events
+  "didInsertElement",
+  "didReceiveAttrs",
+  "didRender",
+  "didUpdate",
+  "didUpdateAttrs",
+  "willClearRender",
+  "willDestroyElement",
+  "willInsertElement",
+  "willRender",
+  "willUpdate",
+
+  // Touch events
+  "touchStart",
+  "touchMove",
+  "touchEnd",
+  "touchCancel",
+
+  // Keyboard events
+  "keyDown",
+  "keyUp",
+  "keyPress",
+
+  // Mouse events
+  "mouseDown",
+  "mouseUp",
+  "contextMenu",
+  "click",
+  "doubleClick",
+  "mouseMove",
+  "focusIn",
+  "focusOut",
+  "mouseEnter",
+  "mouseLeave",
+
+  // Form events
+  "submit",
+  "change",
+  "focusIn",
+  "focusOut",
+  "input",
+
+  // HTML5 drag and drop events
+  "dragStart",
+  "drag",
+  "dragEnter",
+  "dragLeave",
+  "dragOver",
+  "dragEnd",
+  "drop"
+];
+
 /**
  * Get a property from and object, useful to get nested props without checking for null values
  *
@@ -224,6 +310,7 @@ module.exports = {
   isClassDecoratorProp,
   LAYOUT_DECORATOR_LOCAL_NAME,
   LAYOUT_DECORATOR_NAME,
+  LIFECYCLE_HOOKS,
   METHOD_DECORATORS,
   shouldSetValue,
   startsWithUpperCaseLetter

@@ -1,4 +1,5 @@
 const minimatch = require("minimatch");
+const { LIFECYCLE_HOOKS, get, getPropName } = require("./util");
 
 const UNSUPPORTED_PROP_NAMES = ["actions", "layout"];
 
@@ -69,6 +70,10 @@ function hasValidProps(
       );
     }
 
+    if (instanceProp.isAction) {
+      errors = errors.concat(getLifecycleHookErrors(instanceProp));
+    }
+
     if (
       (!decorators &&
         (instanceProp.hasDecorators || instanceProp.isClassDecorator)) ||
@@ -97,6 +102,26 @@ function hasValidProps(
         `[${
           instanceProp.name
         }]: Transform not supported - value has 'volatile' modifier with computed meta ('@ember/object/computed') is not supported`
+      );
+    }
+    return errors;
+  }, []);
+}
+
+/**
+ * Iterate over actions and verify that the action name does not match the lifecycle hooks
+ * The transformation is not supported if an action has the same name as lifecycle hook
+ * Reference: https://github.com/scalvert/ember-es6-class-codemod/issues/34
+ *
+ * @param {EOProp} actionsProp
+ */
+function getLifecycleHookErrors(actionsProp) {
+  const actionProps = get(actionsProp, "value.properties");
+  return actionProps.reduce((errors, actionProp) => {
+    const actionName = getPropName(actionProp);
+    if (actionName && LIFECYCLE_HOOKS.includes(actionName)) {
+      errors.push(
+        `[${actionName}]: Transform not supported - action name matches one of the lifecycle hooks. Rename and try again. See https://github.com/scalvert/ember-es6-class-codemod/issues/34 for more details`
       );
     }
     return errors;

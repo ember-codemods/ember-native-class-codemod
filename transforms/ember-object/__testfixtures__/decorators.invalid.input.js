@@ -41,3 +41,12 @@ const Foo = EmberObject.extend({
     return true;
   }).meta({ type: "Property" })
 });
+
+// Do not transform as action name matches lifecycle hook
+const Foo = EmberObject.extend({
+  actions: {
+    click() {
+      this.set("clicked", true);
+    }
+  }
+});
