@@ -1,6 +1,6 @@
 # ember-es6-class-codemod
 
-[![Build Status](https://travis-ci.org/scalvert/ember-es6-class-codemod.svg?branch=master)](https://travis-ci.org/scalvert/ember-es6-class-codemod)
+[![Build Status](https://travis-ci.org/ember-codemods/ember-es6-class-codemod.svg?branch=master)](https://travis-ci.org/ember-codemods/ember-es6-class-codemod)
 [![npm version](https://badge.fury.io/js/ember-es6-class-codemod.svg)](https://badge.fury.io/js/ember-es6-class-codemod)
 
 Codemods for transforming ember app code to native ES6 class syntax with decorators
