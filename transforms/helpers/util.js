@@ -301,10 +301,23 @@ function getRuntimeData(runtimeConfigPath, filePath) {
   return runtimeConfigs[filePath] || runtimeConfigs[relativePath];
 }
 
+/**
+ * This converts the decorators before export syntax to decorators after export
+ * TODO: Should be removed after https://github.com/facebook/jscodeshift/issues/304 is resolved
+ *
+ * @param {String} source sorce code
+ * @returns {String} modified source code
+ */
+function decoratorsAfterExport(source) {
+  const EXPORT_DECORATOR_REGEX = /((?:@(?:.)+\n)+)(export(?:\s+default)*)\s+/g;
+  return source.replace(EXPORT_DECORATOR_REGEX, "$2\n$1");
+}
+
 module.exports = {
   ACTION_SUPER_EXPRESSION_COMMENT,
   capitalizeFirstLetter,
   DECORATOR_PATHS,
+  decoratorsAfterExport,
   EMBER_DECORATOR_SPECIFIERS,
   get,
   getFirstDeclaration,

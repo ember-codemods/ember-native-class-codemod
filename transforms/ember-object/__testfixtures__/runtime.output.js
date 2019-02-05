@@ -1,10 +1,14 @@
-import { action, off, unobserves, wrapComputed } from "@ember-decorators/object";
+import { classNames, tagName } from "@ember-decorators/component";
+import { action, off, unobserves, wrapComputed} from "@ember-decorators/object";
 import RuntimeInput from "common/runtime/input";
 
 /**
  * Program comments
  */
-export default class RuntimeInputEmberObject extends RuntimeInput.extend(MyMixin) {
+export default
+@tagName("div")
+@classNames("test-class", "custom-class")
+class RuntimeInputEmberObject extends RuntimeInput.extend(MyMixin) {
   /**
    * Property comments
    */

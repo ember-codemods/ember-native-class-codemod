@@ -12,6 +12,8 @@ export default RuntimeInput.extend(MyMixin, {
   numProp: 123,
   [MY_VAL]: "val",
   queryParams: {},
+  tagName: "div",
+  classNames: ["test-class", "custom-class"],
 
   unobservedProp: null,
   offProp: null,

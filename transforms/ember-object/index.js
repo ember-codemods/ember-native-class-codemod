@@ -1,4 +1,5 @@
 const { getOptions } = require("codemod-cli");
+const { decoratorsAfterExport } = require("../helpers/util");
 const { replaceEmberObjectExpressions } = require("../helpers/parse-helper");
 
 module.exports = function transformer(file, api, opts) {
@@ -16,7 +17,7 @@ module.exports = function transformer(file, api, opts) {
 
   const replaced = replaceEmberObjectExpressions(j, root, path, options);
   if (replaced) {
-    source = root.toSource(transformOptions);
+    source = decoratorsAfterExport(root.toSource(transformOptions));
   }
   return source;
 };
