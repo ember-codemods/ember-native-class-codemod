@@ -31,9 +31,8 @@ const EMBER_DECORATOR_SPECIFIERS = {
     "action",
     "off",
     "on",
-    "readOnly",
     "unobserves",
-    "volatile"
+    "wrapComputed"
   ],
   "@ember-decorators/component": [
     "attribute",

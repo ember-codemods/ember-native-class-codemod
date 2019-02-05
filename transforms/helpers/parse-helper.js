@@ -111,6 +111,7 @@ function getDecoratorsToImportMap(instanceProps, decoratorsMap = {}) {
   return instanceProps.reduce((specs, prop) => {
     return {
       action: specs.action || prop.isAction,
+      wrapComputed: specs.wrapComputed || prop.hasWrapComputedDecorator,
       attribute: specs.attribute || prop.hasAttributeDecorator,
       className: specs.className || prop.hasClassNameDecorator,
       classNames: specs.classNames || prop.isClassNames,

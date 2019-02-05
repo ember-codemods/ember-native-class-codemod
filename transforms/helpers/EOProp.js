@@ -143,6 +143,10 @@ class EOProp {
     return this.decoratorNames.includes("off");
   }
 
+  get hasWrapComputedDecorator() {
+    return this.decoratorNames.includes("wrapComputed");
+  }
+
   get hasRuntimeData() {
     return !!this.runtimeType;
   }
@@ -164,6 +168,7 @@ class EOProp {
       this.setCallExpressionProps();
       const {
         decoratorName,
+        isComputedDecorator,
         isMethodDecorator,
         isMetaDecorator,
         importedName
@@ -171,6 +176,7 @@ class EOProp {
       if (decoratorName) {
         this.hasMapDecorator = importedName === "map";
         this.hasFilterDecorator = importedName === "filter";
+        this.hasComputedDecorator = isComputedDecorator;
         this.hasMethodDecorator = isMethodDecorator;
         this.hasMetaDecorator = isMetaDecorator;
         this.decoratorNames.push(decoratorName);
@@ -189,7 +195,7 @@ class EOProp {
   }
 
   setRuntimeData({
-    // computedProperties = [],
+    computedProperties = [],
     // observedProperties = [],
     // observerProperties = {},
     offProperties = {},
@@ -210,6 +216,9 @@ class EOProp {
     if (Object.keys(offProperties).includes(name)) {
       this.decoratorNames.push("off");
       this.decoratorArgs["off"] = offProperties[name];
+    }
+    if (computedProperties.includes(name) && !this.hasComputedDecorator) {
+      this.decoratorNames.push("wrapComputed");
     }
     if (this.isAction) {
       this.overriddenActions = overriddenActions;
