@@ -2,12 +2,9 @@ const path = require("path");
 const camelCase = require("camelcase");
 const {
   capitalizeFirstLetter,
-  DECORATOR_PATHS,
-  EMBER_DECORATOR_SPECIFIERS,
   get,
   getOptions,
   getRuntimeData,
-  METHOD_DECORATORS,
   startsWithUpperCaseLetter
 } = require("./util");
 const {
@@ -15,12 +12,11 @@ const {
   isFileOfType,
   isTestFile
 } = require("./validation-helper");
+const { createClass, withComments } = require("./transform-helper");
 const {
-  createClass,
-  createEmberDecoratorSpecifiers,
-  createImportDeclaration,
-  withComments
-} = require("./transform-helper");
+  createDecoratorImportDeclarations,
+  getImportedDecoratedProps
+} = require("./import-helper");
 const EOProp = require("./EOProp");
 const logger = require("./log-helper");
 
@@ -105,116 +101,13 @@ function parseBindingProps(bindingPropElements = []) {
 }
 
 /**
- * Return the decorator name for the specifier if any, using the importPropDecoratorMap from
- * `DECORATOR_PATHS` config (defined util.js)
- *
- * @param {ImportSpecifier} specifier
- * @param {Object} importPropDecoratorMap
- * @returns {String}
- */
-function getDecoratorInfo(specifier, importPropDecoratorMap) {
-  const localName = get(specifier, "local.name");
-  const importedName = get(specifier, "imported.name");
-  const isImportedAs = importedName !== localName;
-  const isMetaDecorator = !importPropDecoratorMap;
-  let decoratorName;
-  if (isImportedAs) {
-    decoratorName = localName;
-  } else {
-    if (isMetaDecorator) {
-      decoratorName = localName;
-    } else {
-      decoratorName = importPropDecoratorMap[importedName];
-    }
-  }
-
-  const isMethodDecorator = METHOD_DECORATORS.includes(importedName);
-  return {
-    decoratorName,
-    importedName,
-    isImportedAs,
-    isMetaDecorator,
-    isMethodDecorator,
-    localName
-  };
-}
-
-/**
- * Returns true of the specifier is a decorator
- *
- * @param {ImportSpecifier} specifier
- * @param {Object} importPropDecoratorMap
- * @returns {Boolean}
- */
-function isSpecifierDecorator(specifier, importPropDecoratorMap) {
-  const importedName = get(specifier, "imported.name");
-  if (!importPropDecoratorMap || importPropDecoratorMap[importedName]) {
-    return true;
-  }
-  return false;
-}
-
-function getSpecifierLocalIdentifier(specifier) {
-  if (get(specifier, "local.name") === get(specifier, "imported.name")) {
-    return null;
-  }
-  return specifier.local;
-}
-
-/**
- * Set decorator name and remove the duplicated `local` property on specifier
- *
- * @param {ImportSpecifier} specifier
- * @param {Object} importPropDecoratorMap
- * @returns {ImportSpecifier}
- */
-function setSpecifierProps(specifier, importPropDecoratorMap) {
-  const isMetaDecorator = !importPropDecoratorMap;
-  const decoratorImportedName = get(
-    importPropDecoratorMap,
-    get(specifier, "imported.name")
-  );
-  specifier.local = getSpecifierLocalIdentifier(specifier);
-  if (!isMetaDecorator) {
-    specifier.imported.name = decoratorImportedName;
-  }
-  // Needed one more time as we changed the imported name
-  specifier.local = getSpecifierLocalIdentifier(specifier);
-
-  return specifier;
-}
-
-/**
- * Get decorated props from `import` statements
- *
- * @param {Object} j - jscodeshift lib reference
- * @param {File} root
- * @returns {ImportDeclaration[]}
- */
-function getDecoratorImports(j, root) {
-  return Object.keys(DECORATOR_PATHS).reduce((imports, path) => {
-    const decoratorImports = root.find(j.ImportDeclaration, {
-      source: {
-        value: path
-      }
-    });
-
-    if (decoratorImports.length) {
-      imports.push(decoratorImports.get());
-    }
-
-    return imports;
-  }, []);
-}
-
-/**
  * Get the map of decorators to import other than the computed props, services etc
  * which already have imports in the code
  *
  * @param {EOProp[]} instanceProps
  * @param {Object} decoratorsMap
  */
-function getDecoratorsToImport(instanceProps, decoratorsMap = {}) {
+function getDecoratorsToImportMap(instanceProps, decoratorsMap = {}) {
   return instanceProps.reduce((specs, prop) => {
     return {
       action: specs.action || prop.isAction,
@@ -228,120 +121,6 @@ function getDecoratorsToImport(instanceProps, decoratorsMap = {}) {
       unobserves: specs.unobserves || prop.hasUnobservesDecorator
     };
   }, decoratorsMap);
-}
-
-/**
- * Get decorated props from `import` statements
- *
- * @param {Object} j - jscodeshift lib reference
- * @param {File} root
- * @returns {Object}
- */
-function createDecoratorImportDeclarations(j, root, decoratorsToImport = []) {
-  // create a copy - we need to mutate the object later
-  const edSpecifiers = Object.assign({}, EMBER_DECORATOR_SPECIFIERS);
-  getDecoratorImports(j, root).forEach(decoratorImport => {
-    const { importPropDecoratorMap, decoratorPath } = DECORATOR_PATHS[
-      get(decoratorImport, "value.source.value")
-    ];
-    const pathSpecifiers = edSpecifiers[decoratorPath] || [];
-    if (pathSpecifiers.length) {
-      // delete the visited path to avoid duplicate imports
-      delete edSpecifiers[decoratorPath];
-    }
-    const decoratedSpecifiers = createEmberDecoratorSpecifiers(
-      j,
-      pathSpecifiers,
-      decoratorsToImport
-    );
-
-    const specifiers = get(decoratorImport, "value.specifiers") || [];
-
-    for (let i = specifiers.length - 1; i >= 0; i -= 1) {
-      const specifier = specifiers[i];
-
-      if (isSpecifierDecorator(specifier, importPropDecoratorMap)) {
-        const decoratedSpecifier = setSpecifierProps(
-          specifier,
-          importPropDecoratorMap
-        );
-        const isSpecifierPresent = decoratedSpecifiers.some(specifier => {
-          return (
-            !get(specifier, "local.name") &&
-            get(specifier, "imported.name") ===
-              get(decoratedSpecifier, "imported.name")
-          );
-        });
-        if (!isSpecifierPresent) {
-          decoratedSpecifiers.push(decoratedSpecifier);
-        }
-        specifiers.splice(i, 1);
-      }
-    }
-    if (decoratedSpecifiers.length) {
-      const importDeclaration = createImportDeclaration(
-        j,
-        decoratedSpecifiers,
-        decoratorPath
-      );
-
-      if (specifiers.length <= 0) {
-        j(decoratorImport).replaceWith(importDeclaration);
-      } else {
-        j(decoratorImport).insertAfter(importDeclaration);
-      }
-    }
-  });
-
-  const edSpecifierPaths = Object.keys(edSpecifiers);
-  if (edSpecifierPaths.length) {
-    edSpecifierPaths.forEach(path => {
-      const specifiers = createEmberDecoratorSpecifiers(
-        j,
-        edSpecifiers[path],
-        decoratorsToImport
-      );
-
-      if (specifiers.length) {
-        j(
-          root
-            .find(j.Declaration)
-            .at(0)
-            .get()
-        ).insertBefore(createImportDeclaration(j, specifiers, path));
-      }
-    });
-  }
-}
-
-/**
- * Get decorated props from `import` statements
- *
- * @param {Object} j - jscodeshift lib reference
- * @param {File} root
- * @returns {Object}
- */
-function getImportedDecoratedProps(j, root) {
-  return getDecoratorImports(j, root).reduce(
-    (importedDecorators, decoratorImport) => {
-      const { importPropDecoratorMap } = DECORATOR_PATHS[
-        get(decoratorImport, "value.source.value")
-      ];
-
-      const specifiers = get(decoratorImport, "value.specifiers") || [];
-
-      return specifiers.reduce((importedDecorators, specifier) => {
-        if (isSpecifierDecorator(specifier, importPropDecoratorMap)) {
-          importedDecorators[get(specifier, "local.name")] = getDecoratorInfo(
-            specifier,
-            importPropDecoratorMap
-          );
-        }
-        return importedDecorators;
-      }, importedDecorators);
-    },
-    {}
-  );
 }
 
 /**
@@ -469,7 +248,10 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
   const runtimeConfigPath = options["runtime-config-path"];
 
   if (runtimeConfigPath) {
-    options.runtimeData = getRuntimeData(runtimeConfigPath, filePath);
+    options.runtimeData = getRuntimeData(
+      runtimeConfigPath,
+      path.resolve(filePath)
+    );
     if (!options.runtimeData) {
       logger.warn(
         `${filePath} SKIPPED Cound not find runtime data NO_RUNTIME_DATA`
@@ -538,7 +320,7 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
 
     transformed = true;
 
-    decoratorsToImportMap = getDecoratorsToImport(
+    decoratorsToImportMap = getDecoratorsToImportMap(
       eoProps.instanceProps,
       decoratorsToImportMap
     );
