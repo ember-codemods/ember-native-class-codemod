@@ -246,9 +246,6 @@ function getDecoratorPathSpecifiers(j, root, decoratorsToImport = []) {
  * @param {String[]} decoratorsToImport
  */
 function createDecoratorImportDeclarations(j, root, decoratorsToImport = []) {
-  // create a copy - we need to mutate the object later
-  const edPathNameMap = Object.assign({}, EMBER_DECORATOR_SPECIFIERS);
-
   // Iterate through existing imports, extract the already imported specifiers
   const decoratorPathSpecifierMap = getDecoratorPathSpecifiers(
     j,
@@ -259,7 +256,6 @@ function createDecoratorImportDeclarations(j, root, decoratorsToImport = []) {
   const decoratorPathsImported = Object.keys(decoratorPathSpecifierMap);
   // Create import statement replacing the existing ones with specifiers importing from ember-decorators namespace
   decoratorPathsImported.forEach(decoratorPath => {
-    delete edPathNameMap[decoratorPath];
     const specifiers = decoratorPathSpecifierMap[decoratorPath];
     firstDeclaration.insertBefore(
       createImportDeclaration(j, specifiers, decoratorPath)
