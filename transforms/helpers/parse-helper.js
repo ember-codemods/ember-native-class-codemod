@@ -254,7 +254,7 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
     );
     if (!options.runtimeData) {
       logger.warn(
-        `${filePath} SKIPPED Cound not find runtime data NO_RUNTIME_DATA`
+        `${filePath} SKIPPED Could not find runtime data NO_RUNTIME_DATA`
       );
       return;
     }
