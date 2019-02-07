@@ -13,21 +13,12 @@ const DECORATOR_PATHS = {
     decoratorPath: "@ember-decorators/object"
   },
   "@ember/object/evented": {
-    importPropDecoratorMap: {
-      on: "on"
-    },
-    decoratorPath: "@ember-decorators/object/evented"
+    decoratorPath: "@ember-decorators/object"
   },
   "@ember/controller": {
-    importPropDecoratorMap: {
-      inject: "controller"
-    },
     decoratorPath: "@ember-decorators/controller"
   },
   "@ember/service": {
-    importPropDecoratorMap: {
-      inject: "service"
-    },
     decoratorPath: "@ember-decorators/service"
   },
   "@ember/object/computed": {
@@ -39,6 +30,7 @@ const EMBER_DECORATOR_SPECIFIERS = {
   "@ember-decorators/object": [
     "action",
     "off",
+    "on",
     "readOnly",
     "unobserves",
     "volatile"
@@ -171,6 +163,21 @@ function get(obj, path) {
 }
 
 /**
+ * Get the first declaration in the program
+ *
+ * @param {Object} j - jscodeshift lib reference
+ * @param {File} root
+ */
+function getFirstDeclaration(j, root) {
+  return j(
+    root
+      .find(j.Declaration)
+      .at(0)
+      .get()
+  );
+}
+
+/**
  * Return name of the property
  *
  * @param {Property} prop
@@ -274,14 +281,14 @@ function getModifier(calleeObject) {
 /**
  * Get the runtime data for the file being transformed
  *
- * @param {String} configConfigPath Configuration file path (Absolute)
- * @param {String} filePath Path of the file to read data from
+ * @param {String} runtimeConfigPath Configuration file path (Absolute)
+ * @param {String} filePath Absolute path of the file to read data from
  * @returns {Object} Runtime configuration object
  */
-function getRuntimeData(configConfigPath, filePath) {
+function getRuntimeData(runtimeConfigPath, filePath) {
   let runtimeConfigJSON = {};
   try {
-    runtimeConfigJSON = JSON.parse(fs.readFileSync(configConfigPath));
+    runtimeConfigJSON = JSON.parse(fs.readFileSync(runtimeConfigPath));
   } catch (e) {
     runtimeConfigJSON = { data: [{}] };
   }
@@ -301,6 +308,7 @@ module.exports = {
   DECORATOR_PATHS,
   EMBER_DECORATOR_SPECIFIERS,
   get,
+  getFirstDeclaration,
   getModifier,
   getOptions,
   getPropCalleeName,
