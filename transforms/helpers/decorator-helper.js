@@ -48,6 +48,12 @@ function createCallExpressionDecorators(j, decoratorName, instanceProp) {
     return [];
   }
 
+  if (instanceProp.hasWrapComputedDecorator) {
+    return j.decorator(
+      j.callExpression(j.identifier(decoratorName), [instanceProp.value])
+    );
+  }
+
   const decoratorArgs =
     !instanceProp.hasMapDecorator &&
     !instanceProp.hasFilterDecorator &&

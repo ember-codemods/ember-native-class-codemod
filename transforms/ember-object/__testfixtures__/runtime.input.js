@@ -16,6 +16,8 @@ export default RuntimeInput.extend(MyMixin, {
   unobservedProp: null,
   offProp: null,
 
+  computedMacro: customMacro(),
+
   /**
    * Method comments
    */

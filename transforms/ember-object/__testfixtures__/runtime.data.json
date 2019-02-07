@@ -2,7 +2,7 @@
   "data": [
     {
       "./transforms/ember-object/__testfixtures__/runtime.input.js": {
-        "computedProperties": [],
+        "computedProperties": ["computedMacro"],
         "observedProperties": [],
         "observerProperties": {},
         "offProperties": { "offProp": ["prop1", "prop2"] },
