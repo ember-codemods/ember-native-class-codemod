@@ -1,7 +1,7 @@
 # Ember ES6 - How to run ES6 class codemods
 
 ## Overview
-The [ES6 native classes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes) support is available in Ember starting with 3.4.x via [polyfill](https://github.com/pzuraq/ember-native-class-polyfill) (3.6.x without polyfill). Transitioning to the new ES6 classes syntax would provide better overall developer experience. The [ember ES6 class codemods](https://github.com/scalvert/ember-es6-class-codemod) are developed to make this transition easier.
+The [ES6 native classes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes) support is available in Ember starting with 3.4.x via [polyfill](https://github.com/pzuraq/ember-native-class-polyfill) (3.6.x without polyfill). Transitioning to the new ES6 classes syntax would provide better overall developer experience. The [ember ES6 class codemods](https://github.com/ember-codemods/ember-es6-class-codemod) are developed to make this transition easier.
 
 The purpose of this document is to provide step by step guide to install and run codemods on your code base.
 
@@ -14,7 +14,7 @@ The application must be running on
 
 Before moving on to installation steps, let's take a quick overview of dependencies which will be added to the application.
 
-### [ember-es6-class-codemod](https://github.com/scalvert/ember-es6-class-codemod)
+### [ember-es6-class-codemod](https://github.com/ember-codemods/ember-es6-class-codemod)
 Codemods for transforming ember app code to native ES6 class syntax with decorators. The codemods can be installed globally (recommended) or locally.
 
 ### [ember-es6-class-codemod-dyfactor](https://github.com/ssutar/ember-es6-class-codemod-dyfactor)
@@ -45,13 +45,18 @@ yarn add eslint-plugin-ember-es6-class ember-es6-class-codemod-dyfactor --dev
 ```
 yarn ember install ember-decorators
 ```
+  **Note** Make sure the `@ember-decorators/babel-transforms` version is `^2.1.0` in `package.json`. If not, change it to `^2.1.0` and run `yarn install`
+
 - _Install [ember native class polyfill](https://github.com/pzuraq/ember-native-class-polyfill) only if your application is running on `ember-source` less than v3.6.x_
 ```
 yarn ember install ember-native-class-polyfill
 ```
 
 ## Setup dyfactor plugin
-Once all the dependencies are installed successfully, the application need to be setup to run the [dyfactor plugin](https://github.com/ssutar/ember-es6-class-codemod-dyfactor), which is used to gather valuable runtime information from the application for use within the codemod
+Once all the dependencies are installed successfully, the application need to be setup to run the [dyfactor plugin](https://github.com/ssutar/ember-es6-class-codemod-dyfactor), which is used to gather valuable runtime information from the application for use within the codemod. The codemods are designed with runtime data as input to correctly transform the code. See the documentation of [Runtime Config Path](https://github.com/ember-codemods/ember-es6-class-codemod#runtime-config-path) option for more details.
+
+[Dyfactor](https://github.com/dyfactor/dyfactor) is a plugin runner system, which allows you to collect the runtime information about the code. See the [documentation](https://github.com/dyfactor/dyfactor#usage) for more details about dyfactor
+
 
 To initialize the dyfactor plugin, run
 ```
@@ -71,7 +76,7 @@ Name: ember-object Type: template Levels: extract, modify
 ✨  Done in 0.83s.
 ```
 
-Open `.dyfactor.json` and set the entry in navigation.pages list. The page entry must be of the test page url, for example:
+Open `.dyfactor.json` and set the entry in `navigation.pages` list. The page entry must be of the test page url, for example:
 ```
 {
   "navigation": {
