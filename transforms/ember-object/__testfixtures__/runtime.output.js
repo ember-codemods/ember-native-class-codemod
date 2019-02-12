@@ -1,5 +1,5 @@
+import { action, off, unobserves, wrapComputed } from "@ember-decorators/object";
 import { classNames, tagName } from "@ember-decorators/component";
-import { action, off, unobserves, wrapComputed} from "@ember-decorators/object";
 import RuntimeInput from "common/runtime/input";
 
 /**
