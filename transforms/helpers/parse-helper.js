@@ -64,7 +64,7 @@ function getEmberObjectProps(
     }
   });
 
-  // Assign decoator names to the binding props if any
+  // Assign decorator names to the binding props if any
   instanceProps.forEach(instanceProp => {
     instanceProp.addBindingProps(
       attributeBindingsProps,
