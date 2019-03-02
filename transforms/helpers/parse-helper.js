@@ -190,20 +190,19 @@ function getExpressionToReplace(j, eoCallExpression) {
  * Returns name of class to be created
  *
  * @param {Object} j - jscodeshift lib reference
- * @param {CallExpression} eoCallExpression
+ * @param {String} classVariableName
  * @param {String} filePath
  * @return {String}
  */
 function getClassName(
   j,
-  eoCallExpression,
+  classVariableName,
   filePath,
   superClassName,
   type = ""
 ) {
-  const varDeclaration = getClosetVariableDeclaration(j, eoCallExpression);
   const className =
-    getVariableName(varDeclaration) || camelCase(path.basename(filePath, "js"));
+    classVariableName || camelCase(path.basename(filePath, "js"));
   let capitalizedClassName = `${capitalizeFirstLetter(
     className
   )}${capitalizeFirstLetter(type)}`;
@@ -300,15 +299,23 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
     }
 
     const superClassName = get(eoCallExpression, "value.callee.object.name");
+    const varDeclaration = getClosetVariableDeclaration(j, eoCallExpression);
+    const classVariableName = getVariableName(varDeclaration);
+    const className = getClassName(
+      j,
+      classVariableName,
+      filePath,
+      superClassName,
+      get(options, "runtimeData.type")
+    );
+
+    if (classVariableName) {
+      root.findVariableDeclarators(classVariableName).renameTo(className);
+    }
+
     const es6ClassDeclaration = createClass(
       j,
-      getClassName(
-        j,
-        eoCallExpression,
-        filePath,
-        superClassName,
-        get(options, "runtimeData.type")
-      ),
+      className,
       eoProps,
       superClassName,
       mixins

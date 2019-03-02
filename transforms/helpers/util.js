@@ -16,9 +16,15 @@ const DECORATOR_PATHS = {
     decoratorPath: "@ember-decorators/object"
   },
   "@ember/controller": {
+    importPropDecoratorMap: {
+      inject: "inject"
+    },
     decoratorPath: "@ember-decorators/controller"
   },
   "@ember/service": {
+    importPropDecoratorMap: {
+      inject: "inject"
+    },
     decoratorPath: "@ember-decorators/service"
   },
   "@ember/object/computed": {
