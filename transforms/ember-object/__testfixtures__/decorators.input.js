@@ -1,5 +1,7 @@
 import {
   alias,
+  gt,
+  equal,
   readOnly,
   reads,
   oneWay as enoWay,
@@ -13,6 +15,7 @@ import { inject as service } from "@ember/service";
 import { on } from "@ember/object/evented";
 import layout from "components/templates/foo";
 import { someActionUtil } from "some/action/util";
+import NUMERIC_CONSTANT from "constants/numbers";
 
 const Foo = EmberObject.extend({
   tagName: "div",
@@ -146,7 +149,11 @@ const Foo = EmberObject.extend({
   /**
    * Lname5
    */
-  lName5: add("description", "lastName").readOnly()
+  lName5: add("description", "lastName").readOnly(),
+
+  isEqualToLimit: equal("limit", NUMERIC_CONSTANT.LIMIT).readOnly(),
+
+  isGreaterThanLimit: gt("limit", NUMERIC_CONSTANT).readOnly()
 });
 
 const Foo = EmberObject.extend({

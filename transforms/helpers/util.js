@@ -13,6 +13,9 @@ const DECORATOR_PATHS = {
     decoratorPath: "@ember-decorators/object"
   },
   "@ember/object/evented": {
+    importPropDecoratorMap: {
+      on: "on"
+    },
     decoratorPath: "@ember-decorators/object"
   },
   "@ember/controller": {

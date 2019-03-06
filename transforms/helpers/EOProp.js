@@ -91,8 +91,12 @@ class EOProp {
     return get(this.calleeObject, "arguments") || [];
   }
 
-  get hasNonLiteralArg() {
-    return this.callExprArgs.some(arg => arg.type !== "Literal");
+  get shouldRemoveLastArg() {
+    const lastArg = this.callExprArgs.slice(-1) || [];
+    return (
+      lastArg[0].type === "FunctionExpression" ||
+      lastArg[0].type === "ObjectExpression"
+    );
   }
 
   get hasModifierWithArgs() {
