@@ -244,8 +244,6 @@ function parseEmberObjectCallExpression(eoCallExpression) {
  * @param {Object} options
  */
 function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
-  logger.info(`[${filePath}]: BEGIN`);
-
   const runtimeConfigPath = options["runtime-config-path"];
 
   if (runtimeConfigPath) {
@@ -255,7 +253,7 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
     );
     if (!options.runtimeData) {
       logger.warn(
-        `${filePath} SKIPPED Could not find runtime data NO_RUNTIME_DATA`
+        `[${filePath}]: SKIPPED Could not find runtime data NO_RUNTIME_DATA`
       );
       return;
     }
@@ -291,7 +289,7 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
       options.runtimeData
     );
 
-    const errors = hasValidProps(eoProps, getOptions(options));
+    const errors = hasValidProps(j, eoProps, getOptions(options));
     if (errors.length) {
       logger.warn(
         `[${filePath}]: FAILURE \nValidation errors: \n\t${errors.join("\n\t")}`
