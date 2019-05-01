@@ -11,7 +11,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "codemod-cli": "^0.2.10",
+    "codemod-cli": "^0.2.11",
     "minimatch": "^3.0.4",
     "winston": "^3.2.1"
   },
