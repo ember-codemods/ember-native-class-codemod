@@ -168,7 +168,6 @@ class EOProp {
       this.setCallExpressionProps();
       const {
         decoratorName,
-        isComputedDecorator,
         isMethodDecorator,
         isMetaDecorator,
         importedName
@@ -176,7 +175,7 @@ class EOProp {
       if (decoratorName) {
         this.hasMapDecorator = importedName === "map";
         this.hasFilterDecorator = importedName === "filter";
-        this.hasComputedDecorator = isComputedDecorator;
+        this.hasComputedDecorator = importedName === "computed";
         this.hasMethodDecorator = isMethodDecorator;
         this.hasMetaDecorator = isMetaDecorator;
         this.decoratorNames.push(decoratorName);
@@ -217,7 +216,11 @@ class EOProp {
       this.decoratorNames.push("off");
       this.decoratorArgs["off"] = offProperties[name];
     }
-    if (computedProperties.includes(name) && !this.hasComputedDecorator) {
+    if (
+      computedProperties.includes(name) &&
+      !this.hasComputedDecorator &&
+      !this.hasMetaDecorator
+    ) {
       this.decoratorNames.push("wrapComputed");
     }
     if (this.isAction) {

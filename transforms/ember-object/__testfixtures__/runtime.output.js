@@ -1,4 +1,5 @@
-import { action, off, unobserves, wrapComputed } from "@ember-decorators/object";
+import { action, off, unobserves, wrapComputed, computed } from "@ember-decorators/object";
+import { alias } from "@ember-decorators/object/computed";
 import RuntimeInput from "common/runtime/input";
 
 /**
@@ -20,6 +21,14 @@ export default class RuntimeInputEmberObject extends RuntimeInput.extend(MyMixin
 
   @off("prop1", "prop2")
   offProp;
+
+  @computed("numProp")
+  get numPlusOne() {
+    return this.get("numProp") + 1;
+  }
+
+  @alias("numPlusOne")
+  numPlusPlus;
 
   @wrapComputed(customMacro())
   computedMacro;
