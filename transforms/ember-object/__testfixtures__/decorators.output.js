@@ -10,12 +10,15 @@ import {
   oneWay as enoWay,
   reads,
   readOnly,
+  equal,
+  gt,
   alias,
 } from "@ember-decorators/object/computed";
 
 import { get, set } from "@ember/object";
 import layout from "components/templates/foo";
 import { someActionUtil } from "some/action/util";
+import NUMERIC_CONSTANT from "constants/numbers";
 
 @tagName("div")
 @classNames("test-class", "custom-class")
@@ -187,6 +190,12 @@ class Foo extends EmberObject {
    */
   @(add("description", "lastName").readOnly())
   lName5;
+
+  @(equal("limit", NUMERIC_CONSTANT.LIMIT).readOnly())
+  isEqualToLimit;
+
+  @(gt("limit", NUMERIC_CONSTANT).readOnly())
+  isGreaterThanLimit;
 }
 
 @templateLayout(layout)

@@ -57,7 +57,7 @@ function createCallExpressionDecorators(j, decoratorName, instanceProp) {
   const decoratorArgs =
     !instanceProp.hasMapDecorator &&
     !instanceProp.hasFilterDecorator &&
-    instanceProp.hasNonLiteralArg
+    instanceProp.shouldRemoveLastArg
       ? instanceProp.callExprArgs.slice(0, -1)
       : instanceProp.callExprArgs.slice(0);
 
