@@ -49,6 +49,7 @@ function isFileOfType(file, type) {
  * @returns {Boolean}
  */
 function hasValidProps(
+  j,
   { instanceProps = [] } = {},
   { decorators = false, classFields = true } = {}
 ) {
@@ -72,6 +73,7 @@ function hasValidProps(
 
     if (instanceProp.isAction) {
       errors = errors.concat(getLifecycleHookErrors(instanceProp));
+      errors = errors.concat(getInfiniteLoopErrors(j, instanceProp));
     }
 
     if (
@@ -137,6 +139,46 @@ function getLifecycleHookErrors(actionsProp) {
  */
 function isExtendsMixin(j, eoCallExpression) {
   return j(eoCallExpression).get("arguments").value.length > 1;
+}
+
+/**
+ * Validation against pattern mentioned https://github.com/scalvert/eslint-plugin-ember-es6-class/pull/2
+ *
+ * @param {Object} j - jscodeshift lib reference
+ * @param {EOProp} actionsProp
+ */
+function getInfiniteLoopErrors(j, actionsProp) {
+  const actionProps = get(actionsProp, "value.properties");
+  return actionProps.reduce((errors, actionProp) => {
+    const actionName = getPropName(actionProp);
+    if (actionName) {
+      const functExpr = j(actionProp.value);
+
+      // Occurences of this.actionName()
+      const actionCalls = functExpr.find(j.CallExpression, {
+        callee: {
+          type: "MemberExpression",
+          object: {
+            type: "ThisExpression"
+          },
+          property: {
+            type: "Identifier",
+            name: actionName
+          }
+        }
+      });
+
+      // Occurences of this.get('actionName')() or get(this, 'actionName')()
+      const actionLiterals = functExpr.find(j.Literal, { value: actionName });
+
+      if (actionLiterals.length || actionCalls.length) {
+        errors.push(
+          `[${actionName}]: Transform not supported - calling the passed action would cause an infinite loop. See https://github.com/scalvert/eslint-plugin-ember-es6-class/pull/2 for more details`
+        );
+      }
+    }
+    return errors;
+  }, []);
 }
 
 module.exports = { isFileOfType, hasValidProps, isExtendsMixin, isTestFile };
