@@ -1,5 +1,6 @@
 const {
   DECORATOR_PATHS,
+  DECORATOR_PATH_OVERRIDES,
   EMBER_DECORATOR_SPECIFIERS,
   get,
   getFirstDeclaration,
@@ -170,11 +171,18 @@ function createNewImportDeclarations(
 function getDecoratorPathSpecifiers(j, root, decoratorsToImport = []) {
   // create a copy - we need to mutate the object later
   const edPathNameMap = Object.assign({}, EMBER_DECORATOR_SPECIFIERS);
+
+  // Iterate over the existing imports
+  // Extract and process the specifiers
+  // Construct the map with path as key and value as list of specifiers to import from the path
   return getExistingDecoratorImports(j, root).reduce(
     (decoratorPathSpecifierMap, existingDecoratorImport) => {
       const { importPropDecoratorMap, decoratorPath } = DECORATOR_PATHS[
         get(existingDecoratorImport, "value.source.value")
       ];
+      // Decorators to be imported for the path
+      // These are typically additional decorators which need to be imported for a path
+      // For example - `@action` decorator
       const decoratorsForPath = edPathNameMap[decoratorPath] || [];
       // delete the visited path to avoid duplicate imports
       delete edPathNameMap[decoratorPath];
@@ -186,7 +194,6 @@ function getDecoratorPathSpecifiers(j, root, decoratorsToImport = []) {
         decoratorsForPath,
         decoratorsToImport
       );
-
       const existingSpecifiers =
         get(existingDecoratorImport, "value.specifiers") || [];
 
@@ -200,15 +207,26 @@ function getDecoratorPathSpecifiers(j, root, decoratorsToImport = []) {
           // Update decorator local and imported names,
           // Needed in case of `observer` which need to be renamed to `@observes`
           setSpecifierNames(existingSpecifier, importPropDecoratorMap);
-          const isSpecifierPresent = decoratedSpecifiers.some(specifier => {
-            return (
-              !get(specifier, "local.name") &&
-              get(specifier, "imported.name") ===
-                get(existingSpecifier, "imported.name")
+          // Check if the decorator import path is overridden
+          // Needed in case of `observes` which need to be imported from `@ember-decorators/object`
+          const overriddenPath =
+            DECORATOR_PATH_OVERRIDES[get(existingSpecifier, "imported.name")];
+          if (overriddenPath) {
+            decoratorPathSpecifierMap[overriddenPath] = [].concat(
+              decoratorPathSpecifierMap[overriddenPath] || [],
+              existingSpecifier
             );
-          });
-          if (!isSpecifierPresent) {
-            decoratedSpecifiers.push(existingSpecifier);
+          } else {
+            const isSpecifierPresent = decoratedSpecifiers.some(specifier => {
+              return (
+                !get(specifier, "local.name") &&
+                get(specifier, "imported.name") ===
+                  get(existingSpecifier, "imported.name")
+              );
+            });
+            if (!isSpecifierPresent) {
+              decoratedSpecifiers.push(existingSpecifier);
+            }
           }
 
           // Remove the specifier from the existing import
@@ -252,6 +270,7 @@ function createDecoratorImportDeclarations(j, root, decoratorsToImport = []) {
     root,
     decoratorsToImport
   );
+
   const firstDeclaration = getFirstDeclaration(j, root);
   const decoratorPathsImported = Object.keys(decoratorPathSpecifierMap);
   // Create import statement replacing the existing ones with specifiers importing from ember-decorators namespace

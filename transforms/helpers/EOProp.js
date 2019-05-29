@@ -147,10 +147,6 @@ class EOProp {
     return this.decoratorNames.includes("off");
   }
 
-  get hasWrapComputedDecorator() {
-    return this.decoratorNames.includes("wrapComputed");
-  }
-
   get hasRuntimeData() {
     return !!this.runtimeType;
   }
@@ -198,7 +194,7 @@ class EOProp {
   }
 
   setRuntimeData({
-    computedProperties = [],
+    // computedProperties = [],
     // observedProperties = [],
     // observerProperties = {},
     offProperties = {},
@@ -219,13 +215,6 @@ class EOProp {
     if (Object.keys(offProperties).includes(name)) {
       this.decoratorNames.push("off");
       this.decoratorArgs["off"] = offProperties[name];
-    }
-    if (
-      computedProperties.includes(name) &&
-      !this.hasComputedDecorator &&
-      !this.hasMetaDecorator
-    ) {
-      this.decoratorNames.push("wrapComputed");
     }
     if (this.isAction) {
       this.overriddenActions = overriddenActions;
