@@ -24,6 +24,8 @@ export default RuntimeInput.extend(MyMixin, {
 
   numPlusPlus: alias("numPlusOne"),
 
+  computedMacro: customMacro(),
+
   /**
    * Method comments
    */

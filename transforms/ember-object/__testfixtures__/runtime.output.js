@@ -31,6 +31,9 @@ export default class RuntimeInputEmberObject extends RuntimeInput.extend(MyMixin
   @alias("numPlusOne")
   numPlusPlus;
 
+  @customMacro
+  computedMacro;
+
   /**
    * Method comments
    */
