@@ -252,6 +252,26 @@ function getDecoratorPathSpecifiers(j, root, decoratorsToImport = []) {
 }
 
 /**
+ * Get existing import statement matching the import path
+ *
+ * @param {Object} j - jscodeshift lib reference
+ * @param {File} root
+ * @param {String} importPath
+ * @returns {Object}
+ */
+function getExistingImportForPath(j, root, importPath) {
+  const decoratorImports = root.find(j.ImportDeclaration, {
+    source: {
+      value: importPath
+    }
+  });
+
+  if (decoratorImports.length) {
+    return decoratorImports.get();
+  }
+}
+
+/**
  * Create the import statements for decorators
  *
  * It does the following
@@ -276,9 +296,20 @@ function createDecoratorImportDeclarations(j, root, decoratorsToImport = []) {
   // Create import statement replacing the existing ones with specifiers importing from ember-decorators namespace
   decoratorPathsImported.forEach(decoratorPath => {
     const specifiers = decoratorPathSpecifierMap[decoratorPath];
-    firstDeclaration.insertBefore(
-      createImportDeclaration(j, specifiers, decoratorPath)
-    );
+    const existingImport = getExistingImportForPath(j, root, decoratorPath);
+    if (existingImport) {
+      let existingSpecifiers = get(existingImport, "value.specifiers");
+      if (existingSpecifiers) {
+        existingImport.value.specifiers = [].concat(
+          existingSpecifiers,
+          specifiers
+        );
+      }
+    } else {
+      firstDeclaration.insertBefore(
+        createImportDeclaration(j, specifiers, decoratorPath)
+      );
+    }
   });
 
   // Create new import declarations

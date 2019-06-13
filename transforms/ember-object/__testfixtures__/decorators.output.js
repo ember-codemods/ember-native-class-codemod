@@ -1,6 +1,5 @@
 import { attribute, className, classNames, tagName, layout as templateLayout } from "@ember-decorators/component";
 import { observes as watcher, on } from "@ember-decorators/object";
-import { action, computed } from "@ember/object";
 import { inject as controller } from "@ember/controller";
 import { inject as service } from "@ember/service";
 
@@ -16,7 +15,7 @@ import {
   alias,
 } from "@ember/object/computed";
 
-import { get, set } from "@ember/object";
+import { get, set, action, computed } from "@ember/object";
 import layout from "components/templates/foo";
 import { someActionUtil } from "some/action/util";
 import NUMERIC_CONSTANT from "constants/numbers";
