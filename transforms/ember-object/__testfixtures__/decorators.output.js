@@ -1,7 +1,8 @@
 import { attribute, className, classNames, tagName, layout as templateLayout } from "@ember-decorators/component";
-import { action, computed, observes as watcher, on } from "@ember-decorators/object";
-import { inject as controller } from "@ember-decorators/controller";
-import { inject as service } from "@ember-decorators/service";
+import { observes as watcher, on } from "@ember-decorators/object";
+import { action, computed } from "@ember/object";
+import { inject as controller } from "@ember/controller";
+import { inject as service } from "@ember/service";
 
 import {
   filter,
@@ -13,7 +14,7 @@ import {
   equal,
   gt,
   alias,
-} from "@ember-decorators/object/computed";
+} from "@ember/object/computed";
 
 import { get, set } from "@ember/object";
 import layout from "components/templates/foo";

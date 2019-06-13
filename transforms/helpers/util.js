@@ -10,7 +10,7 @@ const DECORATOR_PATHS = {
       observer: "observes",
       computed: "computed"
     },
-    decoratorPath: "@ember-decorators/object"
+    decoratorPath: "@ember/object"
   },
   "@ember/object/evented": {
     importPropDecoratorMap: {
@@ -22,27 +22,26 @@ const DECORATOR_PATHS = {
     importPropDecoratorMap: {
       inject: "inject"
     },
-    decoratorPath: "@ember-decorators/controller"
+    decoratorPath: "@ember/controller"
   },
   "@ember/service": {
     importPropDecoratorMap: {
       inject: "inject"
     },
-    decoratorPath: "@ember-decorators/service"
+    decoratorPath: "@ember/service"
   },
   "@ember/object/computed": {
-    decoratorPath: "@ember-decorators/object/computed"
+    decoratorPath: "@ember/object/computed"
   }
 };
 
+const DECORATOR_PATH_OVERRIDES = {
+  observes: "@ember-decorators/object"
+};
+
 const EMBER_DECORATOR_SPECIFIERS = {
-  "@ember-decorators/object": [
-    "action",
-    "off",
-    "on",
-    "unobserves",
-    "wrapComputed"
-  ],
+  "@ember/object": ["action"],
+  "@ember-decorators/object": ["off", "on", "unobserves"],
   "@ember-decorators/component": [
     "attribute",
     "className",
@@ -314,6 +313,7 @@ module.exports = {
   ACTION_SUPER_EXPRESSION_COMMENT,
   capitalizeFirstLetter,
   DECORATOR_PATHS,
+  DECORATOR_PATH_OVERRIDES,
   EMBER_DECORATOR_SPECIFIERS,
   get,
   getFirstDeclaration,
