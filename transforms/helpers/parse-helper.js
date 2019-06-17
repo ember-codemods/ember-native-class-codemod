@@ -4,9 +4,9 @@ const {
   capitalizeFirstLetter,
   get,
   getOptions,
-  getRuntimeData,
   startsWithUpperCaseLetter
 } = require("./util");
+const getTelemetryFor = require("./util/get-telemetry-for");
 const {
   hasValidProps,
   isFileOfType,
@@ -243,19 +243,13 @@ function parseEmberObjectCallExpression(eoCallExpression) {
  * @param {Object} options
  */
 function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
-  const runtimeConfigPath = options["runtime-config-path"];
+  options.runtimeData = getTelemetryFor(path.resolve(filePath));
 
-  if (runtimeConfigPath) {
-    options.runtimeData = getRuntimeData(
-      runtimeConfigPath,
-      path.resolve(filePath)
+  if (!options.runtimeData) {
+    logger.warn(
+      `[${filePath}]: SKIPPED Could not find runtime data NO_RUNTIME_DATA`
     );
-    if (!options.runtimeData) {
-      logger.warn(
-        `[${filePath}]: SKIPPED Could not find runtime data NO_RUNTIME_DATA`
-      );
-      return;
-    }
+    return;
   }
 
   if (isTestFile(filePath)) {
