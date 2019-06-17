@@ -51,7 +51,7 @@ function isFileOfType(file, type) {
 function hasValidProps(
   j,
   { instanceProps = [] } = {},
-  { decorators = false, classFields = true } = {}
+  { decorators = true, classFields = true } = {}
 ) {
   const unsupportedPropNames = decorators ? [] : UNSUPPORTED_PROP_NAMES;
 

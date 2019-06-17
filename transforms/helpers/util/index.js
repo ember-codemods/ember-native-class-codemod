@@ -52,7 +52,7 @@ const EMBER_DECORATOR_SPECIFIERS = {
 const METHOD_DECORATORS = ["action", "on", "observer"];
 
 const DEFAULT_OPTIONS = {
-  decorators: false,
+  decorators: true,
   classFields: true
 };
 
