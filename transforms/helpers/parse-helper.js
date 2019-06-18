@@ -259,9 +259,7 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
 
   if (options.type && !isFileOfType(filePath, options.type)) {
     logger.warn(
-      `[${filePath}]: FAILURE Type mismatch, expected type '${
-        options.type
-      }' did not match type of file`
+      `[${filePath}]: FAILURE Type mismatch, expected type '${options.type}' did not match type of file`
     );
     return;
   }
