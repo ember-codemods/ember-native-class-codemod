@@ -3,13 +3,10 @@
 const { runTransformTest } = require("codemod-cli");
 
 // bootstrap the mock telemetry data
-const getRepoInfo = require("git-repo-info");
-const Cache = require("sync-disk-cache");
 const walkSync = require("walk-sync");
 const mockTelemetryData = require("./__testfixtures__/-mock-telemetry.json");
 
-const gitInfo = getRepoInfo();
-const cache = new Cache(`native-class-codemod-${gitInfo.sha}`);
+const cache = require("../../lib/cache");
 
 // This is nasty, cwd is screwed up here for some reason
 let testFiles = walkSync("./transforms/ember-object/__testfixtures__", {

@@ -1,11 +1,7 @@
 const fs = require("fs-extra");
 const path = require("path");
 const walkSync = require("walk-sync");
-const getRepoInfo = require("git-repo-info");
-const Cache = require("sync-disk-cache");
-
-const gitInfo = getRepoInfo();
-const cache = new Cache(`native-class-codemod-${gitInfo.sha}`);
+const cache = require("../../../lib/cache");
 
 const telemetry = cache.has("telemetry")
   ? JSON.parse(cache.get("telemetry").value)
