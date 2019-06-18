@@ -15,17 +15,120 @@ ember-es6-class-codemod ember-object path/of/files/ or/some**/*glob.js
 ## Input / Output
 
 <!--FIXTURES_TOC_START-->
+* [action.invalid](#action.invalid)
 * [basic](#basic)
 * [class-fields.invalid](#class-fields.invalid)
 * [class-fields.valid](#class-fields.valid)
+* [decorators-disabled](#decorators-disabled)
 * [decorators](#decorators)
 * [decorators.invalid](#decorators.invalid)
 * [default.export](#default.export)
-* [invalid](#invalid)
+* [import](#import)
 * [runtime](#runtime)
+* [single.quotes](#single.quotes)
 <!--FIXTURES_TOC_END-->
 
 <!--FIXTURES_CONTENT_START-->
+---
+<a id="action.invalid">**action.invalid**</a>
+
+**Input** (<small>[action.invalid.input.js](transforms/ember-object/__testfixtures__/action.invalid.input.js)</small>):
+```js
+const Foo = EmberObject.extend({
+  actions: {
+    bar() {
+      this._super(...arguments);
+      this.get("bar")();
+    }
+  }
+});
+
+const Foo = EmberObject.extend({
+  actions: {
+    biz() {
+      this._super(...arguments);
+      get(this, "biz")();
+    }
+  }
+});
+
+const Foo = EmberObject.extend({
+  actions: {
+    baz() {
+      this._super(...arguments);
+      tryInvoke(this, "baz");
+    }
+  }
+});
+
+const Foo = EmberObject.extend({
+  actions: {
+    sendBaz() {
+      this._super(...arguments);
+      this.send("sendBaz");
+    }
+  }
+});
+
+const Foo = EmberObject.extend({
+  actions: {
+    thisBaz() {
+      this._super(...arguments);
+      this.thisBaz();
+    }
+  }
+});
+
+```
+
+**Output** (<small>[action.invalid.output.js](transforms/ember-object/__testfixtures__/action.invalid.output.js)</small>):
+```js
+const Foo = EmberObject.extend({
+  actions: {
+    bar() {
+      this._super(...arguments);
+      this.get("bar")();
+    }
+  }
+});
+
+const Foo = EmberObject.extend({
+  actions: {
+    biz() {
+      this._super(...arguments);
+      get(this, "biz")();
+    }
+  }
+});
+
+const Foo = EmberObject.extend({
+  actions: {
+    baz() {
+      this._super(...arguments);
+      tryInvoke(this, "baz");
+    }
+  }
+});
+
+const Foo = EmberObject.extend({
+  actions: {
+    sendBaz() {
+      this._super(...arguments);
+      this.send("sendBaz");
+    }
+  }
+});
+
+const Foo = EmberObject.extend({
+  actions: {
+    thisBaz() {
+      this._super(...arguments);
+      this.thisBaz();
+    }
+  }
+});
+
+```
 ---
 <a id="basic">**basic**</a>
 
@@ -43,6 +146,7 @@ const Foo = Test.extend(MyMixin, {
   numProp: 123,
   [MY_VAL]: "val",
   queryParams: {},
+  someVal,
 
   /**
    * Method comments
@@ -70,7 +174,7 @@ const Foo = EmberObject.extend(MixinA, MixinB);
 
 ```
 
-**Output** (<small>[basic.input.js](transforms/ember-object/__testfixtures__/basic.output.js)</small>):
+**Output** (<small>[basic.output.js](transforms/ember-object/__testfixtures__/basic.output.js)</small>):
 ```js
 /**
  * Program comments
@@ -85,6 +189,7 @@ class Foo extends Test.extend(MyMixin) {
   numProp = 123;
   [MY_VAL] = "val";
   queryParams = {};
+  someVal = someVal;
 
   /**
    * Method comments
@@ -152,7 +257,7 @@ const Foo = Test.extend({
 
 ```
 
-**Output** (<small>[class-fields.invalid.input.js](transforms/ember-object/__testfixtures__/class-fields.invalid.output.js)</small>):
+**Output** (<small>[class-fields.invalid.output.js](transforms/ember-object/__testfixtures__/class-fields.invalid.output.js)</small>):
 ```js
 /**
  * Program comments
@@ -222,7 +327,7 @@ const Foo = Test.extend({
 
 ```
 
-**Output** (<small>[class-fields.valid.input.js](transforms/ember-object/__testfixtures__/class-fields.valid.output.js)</small>):
+**Output** (<small>[class-fields.valid.output.js](transforms/ember-object/__testfixtures__/class-fields.valid.output.js)</small>):
 ```js
 /**
  * Program comments
@@ -252,22 +357,194 @@ class Foo extends Test {
 
 ```
 ---
+<a id="decorators-disabled">**decorators-disabled**</a>
+
+**Input** (<small>[decorators-disabled.input.js](transforms/ember-object/__testfixtures__/decorators-disabled.input.js)</small>):
+```js
+import { observer, computed } from "@ember/object";
+import { inject as controller } from "@ember/controller";
+import { inject as service } from "@ember/service";
+import { on } from "@ember/object/evented";
+
+// Do not transform
+const Foo = EmberObject.extend({
+  computed: computed({
+    get() {},
+    set() {}
+  })
+});
+
+// Do not transform
+const Foo = EmberObject.extend({
+  statefulObject: {},
+  statefulArray: []
+});
+
+// Do not transform
+const Foo = EmberObject.extend({
+  tagName: "div"
+});
+
+// Do not transform
+const Foo = EmberObject.extend({
+  classNames: []
+});
+
+// Do not transform
+const Foo = EmberObject.extend({
+  classNameBindings: ["foo"],
+  foo: "val"
+});
+
+// Do not transform
+const Foo = EmberObject.extend({
+  attributeBindings: ["foo"],
+  foo: "val"
+});
+
+// Do not transform
+const Foo = EmberObject.extend({
+  actions: {
+    bar() {}
+  }
+});
+
+// Do not transform
+const Foo = EmberObject.extend({
+  observer: observer()
+});
+
+// Do not transform
+const Foo = EmberObject.extend({
+  event: on()
+});
+
+// Do not transform
+const Foo = EmberObject.extend({
+  event: service()
+});
+
+// Do not transform
+const Foo = EmberObject.extend({
+  event: controller()
+});
+
+// Do not transform if not a primitive value
+const Foo = EmberObject.extend({
+  macroValue: macro()
+});
+
+// Do not transform
+const Foo = EmberObject.extend({
+  layout: "div"
+});
+
+```
+
+**Output** (<small>[decorators-disabled.output.js](transforms/ember-object/__testfixtures__/decorators-disabled.output.js)</small>):
+```js
+import { observer, computed } from "@ember/object";
+import { inject as controller } from "@ember/controller";
+import { inject as service } from "@ember/service";
+import { on } from "@ember/object/evented";
+
+// Do not transform
+const Foo = EmberObject.extend({
+  computed: computed({
+    get() {},
+    set() {}
+  })
+});
+
+// Do not transform
+const Foo = EmberObject.extend({
+  statefulObject: {},
+  statefulArray: []
+});
+
+// Do not transform
+const Foo = EmberObject.extend({
+  tagName: "div"
+});
+
+// Do not transform
+const Foo = EmberObject.extend({
+  classNames: []
+});
+
+// Do not transform
+const Foo = EmberObject.extend({
+  classNameBindings: ["foo"],
+  foo: "val"
+});
+
+// Do not transform
+const Foo = EmberObject.extend({
+  attributeBindings: ["foo"],
+  foo: "val"
+});
+
+// Do not transform
+const Foo = EmberObject.extend({
+  actions: {
+    bar() {}
+  }
+});
+
+// Do not transform
+const Foo = EmberObject.extend({
+  observer: observer()
+});
+
+// Do not transform
+const Foo = EmberObject.extend({
+  event: on()
+});
+
+// Do not transform
+const Foo = EmberObject.extend({
+  event: service()
+});
+
+// Do not transform
+const Foo = EmberObject.extend({
+  event: controller()
+});
+
+// Do not transform if not a primitive value
+const Foo = EmberObject.extend({
+  macroValue: macro()
+});
+
+// Do not transform
+const Foo = EmberObject.extend({
+  layout: "div"
+});
+
+```
+---
 <a id="decorators">**decorators**</a>
 
 **Input** (<small>[decorators.input.js](transforms/ember-object/__testfixtures__/decorators.input.js)</small>):
 ```js
 import {
   alias,
+  gt,
+  equal,
   readOnly,
   reads,
   oneWay as enoWay,
-  sum as add
+  sum as add,
+  map as computedMap,
+  filter
 } from "@ember/object/computed";
 import { get, set, observer as watcher, computed } from "@ember/object";
 import { inject as controller } from "@ember/controller";
 import { inject as service } from "@ember/service";
 import { on } from "@ember/object/evented";
 import layout from "components/templates/foo";
+import { someActionUtil } from "some/action/util";
+import NUMERIC_CONSTANT from "constants/numbers";
 
 const Foo = EmberObject.extend({
   tagName: "div",
@@ -281,8 +558,15 @@ const Foo = EmberObject.extend({
   event: on("click", function() {
     return "abc";
   }),
+  excitingChores: computedMap("chores", function(chore, index) {
+    return chore.toUpperCase() + "!";
+  }),
+  remainingChores: filter("chores", function(chore, index, array) {
+    return !chore.done;
+  }),
 
   actions: {
+    someActionUtil,
     /**
     Comments
     */
@@ -394,7 +678,11 @@ const Foo = EmberObject.extend({
   /**
    * Lname5
    */
-  lName5: add("description", "lastName").readOnly()
+  lName5: add("description", "lastName").readOnly(),
+
+  isEqualToLimit: equal("limit", NUMERIC_CONSTANT.LIMIT).readOnly(),
+
+  isGreaterThanLimit: gt("limit", NUMERIC_CONSTANT).readOnly()
 });
 
 const Foo = EmberObject.extend({
@@ -403,16 +691,29 @@ const Foo = EmberObject.extend({
 
 ```
 
-**Output** (<small>[decorators.input.js](transforms/ember-object/__testfixtures__/decorators.output.js)</small>):
+**Output** (<small>[decorators.output.js](transforms/ember-object/__testfixtures__/decorators.output.js)</small>):
 ```js
-import { attribute, className, classNames, layout, tagName } from "@ember-decorators/component";
-import { sum as add, overridableReads as enoWay, overridableReads, reads, alias } from "@ember-decorators/object/computed";
-import { get, set } from "@ember/object";
-import { action, readOnly, volatile, computed, observes as watcher } from "@ember-decorators/object";
-import { controller } from "@ember-decorators/controller";
-import { service } from "@ember-decorators/service";
-import { on } from "@ember-decorators/object/evented";
-import templateLayout from "components/templates/foo";
+import { attribute, className, classNames, tagName, layout as templateLayout } from "@ember-decorators/component";
+import { observes as watcher, on } from "@ember-decorators/object";
+import { inject as controller } from "@ember/controller";
+import { inject as service } from "@ember/service";
+
+import {
+  filter,
+  map as computedMap,
+  sum as add,
+  oneWay as enoWay,
+  reads,
+  readOnly,
+  equal,
+  gt,
+  alias,
+} from "@ember/object/computed";
+
+import { get, set, action, computed } from "@ember/object";
+import layout from "components/templates/foo";
+import { someActionUtil } from "some/action/util";
+import NUMERIC_CONSTANT from "constants/numbers";
 
 @tagName("div")
 @classNames("test-class", "custom-class")
@@ -433,6 +734,21 @@ class Foo extends EmberObject {
   @on("click")
   event() {
     return "abc";
+  }
+
+  @computedMap("chores", function(chore, index) {
+    return chore.toUpperCase() + "!";
+  })
+  excitingChores;
+
+  @filter("chores", function(chore, index, array) {
+    return !chore.done;
+  })
+  remainingChores;
+
+  @action
+  someActionUtil() {
+    return someActionUtil.call(this, ...arguments);
   }
 
   /**
@@ -480,8 +796,7 @@ class Foo extends EmberObject {
   /**
   Computed fullname
   */
-  @computed("firstName", "lastName")
-  @readOnly
+  @(computed("firstName", "lastName").readOnly())
   get fullName() {
     return super.fullName &&
     `${this.get("firstName")} ${this.get("lastName")}`;
@@ -522,8 +837,7 @@ class Foo extends EmberObject {
   /**
    * Fname2
    */
-  @computed("firstName", "lastName")
-  @readOnly
+  @(computed("firstName", "lastName").readOnly())
   get fName2() {
     return true;
   }
@@ -531,8 +845,7 @@ class Foo extends EmberObject {
   /**
    * Fname3
    */
-  @computed("firstName", "lastName")
-  @volatile
+  @(computed("firstName", "lastName").volatile())
   get fName3() {
     return true;
   }
@@ -540,8 +853,7 @@ class Foo extends EmberObject {
   /**
    * Lname
    */
-  @alias("firstName", "lastName")
-  @readOnly
+  @(alias("firstName", "lastName").readOnly())
   lName;
 
   /**
@@ -553,13 +865,13 @@ class Foo extends EmberObject {
   /**
    * Lname2
    */
-  @reads("description")
+  @readOnly("description")
   lName2;
 
   /**
    * Lname3
    */
-  @overridableReads("description", "lastName")
+  @reads("description", "lastName")
   lName3;
 
   /**
@@ -571,12 +883,17 @@ class Foo extends EmberObject {
   /**
    * Lname5
    */
-  @add("description", "lastName")
-  @readOnly
+  @(add("description", "lastName").readOnly())
   lName5;
+
+  @(equal("limit", NUMERIC_CONSTANT.LIMIT).readOnly())
+  isEqualToLimit;
+
+  @(gt("limit", NUMERIC_CONSTANT).readOnly())
+  isGreaterThanLimit;
 }
 
-@layout(templateLayout)
+@templateLayout(layout)
 class Foo extends EmberObject {}
 
 ```
@@ -629,9 +946,18 @@ const Foo = EmberObject.extend({
   }).meta({ type: "Property" })
 });
 
+// Do not transform as action name matches lifecycle hook
+const Foo = EmberObject.extend({
+  actions: {
+    click() {
+      this.set("clicked", true);
+    }
+  }
+});
+
 ```
 
-**Output** (<small>[decorators.invalid.input.js](transforms/ember-object/__testfixtures__/decorators.invalid.output.js)</small>):
+**Output** (<small>[decorators.invalid.output.js](transforms/ember-object/__testfixtures__/decorators.invalid.output.js)</small>):
 ```js
 // Do not transform
 const Foo = EmberObject.extend({
@@ -677,6 +1003,15 @@ const Foo = EmberObject.extend({
   }).meta({ type: "Property" })
 });
 
+// Do not transform as action name matches lifecycle hook
+const Foo = EmberObject.extend({
+  actions: {
+    click() {
+      this.set("clicked", true);
+    }
+  }
+});
+
 ```
 ---
 <a id="default.export">**default.export**</a>
@@ -687,175 +1022,50 @@ export default EmberObject.extend({});
 
 ```
 
-**Output** (<small>[default.export.input.js](transforms/ember-object/__testfixtures__/default.export.output.js)</small>):
+**Output** (<small>[default.export.output.js](transforms/ember-object/__testfixtures__/default.export.output.js)</small>):
 ```js
 export default class DefaultExportInput extends EmberObject {}
 
 ```
 ---
-<a id="invalid">**invalid**</a>
+<a id="import">**import**</a>
 
-**Input** (<small>[invalid.input.js](transforms/ember-object/__testfixtures__/invalid.input.js)</small>):
+**Input** (<small>[import.input.js](transforms/ember-object/__testfixtures__/import.input.js)</small>):
 ```js
-import { observer, computed } from "@ember/object";
-import { inject as controller } from "@ember/controller";
-import { inject as service } from "@ember/service";
-import { on } from "@ember/object/evented";
+import Service from "@ember/service";
+import Controller from "@ember/controller";
+import Evented, { on } from "@ember/object/evented";
 
-// Do not transform
-const Foo = EmberObject.extend({
-  computed: computed({
-    get() {},
-    set() {}
+const ser = Service.extend({});
+const ctrl = Controller.extend({});
+const evt = Service.extend(Evented, {
+  e: on("click", function() {
+    return "e";
   })
 });
 
-// Do not transform
-const Foo = EmberObject.extend({
-  statefulObject: {},
-  statefulArray: []
-});
-
-// Do not transform
-const Foo = EmberObject.extend({
-  tagName: "div"
-});
-
-// Do not transform
-const Foo = EmberObject.extend({
-  classNames: []
-});
-
-// Do not transform
-const Foo = EmberObject.extend({
-  classNameBindings: ["foo"],
-  foo: "val"
-});
-
-// Do not transform
-const Foo = EmberObject.extend({
-  attributeBindings: ["foo"],
-  foo: "val"
-});
-
-// Do not transform
-const Foo = EmberObject.extend({
-  actions: {
-    bar() {}
-  }
-});
-
-// Do not transform
-const Foo = EmberObject.extend({
-  observer: observer()
-});
-
-// Do not transform
-const Foo = EmberObject.extend({
-  event: on()
-});
-
-// Do not transform
-const Foo = EmberObject.extend({
-  event: service()
-});
-
-// Do not transform
-const Foo = EmberObject.extend({
-  event: controller()
-});
-
-// Do not transform if not a primitive value
-const Foo = EmberObject.extend({
-  macroValue: macro()
-});
-
-// Do not transform
-const Foo = EmberObject.extend({
-  layout: "div"
-});
+export { ser, ctrl, evt };
 
 ```
 
-**Output** (<small>[invalid.input.js](transforms/ember-object/__testfixtures__/invalid.output.js)</small>):
+**Output** (<small>[import.output.js](transforms/ember-object/__testfixtures__/import.output.js)</small>):
 ```js
-import { observer, computed } from "@ember/object";
-import { inject as controller } from "@ember/controller";
-import { inject as service } from "@ember/service";
-import { on } from "@ember/object/evented";
+import { on } from "@ember-decorators/object";
+import Service from "@ember/service";
+import Controller from "@ember/controller";
+import Evented from "@ember/object/evented";
 
-// Do not transform
-const Foo = EmberObject.extend({
-  computed: computed({
-    get() {},
-    set() {}
-  })
-});
+class Ser extends Service {}
+class Ctrl extends Controller {}
 
-// Do not transform
-const Foo = EmberObject.extend({
-  statefulObject: {},
-  statefulArray: []
-});
-
-// Do not transform
-const Foo = EmberObject.extend({
-  tagName: "div"
-});
-
-// Do not transform
-const Foo = EmberObject.extend({
-  classNames: []
-});
-
-// Do not transform
-const Foo = EmberObject.extend({
-  classNameBindings: ["foo"],
-  foo: "val"
-});
-
-// Do not transform
-const Foo = EmberObject.extend({
-  attributeBindings: ["foo"],
-  foo: "val"
-});
-
-// Do not transform
-const Foo = EmberObject.extend({
-  actions: {
-    bar() {}
+class Evt extends Service.extend(Evented) {
+  @on("click")
+  e() {
+    return "e";
   }
-});
+}
 
-// Do not transform
-const Foo = EmberObject.extend({
-  observer: observer()
-});
-
-// Do not transform
-const Foo = EmberObject.extend({
-  event: on()
-});
-
-// Do not transform
-const Foo = EmberObject.extend({
-  event: service()
-});
-
-// Do not transform
-const Foo = EmberObject.extend({
-  event: controller()
-});
-
-// Do not transform if not a primitive value
-const Foo = EmberObject.extend({
-  macroValue: macro()
-});
-
-// Do not transform
-const Foo = EmberObject.extend({
-  layout: "div"
-});
+export { Ser, Ctrl, Evt };
 
 ```
 ---
@@ -863,10 +1073,14 @@ const Foo = EmberObject.extend({
 
 **Input** (<small>[runtime.input.js](transforms/ember-object/__testfixtures__/runtime.input.js)</small>):
 ```js
+import RuntimeInput from "common/runtime/input";
+import { alias } from "@ember/object/computed";
+import { computed } from "@ember/object";
+
 /**
  * Program comments
  */
-const Foo = Test.extend(MyMixin, {
+export default RuntimeInput.extend(MyMixin, {
   /**
    * Property comments
    */
@@ -878,6 +1092,14 @@ const Foo = Test.extend(MyMixin, {
 
   unobservedProp: null,
   offProp: null,
+
+  numPlusOne: computed("numProp", function() {
+    return this.get("numProp") + 1;
+  }),
+
+  numPlusPlus: alias("numPlusOne"),
+
+  computedMacro: customMacro(),
 
   /**
    * Method comments
@@ -917,14 +1139,17 @@ const Foo = Test.extend(MyMixin, {
 
 ```
 
-**Output** (<small>[runtime.input.js](transforms/ember-object/__testfixtures__/runtime.output.js)</small>):
+**Output** (<small>[runtime.output.js](transforms/ember-object/__testfixtures__/runtime.output.js)</small>):
 ```js
-import { action, off, unobserves } from "@ember-decorators/object";
+import { off, unobserves } from "@ember-decorators/object";
+import { action, computed } from "@ember/object";
+import { alias } from "@ember/object/computed";
+import RuntimeInput from "common/runtime/input";
 
 /**
  * Program comments
  */
-class Foo extends Test.extend(MyMixin) {
+export default class RuntimeInputEmberObject extends RuntimeInput.extend(MyMixin) {
   /**
    * Property comments
    */
@@ -940,6 +1165,17 @@ class Foo extends Test.extend(MyMixin) {
 
   @off("prop1", "prop2")
   offProp;
+
+  @computed("numProp")
+  get numPlusOne() {
+    return this.get("numProp") + 1;
+  }
+
+  @alias("numPlusOne")
+  numPlusPlus;
+
+  @customMacro
+  computedMacro;
 
   /**
    * Method comments
@@ -984,4 +1220,91 @@ class Foo extends Test.extend(MyMixin) {
 }
 
 ```
-<!--FIXTURE_CONTENT_END-->
+---
+<a id="single.quotes">**single.quotes**</a>
+
+**Input** (<small>[single.quotes.input.js](transforms/ember-object/__testfixtures__/single.quotes.input.js)</small>):
+```js
+/**
+ * Program comments
+ */
+const Foo = Test.extend(MyMixin, {
+  /**
+   * Property comments
+   */
+  prop: 'defaultValue',
+  boolProp: true,
+  numProp: 123,
+  [MY_VAL]: 'val',
+  queryParams: {},
+  someVal,
+
+  /**
+   * Method comments
+   */
+  method() {
+    // do things
+  },
+
+  otherMethod: function() {},
+
+  get accessor() {
+    return this._value;
+  },
+
+  set accessor(value) {
+    this._value = value;
+  },
+
+  anotherMethod() {
+    this._super(...arguments);
+  }
+});
+
+const Foo = EmberObject.extend(MixinA, MixinB);
+
+```
+
+**Output** (<small>[single.quotes.output.js](transforms/ember-object/__testfixtures__/single.quotes.output.js)</small>):
+```js
+/**
+ * Program comments
+ */
+class Foo extends Test.extend(MyMixin) {
+  /**
+   * Property comments
+   */
+  prop = 'defaultValue';
+
+  boolProp = true;
+  numProp = 123;
+  [MY_VAL] = 'val';
+  queryParams = {};
+  someVal = someVal;
+
+  /**
+   * Method comments
+   */
+  method() {
+    // do things
+  }
+
+  otherMethod() {}
+
+  get accessor() {
+    return this._value;
+  }
+
+  set accessor(value) {
+    this._value = value;
+  }
+
+  anotherMethod() {
+    super.anotherMethod(...arguments);
+  }
+}
+
+class Foo extends EmberObject.extend(MixinA, MixinB) {}
+
+```
+<!--FIXTURES_CONTENT_END-->

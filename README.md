@@ -102,10 +102,9 @@ While the codemods transforms all types of ember objects, it does not support tr
 ## More Transform Examples
 
 <!--TRANSFORMS_START-->
-
-- [ember-object](transforms/ember-object/README.md)
-- [helpers](transforms/helpers/README.md)
-  <!--TRANSFORMS_END-->
+* [ember-object](transforms/ember-object/README.md)
+* [helpers](transforms/helpers/README.md)
+<!--TRANSFORMS_END-->
 
 ## Contributing
 
