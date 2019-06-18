@@ -22,7 +22,6 @@ for (let packagePath of packagePaths) {
 /**
  * Get the runtime data for the file being transformed
  *
- * @param {String} runtimeConfigPath Configuration file path (Absolute)
  * @param {String} filePath Absolute path of the file to read data from
  * @returns {Object} Runtime configuration object
  */
