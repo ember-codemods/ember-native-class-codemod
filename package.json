@@ -17,7 +17,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "codemod-cli": "^0.2.11",
+    "codemod-cli": "^1.0.0",
     "fs-extra": "^8.0.1",
     "git-repo-info": "^2.1.0",
     "minimatch": "^3.0.4",
