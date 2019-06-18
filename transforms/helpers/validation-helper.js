@@ -65,9 +65,7 @@ function hasValidProps(
       !["actions", "queryParams"].includes(instanceProp.name)
     ) {
       errors.push(
-        `[${
-          instanceProp.name
-        }]: Transform not supported - value is of type object. For more details: eslint-plugin-ember/avoid-leaking-state-in-ember-objects`
+        `[${instanceProp.name}]: Transform not supported - value is of type object. For more details: eslint-plugin-ember/avoid-leaking-state-in-ember-objects`
       );
     }
 
@@ -83,27 +81,19 @@ function hasValidProps(
       (instanceProp.isCallExpression && !instanceProp.hasDecorators)
     ) {
       errors.push(
-        `[${
-          instanceProp.name
-        }]: Transform not supported - need option '--decorators=true' or the property type ${
-          instanceProp.type
-        } can not be transformed`
+        `[${instanceProp.name}]: Transform not supported - need option '--decorators=true' or the property type ${instanceProp.type} can not be transformed`
       );
     }
 
     if (instanceProp.hasModifierWithArgs) {
       errors.push(
-        `[${
-          instanceProp.name
-        }]: Transform not supported - value has modifiers like 'property' or 'meta'`
+        `[${instanceProp.name}]: Transform not supported - value has modifiers like 'property' or 'meta'`
       );
     }
 
     if (instanceProp.hasVolatile && instanceProp.hasMetaDecorator) {
       errors.push(
-        `[${
-          instanceProp.name
-        }]: Transform not supported - value has 'volatile' modifier with computed meta ('@ember/object/computed') is not supported`
+        `[${instanceProp.name}]: Transform not supported - value has 'volatile' modifier with computed meta ('@ember/object/computed') is not supported`
       );
     }
     return errors;
