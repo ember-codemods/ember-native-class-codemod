@@ -1,6 +1,3 @@
-const fs = require("fs");
-const fsPath = require("path");
-
 const LAYOUT_DECORATOR_NAME = "layout";
 const LAYOUT_DECORATOR_LOCAL_NAME = "templateLayout";
 
@@ -55,7 +52,7 @@ const EMBER_DECORATOR_SPECIFIERS = {
 const METHOD_DECORATORS = ["action", "on", "observer"];
 
 const DEFAULT_OPTIONS = {
-  decorators: false,
+  decorators: true,
   classFields: true
 };
 
@@ -285,30 +282,6 @@ function getModifier(calleeObject) {
   };
 }
 
-/**
- * Get the runtime data for the file being transformed
- *
- * @param {String} runtimeConfigPath Configuration file path (Absolute)
- * @param {String} filePath Absolute path of the file to read data from
- * @returns {Object} Runtime configuration object
- */
-function getRuntimeData(runtimeConfigPath, filePath) {
-  let runtimeConfigJSON = {};
-  try {
-    runtimeConfigJSON = JSON.parse(fs.readFileSync(runtimeConfigPath));
-  } catch (e) {
-    runtimeConfigJSON = { data: [{}] };
-  }
-  const runtimeConfigs = runtimeConfigJSON.data[0];
-  // Relative path is needed for testing,
-  // However the paths should always be absolute to avoid confusion
-  const relativePath = filePath.replace(
-    fsPath.resolve(`${__dirname}/../..`),
-    "."
-  );
-  return runtimeConfigs[filePath] || runtimeConfigs[relativePath];
-}
-
 module.exports = {
   ACTION_SUPER_EXPRESSION_COMMENT,
   capitalizeFirstLetter,
@@ -322,7 +295,6 @@ module.exports = {
   getPropCalleeName,
   getPropName,
   getPropType,
-  getRuntimeData,
   isClassDecoratorProp,
   LAYOUT_DECORATOR_LOCAL_NAME,
   LAYOUT_DECORATOR_NAME,
