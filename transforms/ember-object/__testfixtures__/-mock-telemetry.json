@@ -1,5 +1,5 @@
 {
-  "ember-es6-class-codemod/transforms/ember-object/__testfixtures__/runtime.input.js": {
+  "runtime.input": {
     "computedProperties": ["computedMacro", "numPlusOne", "numPlusPlus"],
     "observedProperties": [],
     "observerProperties": {},

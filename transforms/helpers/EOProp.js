@@ -93,9 +93,11 @@ class EOProp {
 
   get shouldRemoveLastArg() {
     const lastArg = this.callExprArgs.slice(-1) || [];
+
     return (
-      lastArg[0].type === "FunctionExpression" ||
-      lastArg[0].type === "ObjectExpression"
+      lastArg.length > 0 &&
+      (lastArg[0].type === "FunctionExpression" ||
+        lastArg[0].type === "ObjectExpression")
     );
   }
 
