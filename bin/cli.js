@@ -3,10 +3,12 @@
 
 const gatherTelemetry = require("../lib/gather-telemetry");
 
-gatherTelemetry(process.argv[2]);
+(async () => {
+  await gatherTelemetry(process.argv[2]);
 
-require("codemod-cli").runTransform(
-  __dirname,
-  "ember-object",
-  process.argv.slice(2) /* paths or globs */
-);
+  require("codemod-cli").runTransform(
+    __dirname,
+    "ember-object",
+    process.argv.slice(2) /* paths or globs */
+  );
+})();
