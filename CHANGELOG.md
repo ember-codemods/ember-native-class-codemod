@@ -1,3 +1,16 @@
+## v0.2.1 (2019-06-19)
+
+#### :bug: Bug Fix
+* [#125](https://github.com/ember-codemods/ember-es6-class-codemod/pull/125) Handle module failures gracefully while gathering telemetry. ([@rwjblue](https://github.com/rwjblue))
+* [#124](https://github.com/ember-codemods/ember-es6-class-codemod/pull/124) Add puppeteer launch flag to ignore https errors ([@ssutar](https://github.com/ssutar))
+
+#### :memo: Documentation
+* [#123](https://github.com/ember-codemods/ember-es6-class-codemod/pull/123) Add some missing fields to package.json. ([@rwjblue](https://github.com/rwjblue))
+
+#### Committers: 2
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+- Santosh Sutar ([@ssutar](https://github.com/ssutar))
+
 ## v0.2.0 (2019-06-18)
 
 #### :boom: Breaking Change

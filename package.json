@@ -1,6 +1,6 @@
 {
   "name": "ember-es6-class-codemod",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Codemods for transforming ember app code to native ES6 class syntax with decorators.",
   "keywords": [
     "codemod-cli"
