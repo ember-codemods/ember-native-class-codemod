@@ -1,4 +1,5 @@
-import Component from '@ember/component';
+import classic from "ember-classic-decorator";
+import Component from "@ember/component";
 
-export default class FireSauceComponent extends Component {
-};
+@classic
+export default class FireSauceComponent extends Component {}

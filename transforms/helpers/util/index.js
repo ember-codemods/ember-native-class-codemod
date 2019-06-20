@@ -51,11 +51,6 @@ const EMBER_DECORATOR_SPECIFIERS = {
 
 const METHOD_DECORATORS = ["action", "on", "observer"];
 
-const DEFAULT_OPTIONS = {
-  decorators: true,
-  classFields: true
-};
-
 const ACTION_SUPER_EXPRESSION_COMMENT = [
   " TODO: This call to super is within an action, and has to refer to the parent",
   " class's actions to be safe. This should be refactored to call a normal method",
@@ -262,15 +257,6 @@ function isClassDecoratorProp(propName) {
 }
 
 /**
- * Get the transform options
- *
- * @param {Object} options
- */
-function getOptions(options) {
-  return Object.assign({}, DEFAULT_OPTIONS, options);
-}
-
-/**
  * Get property modifier from the property callee object
  *
  * @param {Expression} calleeObject
@@ -291,7 +277,6 @@ module.exports = {
   get,
   getFirstDeclaration,
   getModifier,
-  getOptions,
   getPropCalleeName,
   getPropName,
   getPropType,

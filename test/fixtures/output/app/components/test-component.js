@@ -1,3 +1,4 @@
+import classic from "ember-classic-decorator";
 import { computed } from "@ember/object";
 import Component from "@ember/component";
 
@@ -7,6 +8,7 @@ function fullNameMacro() {
   });
 }
 
+@classic
 export default class TestComponentComponent extends Component {
   @fullNameMacro
   fullName;
