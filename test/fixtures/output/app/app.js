@@ -1,4 +1,4 @@
-import classic from "ember-classic-decorator";
+import classic from 'ember-classic-decorator';
 import Application from '@ember/application';
 import Resolver from './resolver';
 import loadInitializers from 'ember-load-initializers';

@@ -5,10 +5,10 @@ const Foo = Test.extend(MyMixin, {
   /**
    * Property comments
    */
-  prop: 'defaultValue',
+  prop: "defaultValue",
   boolProp: true,
   numProp: 123,
-  [MY_VAL]: 'val',
+  [MY_VAL]: "val",
   queryParams: {},
   someVal,
 

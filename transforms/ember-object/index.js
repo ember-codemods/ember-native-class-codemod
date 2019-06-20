@@ -5,7 +5,7 @@ const DEFAULT_OPTIONS = {
   decorators: true,
   classFields: true,
   classicDecorator: true,
-  quote: 'double',
+  quote: 'single',
 };
 
 module.exports = function transformer(file, api) {

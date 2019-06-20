@@ -1,4 +1,4 @@
-import classic from "ember-classic-decorator";
+import classic from 'ember-classic-decorator';
 import EmberRouter from '@ember/routing/router';
 import config from './config/environment';
 
@@ -8,7 +8,6 @@ class RouterRouter extends EmberRouter {
   rootURL = config.rootURL;
 }
 
-RouterRouter.map(function() {
-});
+RouterRouter.map(function() {});
 
 export default RouterRouter;

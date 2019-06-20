@@ -2,36 +2,36 @@ const Foo = EmberObject.extend({
   actions: {
     bar() {
       this._super(...arguments);
-      this.get("bar")();
-    }
-  }
+      this.get('bar')();
+    },
+  },
 });
 
 const Foo = EmberObject.extend({
   actions: {
     biz() {
       this._super(...arguments);
-      get(this, "biz")();
-    }
-  }
+      get(this, 'biz')();
+    },
+  },
 });
 
 const Foo = EmberObject.extend({
   actions: {
     baz() {
       this._super(...arguments);
-      tryInvoke(this, "baz");
-    }
-  }
+      tryInvoke(this, 'baz');
+    },
+  },
 });
 
 const Foo = EmberObject.extend({
   actions: {
     sendBaz() {
       this._super(...arguments);
-      this.send("sendBaz");
-    }
-  }
+      this.send('sendBaz');
+    },
+  },
 });
 
 const Foo = EmberObject.extend({
@@ -39,6 +39,6 @@ const Foo = EmberObject.extend({
     thisBaz() {
       this._super(...arguments);
       this.thisBaz();
-    }
-  }
+    },
+  },
 });
