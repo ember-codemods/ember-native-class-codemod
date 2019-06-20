@@ -1,5 +1,6 @@
 'use strict';
 
+const path = require('path');
 const { runTransformTest } = require('codemod-cli');
 
 // bootstrap the mock telemetry data
@@ -18,9 +19,7 @@ for (let testFile of testFiles) {
   let moduleName = testFile.replace(/\.[^/.]+$/, '');
   let value = mockTelemetryData[moduleName] || {};
 
-  mockTelemetry[
-    `ember-es6-class-codemod/transforms/ember-object/__testfixtures__/${moduleName}`
-  ] = value;
+  mockTelemetry[path.resolve(__dirname, `./__testfixtures__/${moduleName}`)] = value;
 }
 
 cache.set('telemetry', JSON.stringify(mockTelemetry));
