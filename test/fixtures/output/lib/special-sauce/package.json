@@ -1,0 +1,9 @@
+{
+  "name": "special-sauce",
+  "keywords": [
+    "ember-addon"
+  ],
+  "dependencies": {
+    "ember-cli-htmlbars": "*"
+  }
+}
