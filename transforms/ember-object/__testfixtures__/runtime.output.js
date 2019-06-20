@@ -1,8 +1,8 @@
-import classic from "ember-classic-decorator";
-import { off, unobserves } from "@ember-decorators/object";
-import { action, computed } from "@ember/object";
-import { alias } from "@ember/object/computed";
-import RuntimeInput from "common/runtime/input";
+import classic from 'ember-classic-decorator';
+import { off, unobserves } from '@ember-decorators/object';
+import { action, computed } from '@ember/object';
+import { alias } from '@ember/object/computed';
+import RuntimeInput from 'common/runtime/input';
 
 /**
  * Program comments
@@ -12,25 +12,25 @@ export default class RuntimeInputEmberObject extends RuntimeInput.extend(MyMixin
   /**
    * Property comments
    */
-  prop = "defaultValue";
+  prop = 'defaultValue';
 
   boolProp = true;
   numProp = 123;
-  [MY_VAL] = "val";
+  [MY_VAL] = 'val';
   queryParams = {};
 
-  @unobserves("prop3", "prop4")
+  @unobserves('prop3', 'prop4')
   unobservedProp;
 
-  @off("prop1", "prop2")
+  @off('prop1', 'prop2')
   offProp;
 
-  @computed("numProp")
+  @computed('numProp')
   get numPlusOne() {
-    return this.get("numProp") + 1;
+    return this.get('numProp') + 1;
   }
 
-  @alias("numPlusOne")
+  @alias('numPlusOne')
   numPlusPlus;
 
   @customMacro

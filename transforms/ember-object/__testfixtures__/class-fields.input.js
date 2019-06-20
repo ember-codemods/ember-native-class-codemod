@@ -21,5 +21,5 @@ const Foo = Test.extend({
 
   anotherMethod() {
     this._super(...arguments);
-  }
+  },
 });

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-"use strict";
+'use strict';
 
-const gatherTelemetry = require("../lib/gather-telemetry");
+const gatherTelemetry = require('../lib/gather-telemetry');
 
 gatherTelemetry(process.argv[2]);

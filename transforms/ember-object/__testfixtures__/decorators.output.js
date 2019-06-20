@@ -1,8 +1,8 @@
-import classic from "ember-classic-decorator";
-import { attribute, className, classNames, tagName, layout as templateLayout } from "@ember-decorators/component";
-import { observes as watcher, on } from "@ember-decorators/object";
-import { inject as controller } from "@ember/controller";
-import { inject as service } from "@ember/service";
+import classic from 'ember-classic-decorator';
+import { attribute, className, classNames, tagName, layout as templateLayout } from '@ember-decorators/component';
+import { observes as watcher, on } from '@ember-decorators/object';
+import { inject as controller } from '@ember/controller';
+import { inject as service } from '@ember/service';
 
 import {
   filter,
@@ -14,41 +14,41 @@ import {
   equal,
   gt,
   alias,
-} from "@ember/object/computed";
+} from '@ember/object/computed';
 
-import { get, set, action, computed } from "@ember/object";
-import layout from "components/templates/foo";
-import { someActionUtil } from "some/action/util";
-import NUMERIC_CONSTANT from "constants/numbers";
+import { get, set, action, computed } from '@ember/object';
+import layout from 'components/templates/foo';
+import { someActionUtil } from 'some/action/util';
+import NUMERIC_CONSTANT from 'constants/numbers';
 
 @classic
-@tagName("div")
-@classNames("test-class", "custom-class")
+@tagName('div')
+@classNames('test-class', 'custom-class')
 class Foo extends EmberObject {
-  a = "";
+  a = '';
 
-  @service("store")
+  @service('store')
   b;
 
-  @controller("abc")
+  @controller('abc')
   myController;
 
-  @watcher("xyz")
+  @watcher('xyz')
   observedProp() {
-    return "observed";
+    return 'observed';
   }
 
-  @on("click")
+  @on('click')
   event() {
-    return "abc";
+    return 'abc';
   }
 
-  @computedMap("chores", function(chore, index) {
-    return chore.toUpperCase() + "!";
+  @computedMap('chores', function(chore, index) {
+    return chore.toUpperCase() + '!';
   })
   excitingChores;
 
-  @filter("chores", function(chore, index, array) {
+  @filter('chores', function(chore, index, array) {
     return !chore.done;
   })
   remainingChores;
@@ -81,20 +81,20 @@ class Foo extends EmberObject {
 
 @classic
 class Comp extends EmberObject {
-  @computed("a", "c")
-  @className("enabled", "disabled")
+  @computed('a', 'c')
+  @className('enabled', 'disabled')
   get isEnabled() {
     return false;
   }
 
-  @className("b", "c")
+  @className('b', 'c')
   a = true;
 
-  @className("d")
-  c = "";
+  @className('d')
+  c = '';
 
-  @attribute("href")
-  customHref = "http://emberjs.com";
+  @attribute('href')
+  customHref = 'http://emberjs.com';
 }
 
 @classic
@@ -105,16 +105,15 @@ class Foo extends EmberObject {
   /**
   Computed fullname
   */
-  @(computed("firstName", "lastName").readOnly())
+  @(computed('firstName', 'lastName').readOnly())
   get fullName() {
-    return super.fullName &&
-    `${this.get("firstName")} ${this.get("lastName")}`;
+    return super.fullName && `${this.get('firstName')} ${this.get('lastName')}`;
   }
 
   set fullName(value) {
     let [firstName, lastName] = value.split(/\s+/);
-    this.set("firstName", firstName);
-    this.set("lastName", lastName);
+    this.set('firstName', firstName);
+    this.set('lastName', lastName);
     return value;
   }
 
@@ -126,27 +125,25 @@ class Foo extends EmberObject {
     if (desc) {
       return desc;
     }
-    return `${this.get(
-      "fullName"
-    )}; Age: ${this.get("age")}; Country: ${this.get("country")}`;
+    return `${this.get('fullName')}; Age: ${this.get('age')}; Country: ${this.get('country')}`;
   }
 
   /**
    * Fname
    */
-  @alias("firstName")
+  @alias('firstName')
   fName;
 
   /**
    * Fname1
    */
-  @alias("firstName")
+  @alias('firstName')
   fName1;
 
   /**
    * Fname2
    */
-  @(computed("firstName", "lastName").readOnly())
+  @(computed('firstName', 'lastName').readOnly())
   get fName2() {
     return true;
   }
@@ -154,7 +151,7 @@ class Foo extends EmberObject {
   /**
    * Fname3
    */
-  @(computed("firstName", "lastName").volatile())
+  @(computed('firstName', 'lastName').volatile())
   get fName3() {
     return true;
   }
@@ -162,43 +159,43 @@ class Foo extends EmberObject {
   /**
    * Lname
    */
-  @(alias("firstName", "lastName").readOnly())
+  @(alias('firstName', 'lastName').readOnly())
   lName;
 
   /**
    * Lname1
    */
-  @add("description", "lastName")
+  @add('description', 'lastName')
   lName1;
 
   /**
    * Lname2
    */
-  @readOnly("description")
+  @readOnly('description')
   lName2;
 
   /**
    * Lname3
    */
-  @reads("description", "lastName")
+  @reads('description', 'lastName')
   lName3;
 
   /**
    * Lname4
    */
-  @enoWay("description", "lastName")
+  @enoWay('description', 'lastName')
   lName4;
 
   /**
    * Lname5
    */
-  @(add("description", "lastName").readOnly())
+  @(add('description', 'lastName').readOnly())
   lName5;
 
-  @(equal("limit", NUMERIC_CONSTANT.LIMIT).readOnly())
+  @(equal('limit', NUMERIC_CONSTANT.LIMIT).readOnly())
   isEqualToLimit;
 
-  @(gt("limit", NUMERIC_CONSTANT).readOnly())
+  @(gt('limit', NUMERIC_CONSTANT).readOnly())
   isGreaterThanLimit;
 }
 

@@ -7,32 +7,32 @@ import {
   oneWay as enoWay,
   sum as add,
   map as computedMap,
-  filter
-} from "@ember/object/computed";
-import { get, set, observer as watcher, computed } from "@ember/object";
-import { inject as controller } from "@ember/controller";
-import { inject as service } from "@ember/service";
-import { on } from "@ember/object/evented";
-import layout from "components/templates/foo";
-import { someActionUtil } from "some/action/util";
-import NUMERIC_CONSTANT from "constants/numbers";
+  filter,
+} from '@ember/object/computed';
+import { get, set, observer as watcher, computed } from '@ember/object';
+import { inject as controller } from '@ember/controller';
+import { inject as service } from '@ember/service';
+import { on } from '@ember/object/evented';
+import layout from 'components/templates/foo';
+import { someActionUtil } from 'some/action/util';
+import NUMERIC_CONSTANT from 'constants/numbers';
 
 const Foo = EmberObject.extend({
-  tagName: "div",
-  classNames: ["test-class", "custom-class"],
-  a: "",
-  b: service("store"),
-  myController: controller("abc"),
-  observedProp: watcher("xyz", function() {
-    return "observed";
+  tagName: 'div',
+  classNames: ['test-class', 'custom-class'],
+  a: '',
+  b: service('store'),
+  myController: controller('abc'),
+  observedProp: watcher('xyz', function() {
+    return 'observed';
   }),
-  event: on("click", function() {
-    return "abc";
+  event: on('click', function() {
+    return 'abc';
   }),
-  excitingChores: computedMap("chores", function(chore, index) {
-    return chore.toUpperCase() + "!";
+  excitingChores: computedMap('chores', function(chore, index) {
+    return chore.toUpperCase() + '!';
   }),
-  remainingChores: filter("chores", function(chore, index, array) {
+  remainingChores: filter('chores', function(chore, index, array) {
     return !chore.done;
   }),
 
@@ -45,20 +45,20 @@ const Foo = EmberObject.extend({
     baz() {
       this._super(...arguments);
     },
-    biz() {}
-  }
+    biz() {},
+  },
 });
 
 var comp = EmberObject.extend({
-  classNameBindings: ["isEnabled:enabled:disabled", "a:b:c", "c:d"],
-  isEnabled: computed("a", "c", function() {
+  classNameBindings: ['isEnabled:enabled:disabled', 'a:b:c', 'c:d'],
+  isEnabled: computed('a', 'c', function() {
     return false;
   }),
   a: true,
-  c: "",
-  attributeBindings: ["customHref:href"],
+  c: '',
+  attributeBindings: ['customHref:href'],
 
-  customHref: "http://emberjs.com"
+  customHref: 'http://emberjs.com',
 });
 
 const Foo = EmberObject.extend({
@@ -68,31 +68,26 @@ const Foo = EmberObject.extend({
   /**
   Computed fullname
   */
-  fullName: computed("firstName", "lastName", {
+  fullName: computed('firstName', 'lastName', {
     get(key) {
-      return (
-        this._super(...arguments) &&
-        `${this.get("firstName")} ${this.get("lastName")}`
-      );
+      return this._super(...arguments) && `${this.get('firstName')} ${this.get('lastName')}`;
     },
     set(key, value) {
       let [firstName, lastName] = value.split(/\s+/);
-      this.set("firstName", firstName);
-      this.set("lastName", lastName);
+      this.set('firstName', firstName);
+      this.set('lastName', lastName);
       return value;
-    }
+    },
   }).readOnly(),
   /**
   Computed description
   */
-  description: computed("fullName", "age", "country", function() {
+  description: computed('fullName', 'age', 'country', function() {
     const desc = this._super(...arguments);
     if (desc) {
       return desc;
     }
-    return `${this.get(
-      "fullName"
-    )}; Age: ${this.get("age")}; Country: ${this.get("country")}`;
+    return `${this.get('fullName')}; Age: ${this.get('age')}; Country: ${this.get('country')}`;
   })
     .volatile()
     .readOnly(),
@@ -100,62 +95,62 @@ const Foo = EmberObject.extend({
   /**
    * Fname
    */
-  fName: alias("firstName"),
+  fName: alias('firstName'),
 
   /**
    * Fname1
    */
-  fName1: alias("firstName"),
+  fName1: alias('firstName'),
 
   /**
    * Fname2
    */
-  fName2: computed("firstName", "lastName", function() {
+  fName2: computed('firstName', 'lastName', function() {
     return true;
   }).readOnly(),
 
   /**
    * Fname3
    */
-  fName3: computed("firstName", "lastName", function() {
+  fName3: computed('firstName', 'lastName', function() {
     return true;
   }).volatile(),
 
   /**
    * Lname
    */
-  lName: alias("firstName", "lastName").readOnly(),
+  lName: alias('firstName', 'lastName').readOnly(),
 
   /**
    * Lname1
    */
-  lName1: add("description", "lastName"),
+  lName1: add('description', 'lastName'),
 
   /**
    * Lname2
    */
-  lName2: readOnly("description"),
+  lName2: readOnly('description'),
 
   /**
    * Lname3
    */
-  lName3: reads("description", "lastName"),
+  lName3: reads('description', 'lastName'),
 
   /**
    * Lname4
    */
-  lName4: enoWay("description", "lastName"),
+  lName4: enoWay('description', 'lastName'),
 
   /**
    * Lname5
    */
-  lName5: add("description", "lastName").readOnly(),
+  lName5: add('description', 'lastName').readOnly(),
 
-  isEqualToLimit: equal("limit", NUMERIC_CONSTANT.LIMIT).readOnly(),
+  isEqualToLimit: equal('limit', NUMERIC_CONSTANT.LIMIT).readOnly(),
 
-  isGreaterThanLimit: gt("limit", NUMERIC_CONSTANT).readOnly()
+  isGreaterThanLimit: gt('limit', NUMERIC_CONSTANT).readOnly(),
 });
 
 const Foo = EmberObject.extend({
-  layout
+  layout,
 });

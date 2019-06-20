@@ -1,4 +1,4 @@
-import classic from "ember-classic-decorator";
+import classic from 'ember-classic-decorator';
 
 /**
  * Program comments

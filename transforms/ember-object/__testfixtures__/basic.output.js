@@ -1,4 +1,4 @@
-import classic from "ember-classic-decorator";
+import classic from 'ember-classic-decorator';
 
 /**
  * Program comments
@@ -8,11 +8,11 @@ class Foo extends Test.extend(MyMixin) {
   /**
    * Property comments
    */
-  prop = "defaultValue";
+  prop = 'defaultValue';
 
   boolProp = true;
   numProp = 123;
-  [MY_VAL] = "val";
+  [MY_VAL] = 'val';
   queryParams = {};
   someVal = someVal;
 

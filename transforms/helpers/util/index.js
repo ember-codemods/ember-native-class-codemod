@@ -1,149 +1,149 @@
-const LAYOUT_DECORATOR_NAME = "layout";
-const LAYOUT_DECORATOR_LOCAL_NAME = "templateLayout";
+const LAYOUT_DECORATOR_NAME = 'layout';
+const LAYOUT_DECORATOR_LOCAL_NAME = 'templateLayout';
 
 const DECORATOR_PATHS = {
-  "@ember/object": {
+  '@ember/object': {
     importPropDecoratorMap: {
-      observer: "observes",
-      computed: "computed"
+      observer: 'observes',
+      computed: 'computed',
     },
-    decoratorPath: "@ember/object"
+    decoratorPath: '@ember/object',
   },
-  "@ember/object/evented": {
+  '@ember/object/evented': {
     importPropDecoratorMap: {
-      on: "on"
+      on: 'on',
     },
-    decoratorPath: "@ember-decorators/object"
+    decoratorPath: '@ember-decorators/object',
   },
-  "@ember/controller": {
+  '@ember/controller': {
     importPropDecoratorMap: {
-      inject: "inject"
+      inject: 'inject',
     },
-    decoratorPath: "@ember/controller"
+    decoratorPath: '@ember/controller',
   },
-  "@ember/service": {
+  '@ember/service': {
     importPropDecoratorMap: {
-      inject: "inject"
+      inject: 'inject',
     },
-    decoratorPath: "@ember/service"
+    decoratorPath: '@ember/service',
   },
-  "@ember/object/computed": {
-    decoratorPath: "@ember/object/computed"
-  }
+  '@ember/object/computed': {
+    decoratorPath: '@ember/object/computed',
+  },
 };
 
 const DECORATOR_PATH_OVERRIDES = {
-  observes: "@ember-decorators/object"
+  observes: '@ember-decorators/object',
 };
 
 const EMBER_DECORATOR_SPECIFIERS = {
-  "@ember/object": ["action"],
-  "@ember-decorators/object": ["off", "on", "unobserves"],
-  "@ember-decorators/component": [
-    "attribute",
-    "className",
-    "classNames",
+  '@ember/object': ['action'],
+  '@ember-decorators/object': ['off', 'on', 'unobserves'],
+  '@ember-decorators/component': [
+    'attribute',
+    'className',
+    'classNames',
     LAYOUT_DECORATOR_NAME,
-    "tagName",
-    LAYOUT_DECORATOR_LOCAL_NAME
-  ]
+    'tagName',
+    LAYOUT_DECORATOR_LOCAL_NAME,
+  ],
 };
 
-const METHOD_DECORATORS = ["action", "on", "observer"];
+const METHOD_DECORATORS = ['action', 'on', 'observer'];
 
 const ACTION_SUPER_EXPRESSION_COMMENT = [
-  " TODO: This call to super is within an action, and has to refer to the parent",
+  ' TODO: This call to super is within an action, and has to refer to the parent',
   " class's actions to be safe. This should be refactored to call a normal method",
-  " on the parent class. If the parent class has not been converted to native",
-  " classes, it may need to be refactored as well. See",
-  " https: //github.com/scalvert/ember-es6-class-codemod/blob/master/README.md",
-  " for more details."
+  ' on the parent class. If the parent class has not been converted to native',
+  ' classes, it may need to be refactored as well. See',
+  ' https: //github.com/scalvert/ember-es6-class-codemod/blob/master/README.md',
+  ' for more details.',
 ];
 
 const LIFECYCLE_HOOKS = [
   // Methods
-  "$",
-  "addObserver",
-  "cacheFor",
-  "decrementProperty",
-  "destroy",
-  "didReceiveAttrs",
-  "didRender",
-  "didUpdate",
-  "didUpdateAttrs",
-  "get",
-  "getProperties",
-  "getWithDefault",
-  "has",
-  "incrementProperty",
-  "init",
-  "notifyPropertyChange",
-  "off",
-  "on",
-  "one",
-  "readDOMAttr",
-  "removeObserver",
-  "rerender",
-  "send",
-  "set",
-  "setProperties",
-  "toString",
-  "toggleProperty",
-  "trigger",
-  "willDestroy",
-  "willRender",
-  "willUpdate",
+  '$',
+  'addObserver',
+  'cacheFor',
+  'decrementProperty',
+  'destroy',
+  'didReceiveAttrs',
+  'didRender',
+  'didUpdate',
+  'didUpdateAttrs',
+  'get',
+  'getProperties',
+  'getWithDefault',
+  'has',
+  'incrementProperty',
+  'init',
+  'notifyPropertyChange',
+  'off',
+  'on',
+  'one',
+  'readDOMAttr',
+  'removeObserver',
+  'rerender',
+  'send',
+  'set',
+  'setProperties',
+  'toString',
+  'toggleProperty',
+  'trigger',
+  'willDestroy',
+  'willRender',
+  'willUpdate',
 
   // Events
-  "didInsertElement",
-  "didReceiveAttrs",
-  "didRender",
-  "didUpdate",
-  "didUpdateAttrs",
-  "willClearRender",
-  "willDestroyElement",
-  "willInsertElement",
-  "willRender",
-  "willUpdate",
+  'didInsertElement',
+  'didReceiveAttrs',
+  'didRender',
+  'didUpdate',
+  'didUpdateAttrs',
+  'willClearRender',
+  'willDestroyElement',
+  'willInsertElement',
+  'willRender',
+  'willUpdate',
 
   // Touch events
-  "touchStart",
-  "touchMove",
-  "touchEnd",
-  "touchCancel",
+  'touchStart',
+  'touchMove',
+  'touchEnd',
+  'touchCancel',
 
   // Keyboard events
-  "keyDown",
-  "keyUp",
-  "keyPress",
+  'keyDown',
+  'keyUp',
+  'keyPress',
 
   // Mouse events
-  "mouseDown",
-  "mouseUp",
-  "contextMenu",
-  "click",
-  "doubleClick",
-  "mouseMove",
-  "focusIn",
-  "focusOut",
-  "mouseEnter",
-  "mouseLeave",
+  'mouseDown',
+  'mouseUp',
+  'contextMenu',
+  'click',
+  'doubleClick',
+  'mouseMove',
+  'focusIn',
+  'focusOut',
+  'mouseEnter',
+  'mouseLeave',
 
   // Form events
-  "submit",
-  "change",
-  "focusIn",
-  "focusOut",
-  "input",
+  'submit',
+  'change',
+  'focusIn',
+  'focusOut',
+  'input',
 
   // HTML5 drag and drop events
-  "dragStart",
-  "drag",
-  "dragEnter",
-  "dragLeave",
-  "dragOver",
-  "dragEnd",
-  "drop"
+  'dragStart',
+  'drag',
+  'dragEnter',
+  'dragLeave',
+  'dragOver',
+  'dragEnd',
+  'drop',
 ];
 
 /**
@@ -154,8 +154,8 @@ const LIFECYCLE_HOOKS = [
  * @returns {Any}
  */
 function get(obj, path) {
-  return path.split(".").reduce(function(currentObject, pathSegment) {
-    return typeof currentObject == "undefined" || currentObject === null
+  return path.split('.').reduce(function(currentObject, pathSegment) {
+    return typeof currentObject == 'undefined' || currentObject === null
       ? currentObject
       : currentObject[pathSegment];
   }, obj);
@@ -183,7 +183,7 @@ function getFirstDeclaration(j, root) {
  * @returns {String}
  */
 function getPropName(prop) {
-  return get(prop, "key.name");
+  return get(prop, 'key.name');
 }
 
 /**
@@ -193,7 +193,7 @@ function getPropName(prop) {
  * @returns {String}
  */
 function getPropType(prop) {
-  return get(prop, "value.type");
+  return get(prop, 'value.type');
 }
 
 /**
@@ -203,10 +203,7 @@ function getPropType(prop) {
  * @returns {String}
  */
 function getPropCalleeName(prop) {
-  return (
-    get(prop, "value.callee.name") ||
-    get(prop, "value.callee.object.callee.name")
-  );
+  return get(prop, 'value.callee.name') || get(prop, 'value.callee.object.callee.name');
 }
 
 /**
@@ -220,8 +217,7 @@ function shouldSetValue(prop) {
     return true;
   }
   return prop.decoratorNames.every(
-    decoratorName =>
-      decoratorName === "className" || decoratorName === "attribute"
+    decoratorName => decoratorName === 'className' || decoratorName === 'attribute'
   );
 }
 
@@ -232,7 +228,7 @@ function shouldSetValue(prop) {
  * @returns {String}
  */
 function capitalizeFirstLetter(name) {
-  return name ? name.charAt(0).toUpperCase() + name.slice(1) : "";
+  return name ? name.charAt(0).toUpperCase() + name.slice(1) : '';
 }
 
 /**
@@ -241,7 +237,7 @@ function capitalizeFirstLetter(name) {
  * @param {String} word
  * @returns {Boolean}
  */
-function startsWithUpperCaseLetter(word = "") {
+function startsWithUpperCaseLetter(word = '') {
   return !!word && word.charAt(0) !== word.charAt(0).toLowerCase();
 }
 
@@ -251,9 +247,7 @@ function startsWithUpperCaseLetter(word = "") {
  * @returns boolean
  */
 function isClassDecoratorProp(propName) {
-  return (
-    propName === "tagName" || propName === "classNames" || propName === "layout"
-  );
+  return propName === 'tagName' || propName === 'classNames' || propName === 'layout';
 }
 
 /**
@@ -263,8 +257,8 @@ function isClassDecoratorProp(propName) {
  */
 function getModifier(calleeObject) {
   return {
-    prop: get(calleeObject, "callee.property"),
-    args: get(calleeObject, "arguments")
+    prop: get(calleeObject, 'callee.property'),
+    args: get(calleeObject, 'arguments'),
   };
 }
 
@@ -286,5 +280,5 @@ module.exports = {
   LIFECYCLE_HOOKS,
   METHOD_DECORATORS,
   shouldSetValue,
-  startsWithUpperCaseLetter
+  startsWithUpperCaseLetter,
 };

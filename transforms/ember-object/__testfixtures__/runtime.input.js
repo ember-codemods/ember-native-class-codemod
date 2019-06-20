@@ -1,6 +1,6 @@
-import RuntimeInput from "common/runtime/input";
-import { alias } from "@ember/object/computed";
-import { computed } from "@ember/object";
+import RuntimeInput from 'common/runtime/input';
+import { alias } from '@ember/object/computed';
+import { computed } from '@ember/object';
 
 /**
  * Program comments
@@ -9,20 +9,20 @@ export default RuntimeInput.extend(MyMixin, {
   /**
    * Property comments
    */
-  prop: "defaultValue",
+  prop: 'defaultValue',
   boolProp: true,
   numProp: 123,
-  [MY_VAL]: "val",
+  [MY_VAL]: 'val',
   queryParams: {},
 
   unobservedProp: null,
   offProp: null,
 
-  numPlusOne: computed("numProp", function() {
-    return this.get("numProp") + 1;
+  numPlusOne: computed('numProp', function() {
+    return this.get('numProp') + 1;
   }),
 
-  numPlusPlus: alias("numPlusOne"),
+  numPlusPlus: alias('numPlusOne'),
 
   computedMacro: customMacro(),
 
@@ -58,6 +58,6 @@ export default RuntimeInput.extend(MyMixin, {
 
     overriddenActionMethod() {
       this._super(...arguments) && this.boolProp;
-    }
-  }
+    },
+  },
 });

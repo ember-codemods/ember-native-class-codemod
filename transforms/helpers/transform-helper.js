@@ -4,14 +4,14 @@ const {
   LAYOUT_DECORATOR_NAME,
   get,
   getPropName,
-  shouldSetValue
-} = require("./util");
+  shouldSetValue,
+} = require('./util');
 const {
   withDecorators,
   createClassDecorator,
   createInstancePropDecorators,
-  createIdentifierDecorators
-} = require("./decorator-helper");
+  createIdentifierDecorators,
+} = require('./decorator-helper');
 
 /**
  * Copy comments `from` => `to`
@@ -50,7 +50,7 @@ function instancePropsToExpressions(j, instanceProps) {
     withComments(
       j.expressionStatement(
         j.assignmentExpression(
-          "=",
+          '=',
           j.memberExpression(j.thisExpression(), instanceProp.key),
           instanceProp.value
         )
@@ -79,17 +79,15 @@ function createSuperExpressionStatement(j) {
  * @returns {MethodDefinition}
  */
 function replaceSuperExpressions(j, methodDefinition, functionProp) {
-  const replaceWithUndefined = functionProp.hasRuntimeData
-    ? !functionProp.isOverridden
-    : false;
+  const replaceWithUndefined = functionProp.hasRuntimeData ? !functionProp.isOverridden : false;
   const superExprs = j(methodDefinition).find(j.CallExpression, {
     callee: {
-      type: "MemberExpression",
+      type: 'MemberExpression',
       property: {
-        type: "Identifier",
-        name: "_super"
-      }
-    }
+        type: 'Identifier',
+        name: '_super',
+      },
+    },
   });
 
   if (!superExprs.length) {
@@ -97,27 +95,24 @@ function replaceSuperExpressions(j, methodDefinition, functionProp) {
   }
   superExprs.forEach(superExpr => {
     if (replaceWithUndefined) {
-      j(superExpr).replaceWith(j.identifier("undefined"));
+      j(superExpr).replaceWith(j.identifier('undefined'));
     } else {
       let superMethodCall;
-      const superMethodArgs = get(superExpr, "value.arguments") || [];
+      const superMethodArgs = get(superExpr, 'value.arguments') || [];
       if (functionProp.isComputed) {
         superMethodCall = j.memberExpression(j.super(), functionProp.key);
       } else if (functionProp.isAction) {
         superMethodCall = j.callExpression(
           j.memberExpression(
             j.memberExpression(
-              j.memberExpression(j.super(), j.identifier("actions")),
+              j.memberExpression(j.super(), j.identifier('actions')),
               methodDefinition.key
             ),
-            j.identifier("call")
+            j.identifier('call')
           ),
           [].concat(j.thisExpression(), ...superMethodArgs)
         );
-        superMethodCall.comments = createLineComments(
-          j,
-          ACTION_SUPER_EXPRESSION_COMMENT
-        );
+        superMethodCall.comments = createLineComments(j, ACTION_SUPER_EXPRESSION_COMMENT);
       } else {
         superMethodCall = j.callExpression(
           j.memberExpression(j.super(), methodDefinition.key),
@@ -142,7 +137,7 @@ function replaceSuperExpressions(j, methodDefinition, functionProp) {
  * @returns {MethodDefinition}
  */
 function createMethodProp(j, functionProp, decorators = []) {
-  const propKind = functionProp.kind === "init" ? "method" : functionProp.kind;
+  const propKind = functionProp.kind === 'init' ? 'method' : functionProp.kind;
 
   return withDecorators(
     withComments(
@@ -168,18 +163,16 @@ function createConstructor(j, instanceProps = []) {
   if (instanceProps.length) {
     return [
       j.methodDefinition(
-        "constructor",
-        j.identifier("constructor"),
+        'constructor',
+        j.identifier('constructor'),
         j.functionExpression(
           null,
           [],
           j.blockStatement(
-            [createSuperExpressionStatement(j)].concat(
-              instancePropsToExpressions(j, instanceProps)
-            )
+            [createSuperExpressionStatement(j)].concat(instancePropsToExpressions(j, instanceProps))
           )
         )
-      )
+      ),
     ];
   }
   return [];
@@ -247,16 +240,16 @@ function createClassProp(j, instanceProp, decorators = []) {
 function convertIdentifierActionToMethod(j, idAction, decorators = []) {
   const returnBlock = j.blockStatement([
     j.returnStatement(
-      j.callExpression(
-        j.memberExpression(idAction.value, j.identifier("call")),
-        [j.thisExpression(), j.spreadElement(j.identifier("arguments"))]
-      )
-    )
+      j.callExpression(j.memberExpression(idAction.value, j.identifier('call')), [
+        j.thisExpression(),
+        j.spreadElement(j.identifier('arguments')),
+      ])
+    ),
   ]);
   const expr = j.functionExpression(null, [], returnBlock);
 
   return withDecorators(
-    withComments(j.methodDefinition("method", idAction.key, expr), idAction),
+    withComments(j.methodDefinition('method', idAction.key, expr), idAction),
     decorators
   );
 }
@@ -283,11 +276,11 @@ function convertIdentifierActionToMethod(j, idAction, decorators = []) {
  * @returns {MethodDefinition[]}
  */
 function createActionDecoratedProps(j, actionsProp) {
-  const actionProps = get(actionsProp, "value.properties");
-  const overriddenActions = get(actionsProp, "overriddenActions") || [];
+  const actionProps = get(actionsProp, 'value.properties');
+  const overriddenActions = get(actionsProp, 'overriddenActions') || [];
   const actionDecorators = createIdentifierDecorators(j);
   return actionProps.map(actionProp => {
-    if (get(actionProp, "value.type") === "Identifier") {
+    if (get(actionProp, 'value.type') === 'Identifier') {
       return convertIdentifierActionToMethod(j, actionProp, actionDecorators);
     } else {
       actionProp.isAction = true;
@@ -312,25 +305,19 @@ function createCallExpressionProp(j, callExprProp) {
     !callExprProp.hasMapDecorator &&
     !callExprProp.hasFilterDecorator &&
     !callExprProp.hasWrapComputedDecorator
-      ? get(callExprLastArg, "type")
-      : "";
+      ? get(callExprLastArg, 'type')
+      : '';
 
-  if (lastArgType === "FunctionExpression") {
+  if (lastArgType === 'FunctionExpression') {
     const functionExpr = {
       isComputed: true,
       kind: callExprProp.kind,
       key: callExprProp.key,
       value: callExprLastArg,
-      comments: callExprProp.comments
+      comments: callExprProp.comments,
     };
-    return [
-      createMethodProp(
-        j,
-        functionExpr,
-        createInstancePropDecorators(j, callExprProp)
-      )
-    ];
-  } else if (lastArgType === "ObjectExpression") {
+    return [createMethodProp(j, functionExpr, createInstancePropDecorators(j, callExprProp))];
+  } else if (lastArgType === 'ObjectExpression') {
     const callExprMethods = callExprLastArg.properties.map(callExprFunction => {
       callExprFunction.isComputed = true;
       callExprFunction.kind = getPropName(callExprFunction);
@@ -357,10 +344,10 @@ function createCallExpressionProp(j, callExprProp) {
  * @param {Expression[]} mixins
  * @returns {Identifier}
  */
-function createSuperClassExpression(j, superClassName = "", mixins = []) {
+function createSuperClassExpression(j, superClassName = '', mixins = []) {
   if (mixins.length > 0) {
     return j.callExpression(
-      j.memberExpression(j.identifier(superClassName), j.identifier("extend")),
+      j.memberExpression(j.identifier(superClassName), j.identifier('extend')),
       mixins
     );
   }
@@ -383,7 +370,7 @@ function createClass(
   j,
   className,
   { instanceProps = [] } = {},
-  superClassName = "",
+  superClassName = '',
   mixins = [],
   options
 ) {
@@ -391,17 +378,17 @@ function createClass(
   let classDecorators = [];
 
   if (options.classicDecorator) {
-    classDecorators.push(j.decorator(j.identifier("classic")));
+    classDecorators.push(j.decorator(j.identifier('classic')));
   }
 
   instanceProps.forEach(prop => {
     if (prop.isClassDecorator) {
       classDecorators.push(createClassDecorator(j, prop));
-    } else if (prop.type === "FunctionExpression") {
+    } else if (prop.type === 'FunctionExpression') {
       classBody.push(createMethodProp(j, prop));
     } else if (prop.isCallExpression) {
       classBody = classBody.concat(createCallExpressionProp(j, prop));
-    } else if (prop.name === "actions") {
+    } else if (prop.name === 'actions') {
       classBody = classBody.concat(createActionDecoratedProps(j, prop));
     } else {
       classBody.push(createClassProp(j, prop));
@@ -437,22 +424,13 @@ function createImportDeclaration(j, specifiers, path) {
  * @param {String[]} decoratorsToImport
  * @returns {ImportSpecifier[]}
  */
-function createEmberDecoratorSpecifiers(
-  j,
-  pathSpecifiers = [],
-  decoratorsToImport = []
-) {
+function createEmberDecoratorSpecifiers(j, pathSpecifiers = [], decoratorsToImport = []) {
   return pathSpecifiers
     .filter(specifier => decoratorsToImport.includes(specifier))
     .map(specifier => {
       const importedSpecifier =
-        specifier === LAYOUT_DECORATOR_LOCAL_NAME
-          ? LAYOUT_DECORATOR_NAME
-          : specifier;
-      return j.importSpecifier(
-        j.identifier(importedSpecifier),
-        j.identifier(specifier)
-      );
+        specifier === LAYOUT_DECORATOR_LOCAL_NAME ? LAYOUT_DECORATOR_NAME : specifier;
+      return j.importSpecifier(j.identifier(importedSpecifier), j.identifier(specifier));
     });
 }
 
@@ -463,5 +441,5 @@ module.exports = {
   createConstructor,
   createClass,
   createImportDeclaration,
-  createEmberDecoratorSpecifiers
+  createEmberDecoratorSpecifiers,
 };

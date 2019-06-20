@@ -1,20 +1,20 @@
-const minimatch = require("minimatch");
-const { LIFECYCLE_HOOKS, get, getPropName } = require("./util");
+const minimatch = require('minimatch');
+const { LIFECYCLE_HOOKS, get, getPropName } = require('./util');
 
-const UNSUPPORTED_PROP_NAMES = ["actions", "layout"];
+const UNSUPPORTED_PROP_NAMES = ['actions', 'layout'];
 
 const TYPE_PATTERNS = {
-  service: "**/services/**/*.js",
-  services: "**/services/**/*.js",
-  controller: "**/controllers/**/*.js",
-  controllers: "**/controllers/**/*.js",
-  component: "**/components/**/*.js",
-  components: "**/components/**/*.js",
-  route: "**/routes/**/*.js",
-  routes: "**/routes/**/*.js"
+  service: '**/services/**/*.js',
+  services: '**/services/**/*.js',
+  controller: '**/controllers/**/*.js',
+  controllers: '**/controllers/**/*.js',
+  component: '**/components/**/*.js',
+  components: '**/components/**/*.js',
+  route: '**/routes/**/*.js',
+  routes: '**/routes/**/*.js',
 };
 
-const TEST_FILE_PATTERN = "**/*-test.js";
+const TEST_FILE_PATTERN = '**/*-test.js';
 
 /**
  * Returns true if the specified file is a test file
@@ -56,13 +56,13 @@ function hasValidProps(
   const unsupportedPropNames = decorators ? [] : UNSUPPORTED_PROP_NAMES;
 
   return instanceProps.reduce((errors, instanceProp) => {
-    if (!classFields && instanceProp.type === "Literal") {
+    if (!classFields && instanceProp.type === 'Literal') {
       errors.push(`[${instanceProp.name}]: Need option '--class-fields=true'`);
     }
 
     if (
-      instanceProp.type === "ObjectExpression" &&
-      !["actions", "queryParams"].includes(instanceProp.name)
+      instanceProp.type === 'ObjectExpression' &&
+      !['actions', 'queryParams'].includes(instanceProp.name)
     ) {
       errors.push(
         `[${instanceProp.name}]: Transform not supported - value is of type object. For more details: eslint-plugin-ember/avoid-leaking-state-in-ember-objects`
@@ -75,8 +75,7 @@ function hasValidProps(
     }
 
     if (
-      (!decorators &&
-        (instanceProp.hasDecorators || instanceProp.isClassDecorator)) ||
+      (!decorators && (instanceProp.hasDecorators || instanceProp.isClassDecorator)) ||
       unsupportedPropNames.includes(instanceProp.name) ||
       (instanceProp.isCallExpression && !instanceProp.hasDecorators)
     ) {
@@ -108,7 +107,7 @@ function hasValidProps(
  * @param {EOProp} actionsProp
  */
 function getLifecycleHookErrors(actionsProp) {
-  const actionProps = get(actionsProp, "value.properties");
+  const actionProps = get(actionsProp, 'value.properties');
   return actionProps.reduce((errors, actionProp) => {
     const actionName = getPropName(actionProp);
     if (actionName && LIFECYCLE_HOOKS.includes(actionName)) {
@@ -128,7 +127,7 @@ function getLifecycleHookErrors(actionsProp) {
  * @returns {Boolean}
  */
 function isExtendsMixin(j, eoCallExpression) {
-  return j(eoCallExpression).get("arguments").value.length > 1;
+  return j(eoCallExpression).get('arguments').value.length > 1;
 }
 
 /**
@@ -138,7 +137,7 @@ function isExtendsMixin(j, eoCallExpression) {
  * @param {EOProp} actionsProp
  */
 function getInfiniteLoopErrors(j, actionsProp) {
-  const actionProps = get(actionsProp, "value.properties");
+  const actionProps = get(actionsProp, 'value.properties');
   return actionProps.reduce((errors, actionProp) => {
     const actionName = getPropName(actionProp);
     if (actionName) {
@@ -147,15 +146,15 @@ function getInfiniteLoopErrors(j, actionsProp) {
       // Occurences of this.actionName()
       const actionCalls = functExpr.find(j.CallExpression, {
         callee: {
-          type: "MemberExpression",
+          type: 'MemberExpression',
           object: {
-            type: "ThisExpression"
+            type: 'ThisExpression',
           },
           property: {
-            type: "Identifier",
-            name: actionName
-          }
-        }
+            type: 'Identifier',
+            name: actionName,
+          },
+        },
       });
 
       // Occurences of this.get('actionName')() or get(this, 'actionName')()
