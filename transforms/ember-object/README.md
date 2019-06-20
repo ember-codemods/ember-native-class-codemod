@@ -4,12 +4,12 @@
 ## Usage
 
 ```
-npx ember-es6-class-codemod ember-object path/of/files/ or/some**/*glob.js
+npx ember-native-class-codemod ember-object path/of/files/ or/some**/*glob.js
 
 # or
 
-yarn global add ember-es6-class-codemod
-ember-es6-class-codemod ember-object path/of/files/ or/some**/*glob.js
+yarn global add ember-native-class-codemod
+ember-native-class-codemod ember-object path/of/files/ or/some**/*glob.js
 ```
 
 ## Input / Output
@@ -763,7 +763,7 @@ class Foo extends EmberObject {
     // class's actions to be safe. This should be refactored to call a normal method
     // on the parent class. If the parent class has not been converted to native
     // classes, it may need to be refactored as well. See
-    // https: //github.com/scalvert/ember-es6-class-codemod/blob/master/README.md
+    // https: //github.com/scalvert/ember-native-class-codemod/blob/master/README.md
     // for more details.
     super.actions.baz.call(this, ...arguments);
   }
@@ -1213,7 +1213,7 @@ export default class RuntimeInputEmberObject extends RuntimeInput.extend(MyMixin
     // class's actions to be safe. This should be refactored to call a normal method
     // on the parent class. If the parent class has not been converted to native
     // classes, it may need to be refactored as well. See
-    // https: //github.com/scalvert/ember-es6-class-codemod/blob/master/README.md
+    // https: //github.com/scalvert/ember-native-class-codemod/blob/master/README.md
     // for more details.
     super.actions.overriddenActionMethod.call(this, ...arguments) && this.boolProp;
   }

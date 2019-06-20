@@ -1,7 +1,7 @@
-# ember-es6-class-codemod
+# ember-native-class-codemod
 
-[![Build Status](https://travis-ci.org/ember-codemods/ember-es6-class-codemod.svg?branch=master)](https://travis-ci.org/ember-codemods/ember-es6-class-codemod)
-[![npm version](https://badge.fury.io/js/ember-es6-class-codemod.svg)](https://badge.fury.io/js/ember-es6-class-codemod)
+[![Build Status](https://travis-ci.org/ember-codemods/ember-native-class-codemod.svg?branch=master)](https://travis-ci.org/ember-codemods/ember-native-class-codemod)
+[![npm version](https://badge.fury.io/js/ember-native-class-codemod.svg)](https://badge.fury.io/js/ember-native-class-codemod)
 
 Codemods for transforming ember app code to native ES6 class syntax with decorators.
 
@@ -10,7 +10,7 @@ Codemods for transforming ember app code to native ES6 class syntax with decorat
 The Ember ES6 codemods can be run using the following command:
 
 ```
-npx ember-es6-class-codemod http://localhost:4200/path/to/server [OPTIONS] path/of/files/ or/some**/*glob.js
+npx ember-native-class-codemod http://localhost:4200/path/to/server [OPTIONS] path/of/files/ or/some**/*glob.js
 ```
 
 The codemods accept the following options:
