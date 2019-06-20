@@ -47,6 +47,7 @@ const execOpts = { cwd: inputDir, stderr: 'inherit' };
 
   try {
     await execa('diff', ['-rq', './app', '../output/app'], execOpts);
+    await execa('diff', ['-rq', './lib', '../output/lib'], execOpts);
   } catch (e) {
     console.error('codemod did not run successfully');
     console.log(e.stdout);

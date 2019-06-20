@@ -4,6 +4,7 @@
     "ember-addon"
   ],
   "dependencies": {
+    "ember-cli-babel": "*",
     "ember-cli-htmlbars": "*"
   }
 }
