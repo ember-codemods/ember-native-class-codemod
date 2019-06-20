@@ -31,7 +31,7 @@ const Foo = Test.extend(MyMixin, {
 
   anotherMethod() {
     this._super(...arguments);
-  }
+  },
 });
 
 const Foo = EmberObject.extend(MixinA, MixinB);

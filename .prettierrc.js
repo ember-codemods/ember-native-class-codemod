@@ -1,6 +1,7 @@
-"use strict";
+'use strict';
 
 module.exports = {
-  singleQuote: false,
-  trailingComma: "none"
+  singleQuote: true,
+  trailingComma: 'es5',
+  printWidth: 100,
 };

@@ -5,8 +5,8 @@ const {
   getModifier,
   isClassDecoratorProp,
   LAYOUT_DECORATOR_LOCAL_NAME,
-  LAYOUT_DECORATOR_NAME
-} = require("./util");
+  LAYOUT_DECORATOR_NAME,
+} = require('./util');
 
 /**
  * Ember Objet Property
@@ -22,19 +22,19 @@ class EOProp {
   }
 
   get value() {
-    return get(this._prop, "value");
+    return get(this._prop, 'value');
   }
 
   get kind() {
-    let kind = get(this._prop, "kind");
-    if (kind === "init" && this.hasDecorators && !this.hasMethodDecorator) {
-      kind = "get";
+    let kind = get(this._prop, 'kind');
+    if (kind === 'init' && this.hasDecorators && !this.hasMethodDecorator) {
+      kind = 'get';
     }
     return kind;
   }
 
   get key() {
-    return get(this._prop, "key");
+    return get(this._prop, 'key');
   }
 
   get name() {
@@ -46,7 +46,7 @@ class EOProp {
   }
 
   get calleeName() {
-    return get(this.calleeObject, "callee.name");
+    return get(this.calleeObject, 'callee.name');
   }
 
   get comments() {
@@ -62,10 +62,7 @@ class EOProp {
   }
 
   get classDecoratorName() {
-    if (
-      this.name === LAYOUT_DECORATOR_NAME &&
-      this.value.name === LAYOUT_DECORATOR_NAME
-    ) {
+    if (this.name === LAYOUT_DECORATOR_NAME && this.value.name === LAYOUT_DECORATOR_NAME) {
       return LAYOUT_DECORATOR_LOCAL_NAME;
     }
     return this.name;
@@ -80,7 +77,7 @@ class EOProp {
   }
 
   get isCallExpression() {
-    return this.type === "CallExpression";
+    return this.type === 'CallExpression';
   }
 
   get hasDecorators() {
@@ -88,7 +85,7 @@ class EOProp {
   }
 
   get callExprArgs() {
-    return get(this.calleeObject, "arguments") || [];
+    return get(this.calleeObject, 'arguments') || [];
   }
 
   get shouldRemoveLastArg() {
@@ -96,8 +93,7 @@ class EOProp {
 
     return (
       lastArg.length > 0 &&
-      (lastArg[0].type === "FunctionExpression" ||
-        lastArg[0].type === "ObjectExpression")
+      (lastArg[0].type === 'FunctionExpression' || lastArg[0].type === 'ObjectExpression')
     );
   }
 
@@ -106,15 +102,11 @@ class EOProp {
   }
 
   get hasVolatile() {
-    return this.modifiers.some(
-      modifier => get(modifier, "prop.name") === "volatile"
-    );
+    return this.modifiers.some(modifier => get(modifier, 'prop.name') === 'volatile');
   }
 
   get hasReadOnly() {
-    return this.modifiers.some(
-      modifier => get(modifier, "prop.name") === "readOnly"
-    );
+    return this.modifiers.some(modifier => get(modifier, 'prop.name') === 'readOnly');
   }
 
   get isVolatileReadOnly() {
@@ -122,35 +114,35 @@ class EOProp {
   }
 
   get isTagName() {
-    return this.name === "tagName";
+    return this.name === 'tagName';
   }
 
   get isClassNames() {
-    return this.name === "classNames";
+    return this.name === 'classNames';
   }
 
   get isAction() {
-    return this.name === "actions";
+    return this.name === 'actions';
   }
 
   get hasClassNameDecorator() {
-    return this.decoratorNames.includes("className");
+    return this.decoratorNames.includes('className');
   }
 
   get hasAttributeDecorator() {
-    return this.decoratorNames.includes("attribute");
+    return this.decoratorNames.includes('attribute');
   }
 
   get hasUnobservesDecorator() {
-    return this.decoratorNames.includes("unobserves");
+    return this.decoratorNames.includes('unobserves');
   }
 
   get hasOffDecorator() {
-    return this.decoratorNames.includes("off");
+    return this.decoratorNames.includes('off');
   }
 
   get hasWrapComputedDecorator() {
-    return this.decoratorNames.includes("wrapComputed");
+    return this.decoratorNames.includes('wrapComputed');
   }
 
   get hasRuntimeData() {
@@ -158,10 +150,10 @@ class EOProp {
   }
 
   setCallExpressionProps() {
-    let calleeObject = get(this._prop, "value");
+    let calleeObject = get(this._prop, 'value');
     const modifiers = [getModifier(calleeObject)];
-    while (get(calleeObject, "callee.type") === "MemberExpression") {
-      calleeObject = get(calleeObject, "callee.object");
+    while (get(calleeObject, 'callee.type') === 'MemberExpression') {
+      calleeObject = get(calleeObject, 'callee.object');
       modifiers.push(getModifier(calleeObject));
     }
     this.calleeObject = calleeObject;
@@ -172,16 +164,12 @@ class EOProp {
   setDecorators(importedDecoratedProps) {
     if (this.isCallExpression) {
       this.setCallExpressionProps();
-      const {
-        decoratorName,
-        isMethodDecorator,
-        isMetaDecorator,
-        importedName
-      } = importedDecoratedProps[this.calleeName] || {};
+      const { decoratorName, isMethodDecorator, isMetaDecorator, importedName } =
+        importedDecoratedProps[this.calleeName] || {};
       if (decoratorName) {
-        this.hasMapDecorator = importedName === "map";
-        this.hasFilterDecorator = importedName === "filter";
-        this.hasComputedDecorator = importedName === "computed";
+        this.hasMapDecorator = importedName === 'map';
+        this.hasFilterDecorator = importedName === 'filter';
+        this.hasComputedDecorator = importedName === 'computed';
         this.hasMethodDecorator = isMethodDecorator;
         this.hasMetaDecorator = isMetaDecorator;
         this.decoratorNames.push(decoratorName);
@@ -191,10 +179,10 @@ class EOProp {
 
   addBindingProps(attributeBindingsProps, classNameBindingsProps) {
     if (attributeBindingsProps[this.name]) {
-      this.decoratorNames.push("attribute");
+      this.decoratorNames.push('attribute');
       this.propList = attributeBindingsProps[this.name];
     } else if (classNameBindingsProps[this.name]) {
-      this.decoratorNames.push("className");
+      this.decoratorNames.push('className');
       this.propList = classNameBindingsProps[this.name];
     }
   }
@@ -207,27 +195,23 @@ class EOProp {
     overriddenActions = [],
     overriddenProperties = [],
     // ownProperties = [],
-    type = "",
-    unobservedProperties = {}
+    type = '',
+    unobservedProperties = {},
   }) {
     if (!type) {
       return;
     }
     const name = this.name;
     if (Object.keys(unobservedProperties).includes(name)) {
-      this.decoratorNames.push("unobserves");
-      this.decoratorArgs["unobserves"] = unobservedProperties[name];
+      this.decoratorNames.push('unobserves');
+      this.decoratorArgs['unobserves'] = unobservedProperties[name];
     }
     if (Object.keys(offProperties).includes(name)) {
-      this.decoratorNames.push("off");
-      this.decoratorArgs["off"] = offProperties[name];
+      this.decoratorNames.push('off');
+      this.decoratorArgs['off'] = offProperties[name];
     }
-    if (
-      computedProperties.includes(name) &&
-      !this.hasComputedDecorator &&
-      !this.hasMetaDecorator
-    ) {
-      this.decoratorNames.push("wrapComputed");
+    if (computedProperties.includes(name) && !this.hasComputedDecorator && !this.hasMetaDecorator) {
+      this.decoratorNames.push('wrapComputed');
     }
     if (this.isAction) {
       this.overriddenActions = overriddenActions;

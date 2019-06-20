@@ -1,23 +1,12 @@
-const path = require("path");
-const camelCase = require("camelcase");
-const {
-  capitalizeFirstLetter,
-  get,
-  startsWithUpperCaseLetter
-} = require("./util");
-const { getTelemetryFor } = require("./util/get-telemetry-for");
-const {
-  hasValidProps,
-  isFileOfType,
-  isTestFile
-} = require("./validation-helper");
-const { createClass, withComments } = require("./transform-helper");
-const {
-  createDecoratorImportDeclarations,
-  getImportedDecoratedProps
-} = require("./import-helper");
-const EOProp = require("./EOProp");
-const logger = require("./log-helper");
+const path = require('path');
+const camelCase = require('camelcase');
+const { capitalizeFirstLetter, get, startsWithUpperCaseLetter } = require('./util');
+const { getTelemetryFor } = require('./util/get-telemetry-for');
+const { hasValidProps, isFileOfType, isTestFile } = require('./validation-helper');
+const { createClass, withComments } = require('./transform-helper');
+const { createDecoratorImportDeclarations, getImportedDecoratedProps } = require('./import-helper');
+const EOProp = require('./EOProp');
+const logger = require('./log-helper');
 
 /**
  * Return the map of instance props and functions from Ember Object
@@ -32,13 +21,8 @@ const logger = require("./log-helper");
  * @param {ObjectExpression} emberObjectExpression
  * @returns {Object} Object of instance and function properties
  */
-function getEmberObjectProps(
-  j,
-  eoExpression,
-  importedDecoratedProps = {},
-  runtimeData = {}
-) {
-  const objProps = get(eoExpression, "properties") || [];
+function getEmberObjectProps(j, eoExpression, importedDecoratedProps = {}, runtimeData = {}) {
+  const objProps = get(eoExpression, 'properties') || [];
 
   const instanceProps = [];
   const attributeBindingsProps = {};
@@ -46,16 +30,10 @@ function getEmberObjectProps(
 
   objProps.forEach(objProp => {
     const prop = new EOProp(objProp);
-    if (prop.name === "classNameBindings") {
-      Object.assign(
-        classNameBindingsProps,
-        parseBindingProps(prop.value.elements)
-      );
-    } else if (prop.name === "attributeBindings") {
-      Object.assign(
-        attributeBindingsProps,
-        parseBindingProps(prop.value.elements)
-      );
+    if (prop.name === 'classNameBindings') {
+      Object.assign(classNameBindingsProps, parseBindingProps(prop.value.elements));
+    } else if (prop.name === 'attributeBindings') {
+      Object.assign(attributeBindingsProps, parseBindingProps(prop.value.elements));
     } else {
       prop.setDecorators(importedDecoratedProps);
       prop.setRuntimeData(runtimeData);
@@ -65,14 +43,11 @@ function getEmberObjectProps(
 
   // Assign decorator names to the binding props if any
   instanceProps.forEach(instanceProp => {
-    instanceProp.addBindingProps(
-      attributeBindingsProps,
-      classNameBindingsProps
-    );
+    instanceProp.addBindingProps(attributeBindingsProps, classNameBindingsProps);
   });
 
   return {
-    instanceProps
+    instanceProps,
   };
 }
 
@@ -91,9 +66,7 @@ function getEmberObjectProps(
  */
 function parseBindingProps(bindingPropElements = []) {
   return bindingPropElements.reduce((props, bindingElement) => {
-    const [boundPropName, ...bindingElementList] = bindingElement.value.split(
-      ":"
-    );
+    const [boundPropName, ...bindingElementList] = bindingElement.value.split(':');
     props[boundPropName.trim()] = bindingElementList;
     return props;
   }, {});
@@ -118,7 +91,7 @@ function getDecoratorsToImportMap(instanceProps, decoratorsMap = {}) {
       templateLayout: specs.templateLayout || prop.isTemplateLayoutDecorator,
       off: specs.off || prop.hasOffDecorator,
       tagName: specs.tagName || prop.isTagName,
-      unobserves: specs.unobserves || prop.hasUnobservesDecorator
+      unobserves: specs.unobserves || prop.hasUnobservesDecorator,
     };
   }, decoratorsMap);
 }
@@ -132,13 +105,11 @@ function getDecoratorsToImportMap(instanceProps, decoratorsMap = {}) {
  */
 function getEmberObjectCallExpressions(j, root) {
   return root
-    .find(j.CallExpression, { callee: { property: { name: "extend" } } })
+    .find(j.CallExpression, { callee: { property: { name: 'extend' } } })
     .filter(
       eoCallExpression =>
-        startsWithUpperCaseLetter(
-          get(eoCallExpression, "value.callee.object.name")
-        ) &&
-        get(eoCallExpression, "parentPath.value.type") !== "ClassDeclaration"
+        startsWithUpperCaseLetter(get(eoCallExpression, 'value.callee.object.name')) &&
+        get(eoCallExpression, 'parentPath.value.type') !== 'ClassDeclaration'
     );
 }
 
@@ -149,7 +120,7 @@ function getEmberObjectCallExpressions(j, root) {
  * @returns {String}
  */
 function getVariableName(varDeclaration) {
-  return get(varDeclaration, "value.declarations.0.id.name");
+  return get(varDeclaration, 'value.declarations.0.id.name');
 }
 
 /**
@@ -175,8 +146,7 @@ function getClosetVariableDeclaration(j, eoCallExpression) {
  */
 function getExpressionToReplace(j, eoCallExpression) {
   const varDeclaration = getClosetVariableDeclaration(j, eoCallExpression);
-  const isFollowedByCreate =
-    get(eoCallExpression, "parentPath.value.property.name") === "create";
+  const isFollowedByCreate = get(eoCallExpression, 'parentPath.value.property.name') === 'create';
 
   let expressionToReplace = eoCallExpression;
   if (varDeclaration && !isFollowedByCreate) {
@@ -193,18 +163,9 @@ function getExpressionToReplace(j, eoCallExpression) {
  * @param {String} filePath
  * @return {String}
  */
-function getClassName(
-  j,
-  classVariableName,
-  filePath,
-  superClassName,
-  type = ""
-) {
-  const className =
-    classVariableName || camelCase(path.basename(filePath, "js"));
-  let capitalizedClassName = `${capitalizeFirstLetter(
-    className
-  )}${capitalizeFirstLetter(type)}`;
+function getClassName(j, classVariableName, filePath, superClassName, type = '') {
+  const className = classVariableName || camelCase(path.basename(filePath, 'js'));
+  let capitalizedClassName = `${capitalizeFirstLetter(className)}${capitalizeFirstLetter(type)}`;
   if (capitalizedClassName === superClassName) {
     capitalizedClassName = capitalizeFirstLetter(className);
   }
@@ -218,13 +179,13 @@ function getClassName(
  * @returns {Object}
  */
 function parseEmberObjectCallExpression(eoCallExpression) {
-  const callExpressionArgs = get(eoCallExpression, "value.arguments") || [];
+  const callExpressionArgs = get(eoCallExpression, 'value.arguments') || [];
   const props = {
     eoExpression: null,
-    mixins: []
+    mixins: [],
   };
   callExpressionArgs.forEach(callExpressionArg => {
-    if (callExpressionArg.type === "ObjectExpression") {
+    if (callExpressionArg.type === 'ObjectExpression') {
       props.eoExpression = callExpressionArg;
     } else {
       props.mixins.push(callExpressionArg);
@@ -245,9 +206,7 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
   options.runtimeData = getTelemetryFor(path.resolve(filePath));
 
   if (!options.runtimeData) {
-    logger.warn(
-      `[${filePath}]: SKIPPED Could not find runtime data NO_RUNTIME_DATA`
-    );
+    logger.warn(`[${filePath}]: SKIPPED Could not find runtime data NO_RUNTIME_DATA`);
     return;
   }
 
@@ -268,9 +227,7 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
   let decoratorsToImportMap = {};
 
   getEmberObjectCallExpressions(j, root).forEach(eoCallExpression => {
-    const { eoExpression, mixins } = parseEmberObjectCallExpression(
-      eoCallExpression
-    );
+    const { eoExpression, mixins } = parseEmberObjectCallExpression(eoCallExpression);
 
     const eoProps = getEmberObjectProps(
       j,
@@ -281,13 +238,11 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
 
     const errors = hasValidProps(j, eoProps, options);
     if (errors.length) {
-      logger.warn(
-        `[${filePath}]: FAILURE \nValidation errors: \n\t${errors.join("\n\t")}`
-      );
+      logger.warn(`[${filePath}]: FAILURE \nValidation errors: \n\t${errors.join('\n\t')}`);
       return;
     }
 
-    const superClassName = get(eoCallExpression, "value.callee.object.name");
+    const superClassName = get(eoCallExpression, 'value.callee.object.name');
     const varDeclaration = getClosetVariableDeclaration(j, eoCallExpression);
     const classVariableName = getVariableName(varDeclaration);
     const className = getClassName(
@@ -295,21 +250,14 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
       classVariableName,
       filePath,
       superClassName,
-      get(options, "runtimeData.type")
+      get(options, 'runtimeData.type')
     );
 
     if (classVariableName) {
       root.findVariableDeclarators(classVariableName).renameTo(className);
     }
 
-    const es6ClassDeclaration = createClass(
-      j,
-      className,
-      eoProps,
-      superClassName,
-      mixins,
-      options
-    );
+    const es6ClassDeclaration = createClass(j, className, eoProps, superClassName, mixins, options);
 
     const expressionToReplace = getExpressionToReplace(j, eoCallExpression);
     j(expressionToReplace).replaceWith(
@@ -318,10 +266,7 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
 
     transformed = true;
 
-    decoratorsToImportMap = getDecoratorsToImportMap(
-      eoProps.instanceProps,
-      decoratorsToImportMap
-    );
+    decoratorsToImportMap = getDecoratorsToImportMap(eoProps.instanceProps, decoratorsToImportMap);
   });
 
   // Need to find another way, as there might be a case where
@@ -343,5 +288,5 @@ module.exports = {
   getEmberObjectProps,
   getExpressionToReplace,
   getVariableName,
-  replaceEmberObjectExpressions
+  replaceEmberObjectExpressions,
 };

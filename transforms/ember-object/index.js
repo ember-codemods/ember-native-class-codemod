@@ -1,11 +1,11 @@
-const { getOptions } = require("codemod-cli");
-const { replaceEmberObjectExpressions } = require("../helpers/parse-helper");
+const { getOptions } = require('codemod-cli');
+const { replaceEmberObjectExpressions } = require('../helpers/parse-helper');
 
 const DEFAULT_OPTIONS = {
   decorators: true,
   classFields: true,
   classicDecorator: true,
-  quote: "double"
+  quote: 'double',
 };
 
 module.exports = function transformer(file, api) {
@@ -18,11 +18,11 @@ module.exports = function transformer(file, api) {
   const replaced = replaceEmberObjectExpressions(j, root, path, options);
   if (replaced) {
     source = root.toSource({
-      quote: options.quotes || options.quote
+      quote: options.quotes || options.quote,
     });
   }
   return source;
 };
 
 // Set the parser, needed for supporting decorators
-module.exports.parser = "flow";
+module.exports.parser = 'flow';

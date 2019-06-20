@@ -1,4 +1,4 @@
-const { get } = require("./util");
+const { get } = require('./util');
 
 /**
  * Copy decorators `from` => `to`
@@ -22,15 +22,13 @@ function withDecorators(to, decorators = []) {
  */
 function createClassDecorator(j, classDecoratorProp) {
   let decoratorArgs = [];
-  if (classDecoratorProp.type === "ArrayExpression") {
+  if (classDecoratorProp.type === 'ArrayExpression') {
     decoratorArgs = classDecoratorProp.value.elements;
   } else {
     decoratorArgs = [classDecoratorProp.value];
   }
   return j.decorator(
-    j.callExpression(j.identifier(classDecoratorProp.classDecoratorName), [
-      ...decoratorArgs
-    ])
+    j.callExpression(j.identifier(classDecoratorProp.classDecoratorName), [...decoratorArgs])
   );
 }
 
@@ -61,10 +59,7 @@ function createCallExpressionDecorators(j, decoratorName, instanceProp) {
 
   const decoratorExpr = instanceProp.modifiers.reduce(
     (callExpr, modifier) =>
-      j.callExpression(
-        j.memberExpression(callExpr, modifier.prop),
-        modifier.args
-      ),
+      j.callExpression(j.memberExpression(callExpr, modifier.prop), modifier.args),
     j.callExpression(j.identifier(decoratorName), decoratorArgs)
   );
 
@@ -74,7 +69,7 @@ function createCallExpressionDecorators(j, decoratorName, instanceProp) {
 
   // If has modifiers wrap decorators in anonymous call expression
   // it transforms @computed('').readOnly() => @(computed('').readOnly())
-  return j.decorator(j.callExpression(j.identifier(""), [decoratorExpr]));
+  return j.decorator(j.callExpression(j.identifier(''), [decoratorExpr]));
 }
 
 /**
@@ -86,14 +81,7 @@ function createCallExpressionDecorators(j, decoratorName, instanceProp) {
  * @returns {Decorator[]}
  */
 function createDecoratorsWithArgs(j, identifier, args) {
-  return [
-    j.decorator(
-      j.callExpression(
-        j.identifier(identifier),
-        args.map(arg => j.literal(arg))
-      )
-    )
-  ];
+  return [j.decorator(j.callExpression(j.identifier(identifier), args.map(arg => j.literal(arg))))];
 }
 
 /**
@@ -103,7 +91,7 @@ function createDecoratorsWithArgs(j, identifier, args) {
  * @param {String} identifier
  * @returns {Decorator[]}
  */
-function createIdentifierDecorators(j, identifier = "action") {
+function createIdentifierDecorators(j, identifier = 'action') {
   return [j.decorator(j.identifier(identifier))];
 }
 
@@ -116,12 +104,10 @@ function createIdentifierDecorators(j, identifier = "action") {
  * @returns {Decorator[]}
  */
 function createBindingDecorators(j, decoratorName, instanceProp) {
-  const propList = get(instanceProp, "propList");
+  const propList = get(instanceProp, 'propList');
   if (propList && propList.length) {
     const propArgs = propList.map(prop => j.literal(prop));
-    return [
-      j.decorator(j.callExpression(j.identifier(decoratorName), propArgs))
-    ];
+    return [j.decorator(j.callExpression(j.identifier(decoratorName), propArgs))];
   }
   return [j.decorator(j.identifier(decoratorName))];
 }
@@ -138,23 +124,15 @@ function createInstancePropDecorators(j, instanceProp) {
     if (!decorator) {
       return decorators;
     }
-    if (decorator === "className" || decorator === "attribute") {
+    if (decorator === 'className' || decorator === 'attribute') {
+      return decorators.concat(createBindingDecorators(j, decorator, instanceProp));
+    }
+    if (decorator === 'off' || decorator === 'unobserves') {
       return decorators.concat(
-        createBindingDecorators(j, decorator, instanceProp)
+        createDecoratorsWithArgs(j, decorator, instanceProp.decoratorArgs[decorator])
       );
     }
-    if (decorator === "off" || decorator === "unobserves") {
-      return decorators.concat(
-        createDecoratorsWithArgs(
-          j,
-          decorator,
-          instanceProp.decoratorArgs[decorator]
-        )
-      );
-    }
-    return decorators.concat(
-      createCallExpressionDecorators(j, decorator, instanceProp)
-    );
+    return decorators.concat(createCallExpressionDecorators(j, decorator, instanceProp));
   }, []);
 }
 
@@ -163,5 +141,5 @@ module.exports = {
   createClassDecorator,
   createIdentifierDecorators,
   createCallExpressionDecorators,
-  createInstancePropDecorators
+  createInstancePropDecorators,
 };

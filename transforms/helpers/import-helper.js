@@ -4,12 +4,9 @@ const {
   EMBER_DECORATOR_SPECIFIERS,
   get,
   getFirstDeclaration,
-  METHOD_DECORATORS
-} = require("./util");
-const {
-  createEmberDecoratorSpecifiers,
-  createImportDeclaration
-} = require("./transform-helper");
+  METHOD_DECORATORS,
+} = require('./util');
+const { createEmberDecoratorSpecifiers, createImportDeclaration } = require('./transform-helper');
 
 /**
  * Return the decorator name for the specifier if any, using the importPropDecoratorMap from
@@ -20,8 +17,8 @@ const {
  * @returns {String}
  */
 function getDecoratorInfo(specifier, importPropDecoratorMap) {
-  const localName = get(specifier, "local.name");
-  const importedName = get(specifier, "imported.name");
+  const localName = get(specifier, 'local.name');
+  const importedName = get(specifier, 'imported.name');
   const isImportedAs = importedName !== localName;
   const isMetaDecorator = !importPropDecoratorMap;
   let decoratorName;
@@ -42,7 +39,7 @@ function getDecoratorInfo(specifier, importPropDecoratorMap) {
     isImportedAs,
     isMetaDecorator,
     isMethodDecorator,
-    localName
+    localName,
   };
 }
 
@@ -54,7 +51,7 @@ function getDecoratorInfo(specifier, importPropDecoratorMap) {
  * @returns {Boolean}
  */
 function isSpecifierDecorator(specifier, importPropDecoratorMap) {
-  const importedName = get(specifier, "imported.name");
+  const importedName = get(specifier, 'imported.name');
   if (!importPropDecoratorMap || importPropDecoratorMap[importedName]) {
     return true;
   }
@@ -67,7 +64,7 @@ function isSpecifierDecorator(specifier, importPropDecoratorMap) {
  * @returns {String} local name
  */
 function getSpecifierLocalIdentifier(specifier) {
-  if (get(specifier, "local.name") === get(specifier, "imported.name")) {
+  if (get(specifier, 'local.name') === get(specifier, 'imported.name')) {
     return null;
   }
   return specifier.local;
@@ -84,10 +81,7 @@ function getSpecifierLocalIdentifier(specifier) {
 function setSpecifierNames(specifier, importPropDecoratorMap) {
   specifier.local = getSpecifierLocalIdentifier(specifier);
   if (importPropDecoratorMap) {
-    const decoratorImportedName = get(
-      importPropDecoratorMap,
-      get(specifier, "imported.name")
-    );
+    const decoratorImportedName = get(importPropDecoratorMap, get(specifier, 'imported.name'));
     specifier.imported.name = decoratorImportedName;
     // Needed one more time as we changed the imported name
     specifier.local = getSpecifierLocalIdentifier(specifier);
@@ -107,8 +101,8 @@ function getExistingDecoratorImports(j, root) {
   return Object.keys(DECORATOR_PATHS).reduce((imports, path) => {
     const decoratorImports = root.find(j.ImportDeclaration, {
       source: {
-        value: path
-      }
+        value: path,
+      },
     });
 
     if (decoratorImports.length) {
@@ -141,8 +135,8 @@ function createNewImportDeclarations(
     firstDeclaration.insertBefore(
       createImportDeclaration(
         j,
-        [j.importDefaultSpecifier(j.identifier("classic"))],
-        "ember-classic-decorator"
+        [j.importDefaultSpecifier(j.identifier('classic'))],
+        'ember-classic-decorator'
       )
     );
   }
@@ -158,9 +152,7 @@ function createNewImportDeclarations(
       );
 
       if (specifiers.length) {
-        firstDeclaration.insertBefore(
-          createImportDeclaration(j, specifiers, path)
-        );
+        firstDeclaration.insertBefore(createImportDeclaration(j, specifiers, path));
       }
     });
 }
@@ -190,7 +182,7 @@ function getDecoratorPathSpecifiers(j, root, decoratorsToImport = []) {
   return getExistingDecoratorImports(j, root).reduce(
     (decoratorPathSpecifierMap, existingDecoratorImport) => {
       const { importPropDecoratorMap, decoratorPath } = DECORATOR_PATHS[
-        get(existingDecoratorImport, "value.source.value")
+        get(existingDecoratorImport, 'value.source.value')
       ];
       // Decorators to be imported for the path
       // These are typically additional decorators which need to be imported for a path
@@ -206,8 +198,7 @@ function getDecoratorPathSpecifiers(j, root, decoratorsToImport = []) {
         decoratorsForPath,
         decoratorsToImport
       );
-      const existingSpecifiers =
-        get(existingDecoratorImport, "value.specifiers") || [];
+      const existingSpecifiers = get(existingDecoratorImport, 'value.specifiers') || [];
 
       // Iterate over existing specifiers for the current path. This is needed
       // to pick the only required specifiers from the existing imports
@@ -221,8 +212,7 @@ function getDecoratorPathSpecifiers(j, root, decoratorsToImport = []) {
           setSpecifierNames(existingSpecifier, importPropDecoratorMap);
           // Check if the decorator import path is overridden
           // Needed in case of `observes` which need to be imported from `@ember-decorators/object`
-          const overriddenPath =
-            DECORATOR_PATH_OVERRIDES[get(existingSpecifier, "imported.name")];
+          const overriddenPath = DECORATOR_PATH_OVERRIDES[get(existingSpecifier, 'imported.name')];
           if (overriddenPath) {
             decoratorPathSpecifierMap[overriddenPath] = [].concat(
               decoratorPathSpecifierMap[overriddenPath] || [],
@@ -231,9 +221,8 @@ function getDecoratorPathSpecifiers(j, root, decoratorsToImport = []) {
           } else {
             const isSpecifierPresent = decoratedSpecifiers.some(specifier => {
               return (
-                !get(specifier, "local.name") &&
-                get(specifier, "imported.name") ===
-                  get(existingSpecifier, "imported.name")
+                !get(specifier, 'local.name') &&
+                get(specifier, 'imported.name') === get(existingSpecifier, 'imported.name')
               );
             });
             if (!isSpecifierPresent) {
@@ -274,8 +263,8 @@ function getDecoratorPathSpecifiers(j, root, decoratorsToImport = []) {
 function getExistingImportForPath(j, root, importPath) {
   const decoratorImports = root.find(j.ImportDeclaration, {
     source: {
-      value: importPath
-    }
+      value: importPath,
+    },
   });
 
   if (decoratorImports.length) {
@@ -295,18 +284,9 @@ function getExistingImportForPath(j, root, importPath) {
  * @param {File} root
  * @param {String[]} decoratorsToImport
  */
-function createDecoratorImportDeclarations(
-  j,
-  root,
-  decoratorsToImport = [],
-  options = {}
-) {
+function createDecoratorImportDeclarations(j, root, decoratorsToImport = [], options = {}) {
   // Iterate through existing imports, extract the already imported specifiers
-  const decoratorPathSpecifierMap = getDecoratorPathSpecifiers(
-    j,
-    root,
-    decoratorsToImport
-  );
+  const decoratorPathSpecifierMap = getDecoratorPathSpecifiers(j, root, decoratorsToImport);
 
   const firstDeclaration = getFirstDeclaration(j, root);
   const decoratorPathsImported = Object.keys(decoratorPathSpecifierMap);
@@ -315,28 +295,17 @@ function createDecoratorImportDeclarations(
     const specifiers = decoratorPathSpecifierMap[decoratorPath];
     const existingImport = getExistingImportForPath(j, root, decoratorPath);
     if (existingImport) {
-      let existingSpecifiers = get(existingImport, "value.specifiers");
+      let existingSpecifiers = get(existingImport, 'value.specifiers');
       if (existingSpecifiers) {
-        existingImport.value.specifiers = [].concat(
-          existingSpecifiers,
-          specifiers
-        );
+        existingImport.value.specifiers = [].concat(existingSpecifiers, specifiers);
       }
     } else {
-      firstDeclaration.insertBefore(
-        createImportDeclaration(j, specifiers, decoratorPath)
-      );
+      firstDeclaration.insertBefore(createImportDeclaration(j, specifiers, decoratorPath));
     }
   });
 
   // Create new import declarations
-  createNewImportDeclarations(
-    j,
-    root,
-    decoratorsToImport,
-    decoratorPathsImported,
-    options
-  );
+  createNewImportDeclarations(j, root, decoratorsToImport, decoratorPathsImported, options);
 }
 
 /**
@@ -347,29 +316,24 @@ function createDecoratorImportDeclarations(
  * @returns {Object}
  */
 function getImportedDecoratedProps(j, root) {
-  return getExistingDecoratorImports(j, root).reduce(
-    (importedDecorators, decoratorImport) => {
-      const { importPropDecoratorMap } = DECORATOR_PATHS[
-        get(decoratorImport, "value.source.value")
-      ];
+  return getExistingDecoratorImports(j, root).reduce((importedDecorators, decoratorImport) => {
+    const { importPropDecoratorMap } = DECORATOR_PATHS[get(decoratorImport, 'value.source.value')];
 
-      const specifiers = get(decoratorImport, "value.specifiers") || [];
+    const specifiers = get(decoratorImport, 'value.specifiers') || [];
 
-      return specifiers.reduce((importedDecorators, specifier) => {
-        if (isSpecifierDecorator(specifier, importPropDecoratorMap)) {
-          importedDecorators[get(specifier, "local.name")] = getDecoratorInfo(
-            specifier,
-            importPropDecoratorMap
-          );
-        }
-        return importedDecorators;
-      }, importedDecorators);
-    },
-    {}
-  );
+    return specifiers.reduce((importedDecorators, specifier) => {
+      if (isSpecifierDecorator(specifier, importPropDecoratorMap)) {
+        importedDecorators[get(specifier, 'local.name')] = getDecoratorInfo(
+          specifier,
+          importPropDecoratorMap
+        );
+      }
+      return importedDecorators;
+    }, importedDecorators);
+  }, {});
 }
 
 module.exports = {
   createDecoratorImportDeclarations,
-  getImportedDecoratedProps
+  getImportedDecoratedProps,
 };
