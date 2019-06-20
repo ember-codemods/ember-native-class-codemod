@@ -1,17 +1,17 @@
 {
-  "name": "ember-es6-class-codemod",
+  "name": "ember-native-class-codemod",
   "version": "0.2.1",
   "description": "Codemods for transforming ember app code to native ES6 class syntax with decorators.",
   "keywords": [
     "codemod-cli"
   ],
-  "homepage": "https://github.com/ember-codemods/ember-es6-class-codemod#readme",
+  "homepage": "https://github.com/ember-codemods/ember-native-class-codemod#readme",
   "bugs": {
-    "url": "https://github.com/ember-codemods/ember-es6-class-codemod/issues"
+    "url": "https://github.com/ember-codemods/ember-native-class-codemod/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ember-codemods/ember-es6-class-codemod.git"
+    "url": "git+https://github.com/ember-codemods/ember-native-class-codemod.git"
   },
   "license": "MIT",
   "author": "",
@@ -23,7 +23,7 @@
   ],
   "main": ".eslintrc.js",
   "bin": {
-    "ember-es6-class-codemod": "./bin/cli.js"
+    "ember-native-class-codemod": "./bin/cli.js"
   },
   "directories": {
     "lib": "lib",

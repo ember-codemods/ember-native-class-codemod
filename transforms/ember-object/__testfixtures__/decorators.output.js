@@ -70,7 +70,7 @@ class Foo extends EmberObject {
     // class's actions to be safe. This should be refactored to call a normal method
     // on the parent class. If the parent class has not been converted to native
     // classes, it may need to be refactored as well. See
-    // https: //github.com/scalvert/ember-es6-class-codemod/blob/master/README.md
+    // https: //github.com/scalvert/ember-native-class-codemod/blob/master/README.md
     // for more details.
     super.actions.baz.call(this, ...arguments);
   }
