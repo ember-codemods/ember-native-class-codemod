@@ -6,7 +6,7 @@ const cache = require("../../../lib/cache");
 const telemetry = cache.has("telemetry")
   ? JSON.parse(cache.get("telemetry").value)
   : {};
-const addonFilePaths = {};
+const ADDON_PATHS = {};
 
 let packagePaths = walkSync("./", {
   globs: ["**/package.json"],
@@ -16,7 +16,36 @@ let packagePaths = walkSync("./", {
 for (let packagePath of packagePaths) {
   let { name } = fs.readJsonSync(packagePath);
 
-  addonFilePaths[path.dirname(path.resolve(".", packagePath))] = name;
+  ADDON_PATHS[path.dirname(path.resolve(".", packagePath))] = name;
+}
+
+/**
+ * Transforms a literal "on disk" path to a "module path".
+ *
+ * @param {String} filePath the path on disk (from current working directory)
+ * @returns {String} The in-browser module path for the specified filePath
+ */
+function getModulePathFor(filePath, addonPaths = ADDON_PATHS) {
+  let fileSegments = filePath.split("/");
+  let addonSegments = [];
+
+  while (fileSegments.length > 0) {
+    addonSegments.push(fileSegments.shift());
+
+    if (addonPaths[addonSegments.join("/")]) {
+      break;
+    }
+  }
+
+  let addonFilePath = addonSegments.join("/");
+  let addonName = addonPaths[addonFilePath];
+
+  let relativeFilePath = fileSegments
+    .join("/")
+    .replace(/^(addon|app)\//, "")
+    .replace(/\.[^/.]+$/, "");
+
+  return `${addonName}/${relativeFilePath}`;
 }
 
 /**
@@ -25,25 +54,13 @@ for (let packagePath of packagePaths) {
  * @param {String} filePath Absolute path of the file to read data from
  * @returns {Object} Runtime configuration object
  */
-module.exports = function getTelemetryData(filePath) {
-  let fileSegments = filePath.split("/");
-  let addonSegments = [];
+function getTelemetryFor(filePath) {
+  let modulePath = getModulePathFor(filePath);
 
-  while (fileSegments.length > 0) {
-    addonSegments.push(fileSegments.shift());
+  return telemetry[modulePath];
+}
 
-    if (addonFilePaths[addonSegments.join("/")]) {
-      break;
-    }
-  }
-
-  let addonFilePath = addonSegments.join("/");
-  let addonName = addonFilePaths[addonFilePath];
-
-  let relativeFilePath = fileSegments
-    .join("/")
-    .replace(/^(addon|app)\//, "")
-    .replace(/\.[^/.]+$/, "");
-
-  return telemetry[`${addonName}/${relativeFilePath}`];
+module.exports = {
+  getTelemetryFor,
+  getModulePathFor
 };

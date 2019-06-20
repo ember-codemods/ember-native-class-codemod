@@ -11,5 +11,13 @@ module.exports = {
   plugins: ["prettier"],
   rules: {
     "prettier/prettier": "error"
-  }
+  },
+  overrides: [
+    {
+      files: ['**/*.test.js'],
+      env: {
+        jest: true
+      }
+    }
+  ]
 };
