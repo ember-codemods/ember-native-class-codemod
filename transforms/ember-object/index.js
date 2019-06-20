@@ -1,22 +1,25 @@
 const { getOptions } = require("codemod-cli");
 const { replaceEmberObjectExpressions } = require("../helpers/parse-helper");
 
-module.exports = function transformer(file, api, opts) {
+const DEFAULT_OPTIONS = {
+  decorators: true,
+  classFields: true,
+  classicDecorator: true,
+  quote: "double"
+};
+
+module.exports = function transformer(file, api) {
   const j = api.jscodeshift;
-  const options = Object.assign({}, opts, getOptions());
+  const options = Object.assign({}, DEFAULT_OPTIONS, getOptions());
   let { source, path } = file;
-
-  let transformOptions = {};
-
-  if (options.quotes || options.quote) {
-    transformOptions.quote = options.quotes || options.quote;
-  }
 
   const root = j(source);
 
   const replaced = replaceEmberObjectExpressions(j, root, path, options);
   if (replaced) {
-    source = root.toSource(transformOptions);
+    source = root.toSource({
+      quote: options.quotes || options.quote
+    });
   }
   return source;
 };

@@ -1,3 +1,4 @@
+import classic from "ember-classic-decorator";
 import { off, unobserves } from "@ember-decorators/object";
 import { action, computed } from "@ember/object";
 import { alias } from "@ember/object/computed";
@@ -6,6 +7,7 @@ import RuntimeInput from "common/runtime/input";
 /**
  * Program comments
  */
+@classic
 export default class RuntimeInputEmberObject extends RuntimeInput.extend(MyMixin) {
   /**
    * Property comments

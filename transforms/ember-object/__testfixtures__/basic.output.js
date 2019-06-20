@@ -1,6 +1,9 @@
+import classic from "ember-classic-decorator";
+
 /**
  * Program comments
  */
+@classic
 class Foo extends Test.extend(MyMixin) {
   /**
    * Property comments
@@ -35,4 +38,5 @@ class Foo extends Test.extend(MyMixin) {
   }
 }
 
+@classic
 class Foo extends EmberObject.extend(MixinA, MixinB) {}

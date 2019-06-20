@@ -132,9 +132,21 @@ function createNewImportDeclarations(
   j,
   root,
   decoratorsToImport,
-  decoratorPathsToIgnore = []
+  decoratorPathsToIgnore = [],
+  options = {}
 ) {
   const firstDeclaration = getFirstDeclaration(j, root);
+
+  if (options.classicDecorator) {
+    firstDeclaration.insertBefore(
+      createImportDeclaration(
+        j,
+        [j.importDefaultSpecifier(j.identifier("classic"))],
+        "ember-classic-decorator"
+      )
+    );
+  }
+
   // Create new import statements which do not have any matching existing imports
   Object.keys(EMBER_DECORATOR_SPECIFIERS)
     .filter(path => !decoratorPathsToIgnore.includes(path))
@@ -283,7 +295,12 @@ function getExistingImportForPath(j, root, importPath) {
  * @param {File} root
  * @param {String[]} decoratorsToImport
  */
-function createDecoratorImportDeclarations(j, root, decoratorsToImport = []) {
+function createDecoratorImportDeclarations(
+  j,
+  root,
+  decoratorsToImport = [],
+  options = {}
+) {
   // Iterate through existing imports, extract the already imported specifiers
   const decoratorPathSpecifierMap = getDecoratorPathSpecifiers(
     j,
@@ -317,7 +334,8 @@ function createDecoratorImportDeclarations(j, root, decoratorsToImport = []) {
     j,
     root,
     decoratorsToImport,
-    decoratorPathsImported
+    decoratorPathsImported,
+    options
   );
 }
 

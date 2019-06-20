@@ -3,7 +3,6 @@ const camelCase = require("camelcase");
 const {
   capitalizeFirstLetter,
   get,
-  getOptions,
   startsWithUpperCaseLetter
 } = require("./util");
 const { getTelemetryFor } = require("./util/get-telemetry-for");
@@ -280,7 +279,7 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
       options.runtimeData
     );
 
-    const errors = hasValidProps(j, eoProps, getOptions(options));
+    const errors = hasValidProps(j, eoProps, options);
     if (errors.length) {
       logger.warn(
         `[${filePath}]: FAILURE \nValidation errors: \n\t${errors.join("\n\t")}`
@@ -308,7 +307,8 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
       className,
       eoProps,
       superClassName,
-      mixins
+      mixins,
+      options
     );
 
     const expressionToReplace = getExpressionToReplace(j, eoCallExpression);
@@ -330,7 +330,7 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
     const decoratorsToImport = Object.keys(decoratorsToImportMap).filter(
       key => decoratorsToImportMap[key]
     );
-    createDecoratorImportDeclarations(j, root, decoratorsToImport);
+    createDecoratorImportDeclarations(j, root, decoratorsToImport, options);
     logger.info(`[${filePath}]: SUCCESS`);
   }
   return transformed;

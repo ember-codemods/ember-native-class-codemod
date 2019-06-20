@@ -1,3 +1,4 @@
+import classic from "ember-classic-decorator";
 import { attribute, className, classNames, tagName, layout as templateLayout } from "@ember-decorators/component";
 import { observes as watcher, on } from "@ember-decorators/object";
 import { inject as controller } from "@ember/controller";
@@ -20,6 +21,7 @@ import layout from "components/templates/foo";
 import { someActionUtil } from "some/action/util";
 import NUMERIC_CONSTANT from "constants/numbers";
 
+@classic
 @tagName("div")
 @classNames("test-class", "custom-class")
 class Foo extends EmberObject {
@@ -77,6 +79,7 @@ class Foo extends EmberObject {
   biz() {}
 }
 
+@classic
 class Comp extends EmberObject {
   @computed("a", "c")
   @className("enabled", "disabled")
@@ -94,6 +97,7 @@ class Comp extends EmberObject {
   customHref = "http://emberjs.com";
 }
 
+@classic
 class Foo extends EmberObject {
   firstName = null;
   lastName = null;
@@ -198,5 +202,6 @@ class Foo extends EmberObject {
   isGreaterThanLimit;
 }
 
+@classic
 @templateLayout(layout)
 class Foo extends EmberObject {}

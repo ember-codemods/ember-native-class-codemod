@@ -384,10 +384,16 @@ function createClass(
   className,
   { instanceProps = [] } = {},
   superClassName = "",
-  mixins = []
+  mixins = [],
+  options
 ) {
   let classBody = [];
   let classDecorators = [];
+
+  if (options.classicDecorator) {
+    classDecorators.push(j.decorator(j.identifier("classic")));
+  }
+
   instanceProps.forEach(prop => {
     if (prop.isClassDecorator) {
       classDecorators.push(createClassDecorator(j, prop));
