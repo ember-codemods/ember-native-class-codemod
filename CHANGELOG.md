@@ -1,3 +1,26 @@
+## v1.0.0 (2019-06-20)
+
+#### :boom: Breaking Change
+* [#134](https://github.com/ember-codemods/ember-native-class-codemod/pull/134) Rename to ember-native-class-codemod  ([@pzuraq](https://github.com/pzuraq))
+
+#### :rocket: Enhancement
+* [#132](https://github.com/ember-codemods/ember-native-class-codemod/pull/132) Adds the `classicDecorator` option and enable it by default ([@pzuraq](https://github.com/pzuraq))
+
+#### :bug: Bug Fix
+* [#129](https://github.com/ember-codemods/ember-native-class-codemod/pull/129) Fix issues identifying in-repo addon paths in getTelemetryFor. ([@rwjblue](https://github.com/rwjblue))
+* [#130](https://github.com/ember-codemods/ember-native-class-codemod/pull/130) Ensure logging of modules that failed to gather telemetry. ([@rwjblue](https://github.com/rwjblue))
+* [#126](https://github.com/ember-codemods/ember-native-class-codemod/pull/126) Wait for telemetry before starting transforms ([@pzuraq](https://github.com/pzuraq))
+
+#### :house: Internal
+* [#131](https://github.com/ember-codemods/ember-native-class-codemod/pull/131) Fix in-repo addon acceptance test to demonstrate real world failure with in-repo addons. ([@rwjblue](https://github.com/rwjblue))
+* [#133](https://github.com/ember-codemods/ember-native-class-codemod/pull/133) Convert to single quotes in Prettier configuration ([@pzuraq](https://github.com/pzuraq))
+* [#128](https://github.com/ember-codemods/ember-native-class-codemod/pull/128) Add in-repo addon to acceptance test. ([@rwjblue](https://github.com/rwjblue))
+* [#127](https://github.com/ember-codemods/ember-native-class-codemod/pull/127) Split apart and add unit tests for getTelemetryFor. ([@rwjblue](https://github.com/rwjblue))
+
+#### Committers: 2
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+
 ## v0.2.1 (2019-06-19)
 
 #### :bug: Bug Fix
