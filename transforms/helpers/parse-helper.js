@@ -6,7 +6,7 @@ const {
   getOptions,
   startsWithUpperCaseLetter
 } = require("./util");
-const getTelemetryFor = require("./util/get-telemetry-for");
+const { getTelemetryFor } = require("./util/get-telemetry-for");
 const {
   hasValidProps,
   isFileOfType,
