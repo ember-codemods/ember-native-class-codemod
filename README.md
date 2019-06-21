@@ -3,71 +3,45 @@
 [![Build Status](https://travis-ci.org/ember-codemods/ember-native-class-codemod.svg?branch=master)](https://travis-ci.org/ember-codemods/ember-native-class-codemod)
 [![npm version](https://badge.fury.io/js/ember-native-class-codemod.svg)](https://badge.fury.io/js/ember-native-class-codemod)
 
-Codemods for transforming ember app code to native ES6 class syntax with decorators.
+A codemod for transforming your ember app code to native JavaScript class syntax
+with decorators!
 
 ## Usage
 
-The Ember ES6 codemods can be run using the following command:
+First, boot up your application. Then, the codemod can be run using the
+following command:
 
 ```
 npx ember-native-class-codemod http://localhost:4200/path/to/server [OPTIONS] path/of/files/ or/some**/*glob.js
 ```
 
-The codemods accept the following options:
+The codemod accepts the following options:
 
-| Option                | Value     | Default                         | Details                                                                                                            |
-| --------------------- | --------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| --class-fields        | boolean   | true                            | Enable/disable transformation using class fields                                                                   |
-| --decorators          | boolean   | true                            | Enable/disable transformation using decorators                                                                     |
-| --type                | String    | Empty (match all types in path) | Apply transformation to only passed type. The type can be one of `services`, `routes`, `components`, `controllers` |
+| Option              | Value   | Default                         | Details                                                                                                                                          |
+| ------------------- | ------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| --class-fields      | boolean | true                            | Enable/disable transformation using class fields                                                                                                 |
+| --decorators        | boolean | true                            | Enable/disable transformation using decorators                                                                                                   |
+| --classic-decorator | boolean | true                            | Enable/disable adding the [`@classic` decorator](https://github.com/pzuraq/ember-classic-decorator), which helps with transitioning Ember Octane |
+| --type              | String  | Empty (match all types in path) | Apply transformation to only passed type. The type can be one of `services`, `routes`, `components`, `controllers`                               |
+| --quote             | String  | 'single'                        | Whether to use double or single quotes by default for new statements that are added during the codemod.                                          |
 
-### Class Fields
+### Gathering Runtime Data
 
-Class fields are currently defined as a [stage 3 proposal](https://github.com/tc39/proposal-class-fields) in the [ECMA TC39 process](https://tc39.github.io/process-document/). As such, they are added as a configurable option in the transforms, enabled by default. If set to **false**, it will NOT transform the object properties to class fields but instead error out.
+The first argument that you must pass to the codemod is the URL of a running
+instance of your application. The codemod opens up your application and analyzes
+the classes directly, so it can transform them, which is why it needs this URL.
+Any classes that were not analyzed will not be transformed. This includes
+classes that are private to a module and never exported.
 
-For example, the below declaration
-
-```
-const Foo = EmberObject.extend({
- prop: "defaultValue",
-});
-```
-
-Will be transformed to
-
-```
-class Foo extends EmberObject {
- prop = "defaultValue";
-}
-```
-
-### Decorators
-
-Decorators are currently a [stage 2 proposal](https://github.com/tc39/proposal-decorators) in the [ECMA TC39 process](https://tc39.github.io/process-document/). They are added as a configurable option in the transforms. If set to true, it will transform the object's properties to decorators wherever required.
-
-For example, the below declaration
-
-```
-import { inject as service } from "@ember/service";
-const Foo = EmberObject.extend({
- store: service(),
-});
-```
-
-Will be transformed to
-
-```
-import { service } from "@ember-decorators/service";
-class Foo extends EmberObject {
- @service store;
-}
-```
-
-**Note** The decorators support is built into Ember by way of ember-cli-babel@7.7.0 or higher.
+If you have any _lazily loaded_ modules, such as modules from Ember Engines,
+you'll need to make sure that the URL you provide loads these modules as well.
+Otherwise, the codemod will not be able to detect them or analyze them.
 
 ### Types
 
-The option `type` can be used to further target transforms to a particular type of ember object within the application or addon. The types can be any of the following:
+The `type` option can be used to further transforms to a particular type of
+ember object within the application or addon. The types can be any of the
+following:
 
 | Type        | Option             |
 | ----------- | ------------------ |
@@ -76,35 +50,39 @@ The option `type` can be used to further target transforms to a particular type 
 | Components  | --type=components  |
 | Controllers | --type=controllers |
 
-The path of the file being transformed is matched against the glob pattern of the type to determine whether to run the specific transforms.
+The path of the file being transformed is matched against the glob pattern of
+the type to determine whether to run the specific transforms.
 
-If a type is not provided, the codemods will run against all the **_types_** in the path provided.
-
-### Runtime Config
-
-As per conventional codemods, the code is converted from one API to another by statically analyzing patterns within it. While this works well most of the time, there are cases that can only be analyzed at runtime to determine the full shape of the code to transform. For example, if we need to determine the class hierarchy, it is not possible with static analysis to determine the parent classes and their properties.
-
-The codemods are designed with `runtime data` as input to correctly transform the code. For each file currently being transformed, the codemods need a `configuration file`, which will provide additional metadata about the properties of the ember object.
+If a type is not provided, the codemods will run against all the **_types_** in
+the path provided.
 
 ## Debugging
 
-The codemods log execution information in the `codemods.log` file in the current directory from where the codemods are being executed. Specifically, details such as failures and reasons for failures, are logged. This would be the recommended starting point for debugging issues related to these codemods.
+The codemods log execution information in the `codemods.log` file in the current
+directory where the codemods are being executed. Specifically, details such as
+failures and reasons for failures, are logged. This would be the recommended
+starting point for debugging issues related to these codemods.
 
 ## Unsupported Types
 
-While the codemods transforms all types of ember objects, it does not support transformation of
+While the codemods transforms many types of ember objects, it does not support
+transformation of
 
-- `ember-data` entities for example `DS.Model`, `DS.Adapter` etc
+- `ember-data` classes such as `DS.Model`, `DS.Adapter` etc
 - Mixins
-- Ember Object having a property with `ObjectExpression` as value (`actions` and `queryParams` are exception) See `eslint-plugin-ember/avoid-leaking-state-in-ember-objects` for more details.
-- Ember object having property with `meta` or `property` modifiers
+- Ember Objects with objects or arrays as direct properties (`actions` and
+  `queryParams` are the exception). See `eslint-plugin-ember/avoid-leaking-state-in-ember-objects`
+  for more details.
+- Ember objects with computed properties that use the `meta` or `property`
+  modifiers.
 
 ## More Transform Examples
 
 <!--TRANSFORMS_START-->
-* [ember-object](transforms/ember-object/README.md)
-* [helpers](transforms/helpers/README.md)
-<!--TRANSFORMS_END-->
+
+- [ember-object](transforms/ember-object/README.md)
+- [helpers](transforms/helpers/README.md)
+  <!--TRANSFORMS_END-->
 
 ## Contributing
 
