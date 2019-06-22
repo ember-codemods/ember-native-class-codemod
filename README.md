@@ -8,7 +8,15 @@ with decorators!
 
 ## Usage
 
-First, boot up your application. Then, the codemod can be run using the
+First, install the dependencies that the codemod relies on. These are
+addons that the codemod will add imports from:
+
+```
+ember install ember-classic-decorator
+ember install ember-decorators 
+```
+
+Then, boot up your application. Then, the codemod can be run using the
 following command:
 
 ```
