@@ -1,6 +1,6 @@
 {
   "name": "ember-native-class-codemod",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Codemods for transforming ember app code to native class syntax with decorators.",
   "keywords": [
     "codemod-cli"

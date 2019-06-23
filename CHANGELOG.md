@@ -1,3 +1,17 @@
+## v1.0.1 (2019-06-23)
+
+#### :bug: Bug Fix
+* [#140](https://github.com/ember-codemods/ember-native-class-codemod/pull/140) Avoid `**/tmp/**` when looking for `package.json`'s. ([@rwjblue](https://github.com/rwjblue))
+
+#### :memo: Documentation
+* [#137](https://github.com/ember-codemods/ember-native-class-codemod/pull/137) Add dependency installation to the README ([@pzuraq](https://github.com/pzuraq))
+* [#136](https://github.com/ember-codemods/ember-native-class-codemod/pull/136) Update the README to match v1.0.0 refactors ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 3
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+- [@dependabot-preview[bot]](https://github.com/apps/dependabot-preview)
+
 ## v1.0.0 (2019-06-20)
 
 #### :boom: Breaking Change
