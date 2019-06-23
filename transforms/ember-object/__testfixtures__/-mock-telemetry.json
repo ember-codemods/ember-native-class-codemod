@@ -10,14 +10,19 @@
     "type": "EmberObject",
     "unobservedProperties": { "unobservedProp": ["prop3", "prop4"] }
   },
-  "injecting-service": {
-    "computedProperties": ["something", "otherThing"],
+  "ember-concurrency": {
+    "computedProperties": ["fetchAlerts"],
     "observedProperties": [],
     "observerProperties": {},
     "offProperties": {},
     "overriddenActions": [],
     "overriddenProperties": [],
     "ownProperties": [],
+    "type": "Component",
+    "unobservedProperties": {}
+  },
+  "injecting-service": {
+    "computedProperties": ["something", "otherThing"],
     "type": "Service",
     "unobservedProperties": {}
   },
