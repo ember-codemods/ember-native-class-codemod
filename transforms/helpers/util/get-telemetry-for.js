@@ -9,7 +9,7 @@ const APP_PATHS = {};
 
 let packagePaths = walkSync('./', {
   globs: ['**/package.json'],
-  ignore: ['node_modules/**'],
+  ignore: ['**/tmp/**', '**/node_modules/**'],
 });
 
 for (let packagePath of packagePaths) {
