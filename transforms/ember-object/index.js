@@ -1,3 +1,4 @@
+const path = require('path');
 const { getOptions } = require('codemod-cli');
 const { replaceEmberObjectExpressions } = require('../helpers/parse-helper');
 
@@ -9,13 +10,20 @@ const DEFAULT_OPTIONS = {
 };
 
 module.exports = function transformer(file, api) {
+  const extension = path.extname(file.path);
+
+  if (!['.js', '.ts'].includes(extension.toLowerCase())) {
+    // do nothing on non-js/ts files
+    return;
+  }
+
   const j = api.jscodeshift;
   const options = Object.assign({}, DEFAULT_OPTIONS, getOptions());
-  let { source, path } = file;
+  let { source } = file;
 
   const root = j(source);
 
-  const replaced = replaceEmberObjectExpressions(j, root, path, options);
+  const replaced = replaceEmberObjectExpressions(j, root, file.path, options);
   if (replaced) {
     source = root.toSource({
       quote: options.quotes || options.quote,
