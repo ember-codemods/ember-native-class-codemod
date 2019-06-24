@@ -54,7 +54,7 @@ function createCallExpressionDecorators(j, decoratorName, instanceProp) {
       : instanceProp.callExprArgs.slice(0);
 
   let decoratorExpression =
-    instanceProp.isComputed && decoratorArgs.length === 0
+    ['computed', 'service', 'controller'].includes(decoratorName) && decoratorArgs.length === 0
       ? j.identifier(decoratorName)
       : j.callExpression(j.identifier(decoratorName), decoratorArgs);
 

@@ -19,9 +19,11 @@ export default class RuntimeInputEmberObject extends RuntimeInput.extend(MyMixin
   [MY_VAL] = 'val';
   queryParams = {};
 
-  @service error;
+  @service
+  error;
 
-  @service('error') errorService;
+  @service('error')
+  errorService;
 
   @unobserves('prop3', 'prop4')
   unobservedProp;

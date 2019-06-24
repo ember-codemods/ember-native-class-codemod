@@ -16,8 +16,8 @@ export default RuntimeInput.extend(MyMixin, {
   [MY_VAL]: 'val',
   queryParams: {},
 
-  // error: service(),
-  // errorService: service('error'),
+  error: service(),
+  errorService: service('error'),
 
   unobservedProp: null,
   offProp: null,
