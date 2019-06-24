@@ -1,6 +1,6 @@
 {
   "runtime.input": {
-    "computedProperties": ["computedMacro", "numPlusOne", "numPlusPlus"],
+    "computedProperties": ["computedMacro", "anotherMacro", "numPlusOne", "numPlusPlus"],
     "observedProperties": [],
     "observerProperties": {},
     "offProperties": { "offProp": ["prop1", "prop2"] },

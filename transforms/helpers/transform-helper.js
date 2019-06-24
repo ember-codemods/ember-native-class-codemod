@@ -306,29 +306,31 @@ function createCallExpressionProp(j, callExprProp) {
     !callExprProp.hasFilterDecorator &&
     get(callExprLastArg, 'type');
 
-  if (lastArgType === 'FunctionExpression') {
-    const functionExpr = {
-      isComputed: true,
-      kind: callExprProp.kind,
-      key: callExprProp.key,
-      value: callExprLastArg,
-      comments: callExprProp.comments,
-    };
-    return [createMethodProp(j, functionExpr, createInstancePropDecorators(j, callExprProp))];
-  } else if (lastArgType === 'ObjectExpression') {
-    const callExprMethods = callExprLastArg.properties.map(callExprFunction => {
-      callExprFunction.isComputed = true;
-      callExprFunction.kind = getPropName(callExprFunction);
-      callExprFunction.key = callExprProp.key;
-      callExprFunction.value.params.shift();
-      return createMethodProp(j, callExprFunction);
-    });
+  if (callExprProp.decoratorNames.includes('computed')) {
+    if (lastArgType === 'FunctionExpression') {
+      const functionExpr = {
+        isComputed: true,
+        kind: callExprProp.kind,
+        key: callExprProp.key,
+        value: callExprLastArg,
+        comments: callExprProp.comments,
+      };
+      return [createMethodProp(j, functionExpr, createInstancePropDecorators(j, callExprProp))];
+    } else if (lastArgType === 'ObjectExpression') {
+      const callExprMethods = callExprLastArg.properties.map(callExprFunction => {
+        callExprFunction.isComputed = true;
+        callExprFunction.kind = getPropName(callExprFunction);
+        callExprFunction.key = callExprProp.key;
+        callExprFunction.value.params.shift();
+        return createMethodProp(j, callExprFunction);
+      });
 
-    withDecorators(
-      withComments(callExprMethods[0], callExprProp),
-      createInstancePropDecorators(j, callExprProp)
-    );
-    return callExprMethods;
+      withDecorators(
+        withComments(callExprMethods[0], callExprProp),
+        createInstancePropDecorators(j, callExprProp)
+      );
+      return callExprMethods;
+    }
   } else {
     return [createClassProp(j, callExprProp)];
   }
