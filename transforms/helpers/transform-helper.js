@@ -300,13 +300,17 @@ function createActionDecoratedProps(j, actionsProp) {
  */
 function createCallExpressionProp(j, callExprProp) {
   const callExprArgs = callExprProp.callExprArgs.slice(0);
-  const callExprLastArg = callExprArgs.pop();
+  let callExprLastArg;
+  if (callExprProp.shouldRemoveLastArg) {
+    callExprLastArg = callExprArgs.pop();
+  }
+
   const lastArgType =
     !callExprProp.hasMapDecorator &&
     !callExprProp.hasFilterDecorator &&
     get(callExprLastArg, 'type');
 
-  if (callExprProp.decoratorNames.includes('computed')) {
+  if (callExprProp.shouldRemoveLastArg) {
     if (lastArgType === 'FunctionExpression') {
       const functionExpr = {
         isComputed: true,

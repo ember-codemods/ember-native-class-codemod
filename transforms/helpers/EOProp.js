@@ -89,11 +89,12 @@ class EOProp {
   }
 
   get shouldRemoveLastArg() {
-    const lastArg = this.callExprArgs.slice(-1) || [];
+    const lastArg = this.callExprArgs[this.callExprArgs.length - 1];
 
     return (
-      lastArg.length > 0 &&
-      (lastArg[0].type === 'FunctionExpression' || lastArg[0].type === 'ObjectExpression')
+      lastArg &&
+      (lastArg.type === 'FunctionExpression' ||
+        (this.decoratorNames.includes('computed') && lastArg.type === 'ObjectExpression'))
     );
   }
 
