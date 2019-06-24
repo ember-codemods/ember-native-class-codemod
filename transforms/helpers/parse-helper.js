@@ -35,8 +35,8 @@ function getEmberObjectProps(j, eoExpression, importedDecoratedProps = {}, runti
     } else if (prop.name === 'attributeBindings') {
       Object.assign(attributeBindingsProps, parseBindingProps(prop.value.elements));
     } else {
-      prop.setDecorators(importedDecoratedProps);
       prop.setRuntimeData(runtimeData);
+      prop.setDecorators(importedDecoratedProps);
       instanceProps.push(prop);
     }
   });
@@ -83,7 +83,6 @@ function getDecoratorsToImportMap(instanceProps, decoratorsMap = {}) {
   return instanceProps.reduce((specs, prop) => {
     return {
       action: specs.action || prop.isAction,
-      wrapComputed: specs.wrapComputed || prop.hasWrapComputedDecorator,
       attribute: specs.attribute || prop.hasAttributeDecorator,
       className: specs.className || prop.hasClassNameDecorator,
       classNames: specs.classNames || prop.isClassNames,

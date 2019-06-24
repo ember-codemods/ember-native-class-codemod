@@ -141,10 +141,6 @@ class EOProp {
     return this.decoratorNames.includes('off');
   }
 
-  get hasWrapComputedDecorator() {
-    return this.decoratorNames.includes('wrapComputed');
-  }
-
   get hasRuntimeData() {
     return !!this.runtimeType;
   }
@@ -164,15 +160,18 @@ class EOProp {
   setDecorators(importedDecoratedProps) {
     if (this.isCallExpression) {
       this.setCallExpressionProps();
+
       const { decoratorName, isMethodDecorator, isMetaDecorator, importedName } =
         importedDecoratedProps[this.calleeName] || {};
+
       if (decoratorName) {
         this.hasMapDecorator = importedName === 'map';
         this.hasFilterDecorator = importedName === 'filter';
-        this.hasComputedDecorator = importedName === 'computed';
         this.hasMethodDecorator = isMethodDecorator;
         this.hasMetaDecorator = isMetaDecorator;
         this.decoratorNames.push(decoratorName);
+      } else if (this.isComputed) {
+        this.decoratorNames.push(this.calleeName);
       }
     }
   }
@@ -201,6 +200,7 @@ class EOProp {
     if (!type) {
       return;
     }
+
     const name = this.name;
     if (Object.keys(unobservedProperties).includes(name)) {
       this.decoratorNames.push('unobserves');
@@ -210,8 +210,8 @@ class EOProp {
       this.decoratorNames.push('off');
       this.decoratorArgs['off'] = offProperties[name];
     }
-    if (computedProperties.includes(name) && !this.hasComputedDecorator && !this.hasMetaDecorator) {
-      this.decoratorNames.push('wrapComputed');
+    if (computedProperties.includes(name)) {
+      this.isComputed = true;
     }
     if (this.isAction) {
       this.overriddenActions = overriddenActions;

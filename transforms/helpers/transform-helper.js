@@ -304,9 +304,7 @@ function createCallExpressionProp(j, callExprProp) {
   const lastArgType =
     !callExprProp.hasMapDecorator &&
     !callExprProp.hasFilterDecorator &&
-    !callExprProp.hasWrapComputedDecorator
-      ? get(callExprLastArg, 'type')
-      : '';
+    get(callExprLastArg, 'type');
 
   if (lastArgType === 'FunctionExpression') {
     const functionExpr = {
