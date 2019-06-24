@@ -130,7 +130,7 @@ function getVariableName(varDeclaration) {
  * @param {CallExpression} eoCallExpression
  * @returns {VariableDeclaration}
  */
-function getClosetVariableDeclaration(j, eoCallExpression) {
+function getClosestVariableDeclaration(j, eoCallExpression) {
   const varDeclarations = j(eoCallExpression).closest(j.VariableDeclaration);
   return varDeclarations.length > 0 ? varDeclarations.get() : null;
 }
@@ -145,7 +145,7 @@ function getClosetVariableDeclaration(j, eoCallExpression) {
  * @returns {CallExpression|VariableDeclaration}
  */
 function getExpressionToReplace(j, eoCallExpression) {
-  const varDeclaration = getClosetVariableDeclaration(j, eoCallExpression);
+  const varDeclaration = getClosestVariableDeclaration(j, eoCallExpression);
   const isFollowedByCreate = get(eoCallExpression, 'parentPath.value.property.name') === 'create';
 
   let expressionToReplace = eoCallExpression;
@@ -243,7 +243,7 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
     }
 
     const superClassName = get(eoCallExpression, 'value.callee.object.name');
-    const varDeclaration = getClosetVariableDeclaration(j, eoCallExpression);
+    const varDeclaration = getClosestVariableDeclaration(j, eoCallExpression);
     const classVariableName = getVariableName(varDeclaration);
     const className = getClassName(
       j,
@@ -283,7 +283,7 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
 
 module.exports = {
   getClassName,
-  getClosetVariableDeclaration,
+  getClosestVariableDeclaration,
   getEmberObjectCallExpressions,
   getEmberObjectProps,
   getExpressionToReplace,
