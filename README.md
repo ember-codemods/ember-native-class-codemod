@@ -88,7 +88,7 @@ transformation of
 
 <!--TRANSFORMS_START-->
 * [ember-object](transforms/ember-object/README.md)
-* [helpers](transforms/helpers/README.md)
+* [helpers](transforms/helpers)
 <!--TRANSFORMS_END-->
 
 ## Contributing
