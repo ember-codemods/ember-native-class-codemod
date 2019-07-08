@@ -47,7 +47,7 @@ Otherwise, the codemod will not be able to detect them or analyze them.
 
 ### Types
 
-The `type` option can be used to further transforms to a particular type of
+The `type` option can be used to further narrow down transforms to a particular type of
 ember object within the application or addon. The types can be any of the
 following:
 
