@@ -2,12 +2,11 @@
 
 const path = require('path');
 const { runTransformTest } = require('codemod-cli');
+const { setTelemetry } = require('ember-codemods-telemetry-helpers');
 
 // bootstrap the mock telemetry data
 const walkSync = require('walk-sync');
 const mockTelemetryData = require('./__testfixtures__/-mock-telemetry.json');
-
-const cache = require('../../lib/cache');
 
 // This is nasty, cwd is screwed up here for some reason
 let testFiles = walkSync('./transforms/ember-object/__testfixtures__', {
@@ -22,7 +21,7 @@ for (let testFile of testFiles) {
   mockTelemetry[path.resolve(__dirname, `./__testfixtures__/${moduleName}`)] = value;
 }
 
-cache.set('telemetry', JSON.stringify(mockTelemetry));
+setTelemetry(mockTelemetry);
 
 runTransformTest({
   type: 'jscodeshift',
