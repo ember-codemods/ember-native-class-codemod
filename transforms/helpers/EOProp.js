@@ -16,7 +16,7 @@ const {
 class EOProp {
   constructor(eoProp) {
     this._prop = eoProp;
-    this.decoratorNames = [];
+    this.decorators = [];
     this.modifiers = [];
     this.decoratorArgs = {};
   }
@@ -27,9 +27,20 @@ class EOProp {
 
   get kind() {
     let kind = get(this._prop, 'kind');
-    if (kind === 'init' && this.hasDecorators && !this.hasMethodDecorator) {
+    let method = get(this._prop, 'method');
+
+    if (
+      kind === 'init' &&
+      this.hasDecorators &&
+      this.decorators.find(d => d.importedName === 'computed')
+    ) {
       kind = 'get';
     }
+
+    if (method || this.hasMethodDecorator) {
+      kind = 'method';
+    }
+
     return kind;
   }
 
@@ -61,6 +72,10 @@ class EOProp {
     return isClassDecoratorProp(this.name);
   }
 
+  get decoratorNames() {
+    return this.decorators.map(d => d.name);
+  }
+
   get classDecoratorName() {
     if (this.name === LAYOUT_DECORATOR_NAME && this.value.name === LAYOUT_DECORATOR_NAME) {
       return LAYOUT_DECORATOR_LOCAL_NAME;
@@ -81,7 +96,7 @@ class EOProp {
   }
 
   get hasDecorators() {
-    return this.decoratorNames.length;
+    return this.decorators.length;
   }
 
   get callExprArgs() {
@@ -89,12 +104,7 @@ class EOProp {
   }
 
   get shouldRemoveLastArg() {
-    const lastArg = this.callExprArgs.slice(-1) || [];
-
-    return (
-      lastArg.length > 0 &&
-      (lastArg[0].type === 'FunctionExpression' || lastArg[0].type === 'ObjectExpression')
-    );
+    return this.kind === 'method' || this.kind === 'get';
   }
 
   get hasModifierWithArgs() {
@@ -141,12 +151,16 @@ class EOProp {
     return this.decoratorNames.includes('off');
   }
 
-  get hasWrapComputedDecorator() {
-    return this.decoratorNames.includes('wrapComputed');
-  }
-
   get hasRuntimeData() {
     return !!this.runtimeType;
+  }
+
+  get hasMethodDecorator() {
+    return this.decorators.find(d => d.isMethodDecorator);
+  }
+
+  get hasMetaDecorator() {
+    return this.decorators.find(d => d.isMetaDecorator);
   }
 
   setCallExpressionProps() {
@@ -164,25 +178,21 @@ class EOProp {
   setDecorators(importedDecoratedProps) {
     if (this.isCallExpression) {
       this.setCallExpressionProps();
-      const { decoratorName, isMethodDecorator, isMetaDecorator, importedName } =
-        importedDecoratedProps[this.calleeName] || {};
-      if (decoratorName) {
-        this.hasMapDecorator = importedName === 'map';
-        this.hasFilterDecorator = importedName === 'filter';
-        this.hasComputedDecorator = importedName === 'computed';
-        this.hasMethodDecorator = isMethodDecorator;
-        this.hasMetaDecorator = isMetaDecorator;
-        this.decoratorNames.push(decoratorName);
+
+      if (importedDecoratedProps[this.calleeName]) {
+        this.decorators.push(importedDecoratedProps[this.calleeName]);
+      } else if (this.isComputed) {
+        this.decorators.push({ name: this.calleeName });
       }
     }
   }
 
   addBindingProps(attributeBindingsProps, classNameBindingsProps) {
     if (attributeBindingsProps[this.name]) {
-      this.decoratorNames.push('attribute');
+      this.decorators.push({ name: 'attribute' });
       this.propList = attributeBindingsProps[this.name];
     } else if (classNameBindingsProps[this.name]) {
-      this.decoratorNames.push('className');
+      this.decorators.push({ name: 'className' });
       this.propList = classNameBindingsProps[this.name];
     }
   }
@@ -201,17 +211,18 @@ class EOProp {
     if (!type) {
       return;
     }
+
     const name = this.name;
     if (Object.keys(unobservedProperties).includes(name)) {
-      this.decoratorNames.push('unobserves');
+      this.decorators.push({ name: 'unobserves' });
       this.decoratorArgs['unobserves'] = unobservedProperties[name];
     }
     if (Object.keys(offProperties).includes(name)) {
-      this.decoratorNames.push('off');
+      this.decorators.push({ name: 'off' });
       this.decoratorArgs['off'] = offProperties[name];
     }
-    if (computedProperties.includes(name) && !this.hasComputedDecorator && !this.hasMetaDecorator) {
-      this.decoratorNames.push('wrapComputed');
+    if (computedProperties.includes(name)) {
+      this.isComputed = true;
     }
     if (this.isAction) {
       this.overriddenActions = overriddenActions;

@@ -3,6 +3,7 @@ import { off, unobserves } from '@ember-decorators/object';
 import { action, computed } from '@ember/object';
 import { alias } from '@ember/object/computed';
 import RuntimeInput from 'common/runtime/input';
+import { service } from '@ember/service';
 
 /**
  * Program comments
@@ -19,6 +20,12 @@ export default class RuntimeInputEmberObject extends RuntimeInput.extend(MyMixin
   [MY_VAL] = 'val';
   queryParams = {};
 
+  @service
+  error;
+
+  @service('error')
+  errorService;
+
   @unobserves('prop3', 'prop4')
   unobservedProp;
 
@@ -33,8 +40,14 @@ export default class RuntimeInputEmberObject extends RuntimeInput.extend(MyMixin
   @alias('numPlusOne')
   numPlusPlus;
 
-  @customMacro
+  @customMacro()
   computedMacro;
+
+  @customMacroWithInput({
+    foo: 123,
+    bar: 'baz'
+  })
+  anotherMacro;
 
   /**
    * Method comments

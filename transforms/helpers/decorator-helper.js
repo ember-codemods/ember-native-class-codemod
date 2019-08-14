@@ -46,30 +46,28 @@ function createCallExpressionDecorators(j, decoratorName, instanceProp) {
     return [];
   }
 
-  if (instanceProp.hasWrapComputedDecorator) {
-    return j.decorator(j.identifier(instanceProp.calleeName));
-  }
+  const decoratorArgs = instanceProp.shouldRemoveLastArg
+    ? instanceProp.callExprArgs.slice(0, -1)
+    : instanceProp.callExprArgs.slice(0);
 
-  const decoratorArgs =
-    !instanceProp.hasMapDecorator &&
-    !instanceProp.hasFilterDecorator &&
-    instanceProp.shouldRemoveLastArg
-      ? instanceProp.callExprArgs.slice(0, -1)
-      : instanceProp.callExprArgs.slice(0);
+  let decoratorExpression =
+    ['computed', 'service', 'controller'].includes(decoratorName) && decoratorArgs.length === 0
+      ? j.identifier(decoratorName)
+      : j.callExpression(j.identifier(decoratorName), decoratorArgs);
 
-  const decoratorExpr = instanceProp.modifiers.reduce(
+  decoratorExpression = instanceProp.modifiers.reduce(
     (callExpr, modifier) =>
       j.callExpression(j.memberExpression(callExpr, modifier.prop), modifier.args),
-    j.callExpression(j.identifier(decoratorName), decoratorArgs)
+    decoratorExpression
   );
 
   if (!instanceProp.modifiers.length) {
-    return j.decorator(decoratorExpr);
+    return j.decorator(decoratorExpression);
   }
 
   // If has modifiers wrap decorators in anonymous call expression
   // it transforms @computed('').readOnly() => @(computed('').readOnly())
-  return j.decorator(j.callExpression(j.identifier(''), [decoratorExpr]));
+  return j.decorator(j.callExpression(j.identifier(''), [decoratorExpression]));
 }
 
 /**

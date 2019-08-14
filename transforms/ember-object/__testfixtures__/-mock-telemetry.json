@@ -1,6 +1,6 @@
 {
   "runtime.input": {
-    "computedProperties": ["computedMacro", "numPlusOne", "numPlusPlus"],
+    "computedProperties": ["computedMacro", "anotherMacro", "numPlusOne", "numPlusPlus", "error", "errorService"],
     "observedProperties": [],
     "observerProperties": {},
     "offProperties": { "offProp": ["prop1", "prop2"] },
@@ -9,5 +9,16 @@
     "ownProperties": [],
     "type": "EmberObject",
     "unobservedProperties": { "unobservedProp": ["prop3", "prop4"] }
+  },
+  "injecting-service.input": {
+    "computedProperties": ["something", "otherThing"],
+    "observedProperties": [],
+    "observerProperties": {},
+    "offProperties": {},
+    "overriddenActions": [],
+    "overriddenProperties": [],
+    "ownProperties": [],
+    "type": "Service",
+    "unobservedProperties": {}
   }
 }

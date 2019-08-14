@@ -300,37 +300,38 @@ function createActionDecoratedProps(j, actionsProp) {
  */
 function createCallExpressionProp(j, callExprProp) {
   const callExprArgs = callExprProp.callExprArgs.slice(0);
-  const callExprLastArg = callExprArgs.pop();
-  const lastArgType =
-    !callExprProp.hasMapDecorator &&
-    !callExprProp.hasFilterDecorator &&
-    !callExprProp.hasWrapComputedDecorator
-      ? get(callExprLastArg, 'type')
-      : '';
+  let callExprLastArg;
+  if (callExprProp.shouldRemoveLastArg) {
+    callExprLastArg = callExprArgs.pop();
+  }
 
-  if (lastArgType === 'FunctionExpression') {
-    const functionExpr = {
-      isComputed: true,
-      kind: callExprProp.kind,
-      key: callExprProp.key,
-      value: callExprLastArg,
-      comments: callExprProp.comments,
-    };
-    return [createMethodProp(j, functionExpr, createInstancePropDecorators(j, callExprProp))];
-  } else if (lastArgType === 'ObjectExpression') {
-    const callExprMethods = callExprLastArg.properties.map(callExprFunction => {
-      callExprFunction.isComputed = true;
-      callExprFunction.kind = getPropName(callExprFunction);
-      callExprFunction.key = callExprProp.key;
-      callExprFunction.value.params.shift();
-      return createMethodProp(j, callExprFunction);
-    });
+  const lastArgType = get(callExprLastArg, 'type');
 
-    withDecorators(
-      withComments(callExprMethods[0], callExprProp),
-      createInstancePropDecorators(j, callExprProp)
-    );
-    return callExprMethods;
+  if (callExprProp.shouldRemoveLastArg) {
+    if (lastArgType === 'FunctionExpression') {
+      const functionExpr = {
+        isComputed: true,
+        kind: callExprProp.kind,
+        key: callExprProp.key,
+        value: callExprLastArg,
+        comments: callExprProp.comments,
+      };
+      return [createMethodProp(j, functionExpr, createInstancePropDecorators(j, callExprProp))];
+    } else if (lastArgType === 'ObjectExpression') {
+      const callExprMethods = callExprLastArg.properties.map(callExprFunction => {
+        callExprFunction.isComputed = true;
+        callExprFunction.kind = getPropName(callExprFunction);
+        callExprFunction.key = callExprProp.key;
+        callExprFunction.value.params.shift();
+        return createMethodProp(j, callExprFunction);
+      });
+
+      withDecorators(
+        withComments(callExprMethods[0], callExprProp),
+        createInstancePropDecorators(j, callExprProp)
+      );
+      return callExprMethods;
+    }
   } else {
     return [createClassProp(j, callExprProp)];
   }
@@ -394,6 +395,7 @@ function createClass(
       classBody.push(createClassProp(j, prop));
     }
   });
+
   return withDecorators(
     j.classDeclaration(
       className ? j.identifier(className) : null,

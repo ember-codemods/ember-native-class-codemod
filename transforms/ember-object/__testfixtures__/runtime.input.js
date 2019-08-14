@@ -1,6 +1,7 @@
 import RuntimeInput from 'common/runtime/input';
 import { alias } from '@ember/object/computed';
 import { computed } from '@ember/object';
+import { service } from '@ember/service';
 
 /**
  * Program comments
@@ -15,6 +16,9 @@ export default RuntimeInput.extend(MyMixin, {
   [MY_VAL]: 'val',
   queryParams: {},
 
+  error: service(),
+  errorService: service('error'),
+
   unobservedProp: null,
   offProp: null,
 
@@ -25,6 +29,11 @@ export default RuntimeInput.extend(MyMixin, {
   numPlusPlus: alias('numPlusOne'),
 
   computedMacro: customMacro(),
+
+  anotherMacro: customMacroWithInput({
+    foo: 123,
+    bar: 'baz'
+  }),
 
   /**
    * Method comments

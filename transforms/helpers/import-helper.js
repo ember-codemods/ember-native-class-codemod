@@ -21,20 +21,20 @@ function getDecoratorInfo(specifier, importPropDecoratorMap) {
   const importedName = get(specifier, 'imported.name');
   const isImportedAs = importedName !== localName;
   const isMetaDecorator = !importPropDecoratorMap;
-  let decoratorName;
+  let name;
   if (isImportedAs) {
-    decoratorName = localName;
+    name = localName;
   } else {
     if (isMetaDecorator) {
-      decoratorName = localName;
+      name = localName;
     } else {
-      decoratorName = importPropDecoratorMap[importedName];
+      name = importPropDecoratorMap[importedName];
     }
   }
 
   const isMethodDecorator = METHOD_DECORATORS.includes(importedName);
   return {
-    decoratorName,
+    name,
     importedName,
     isImportedAs,
     isMetaDecorator,
