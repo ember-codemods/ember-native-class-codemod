@@ -24,52 +24,11 @@ const logger = require('./log-helper');
 function getEmberObjectProps(j, eoExpression, importedDecoratedProps = {}, runtimeData = {}) {
   const objProps = get(eoExpression, 'properties') || [];
 
-  const instanceProps = [];
-  const attributeBindingsProps = {};
-  const classNameBindingsProps = {};
-
-  objProps.forEach(objProp => {
-    const prop = new EOProp(objProp);
-    if (prop.name === 'classNameBindings') {
-      Object.assign(classNameBindingsProps, parseBindingProps(prop.value.elements));
-    } else if (prop.name === 'attributeBindings') {
-      Object.assign(attributeBindingsProps, parseBindingProps(prop.value.elements));
-    } else {
-      prop.setRuntimeData(runtimeData);
-      prop.setDecorators(importedDecoratedProps);
-      instanceProps.push(prop);
-    }
-  });
-
-  // Assign decorator names to the binding props if any
-  instanceProps.forEach(instanceProp => {
-    instanceProp.addBindingProps(attributeBindingsProps, classNameBindingsProps);
-  });
-
   return {
-    instanceProps,
+    instanceProps: objProps.map(
+      objProp => new EOProp(objProp, runtimeData, importedDecoratedProps)
+    ),
   };
-}
-
-/**
- * Split the binding property values using `:` as separator
- *
- * For example ["isEnabled:enabled:disabled", "a:b:c", "c:d"] will be parsed as
- * {
- *  isEnabled:["enabled", "disabled"],
- *  a: ["b", "c"],
- *  c: ["d"]
- * }
- *
- * @param {Array} bindingPropElements
- * @returns {Object}
- */
-function parseBindingProps(bindingPropElements = []) {
-  return bindingPropElements.reduce((props, bindingElement) => {
-    const [boundPropName, ...bindingElementList] = bindingElement.value.split(':');
-    props[boundPropName.trim()] = bindingElementList;
-    return props;
-  }, {});
 }
 
 /**
@@ -82,10 +41,10 @@ function parseBindingProps(bindingPropElements = []) {
 function getDecoratorsToImportMap(instanceProps, decoratorsMap = {}) {
   return instanceProps.reduce((specs, prop) => {
     return {
-      action: specs.action || prop.isAction,
-      attribute: specs.attribute || prop.hasAttributeDecorator,
-      className: specs.className || prop.hasClassNameDecorator,
+      action: specs.action || prop.isActions,
       classNames: specs.classNames || prop.isClassNames,
+      classNameBindings: specs.classNameBindings || prop.isClassNameBindings,
+      attributeBindings: specs.attributeBindings || prop.isAttributeBindings,
       layout: specs.layout || prop.isLayoutDecorator,
       templateLayout: specs.templateLayout || prop.isTemplateLayoutDecorator,
       off: specs.off || prop.hasOffDecorator,

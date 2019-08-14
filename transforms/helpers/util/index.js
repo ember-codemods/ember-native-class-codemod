@@ -40,9 +40,9 @@ const EMBER_DECORATOR_SPECIFIERS = {
   '@ember/object': ['action'],
   '@ember-decorators/object': ['off', 'on', 'unobserves'],
   '@ember-decorators/component': [
-    'attribute',
-    'className',
     'classNames',
+    'attributeBindings',
+    'classNameBindings',
     LAYOUT_DECORATOR_NAME,
     'tagName',
     LAYOUT_DECORATOR_LOCAL_NAME,
@@ -247,7 +247,9 @@ function startsWithUpperCaseLetter(word = '') {
  * @returns boolean
  */
 function isClassDecoratorProp(propName) {
-  return propName === 'tagName' || propName === 'classNames' || propName === 'layout';
+  return ['layout', 'tagName', 'classNames', 'classNameBindings', 'attributeBindings'].includes(
+    propName
+  );
 }
 
 /**
