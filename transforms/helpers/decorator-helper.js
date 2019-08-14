@@ -46,12 +46,9 @@ function createCallExpressionDecorators(j, decoratorName, instanceProp) {
     return [];
   }
 
-  const decoratorArgs =
-    !instanceProp.hasMapDecorator &&
-    !instanceProp.hasFilterDecorator &&
-    instanceProp.shouldRemoveLastArg
-      ? instanceProp.callExprArgs.slice(0, -1)
-      : instanceProp.callExprArgs.slice(0);
+  const decoratorArgs = instanceProp.shouldRemoveLastArg
+    ? instanceProp.callExprArgs.slice(0, -1)
+    : instanceProp.callExprArgs.slice(0);
 
   let decoratorExpression =
     ['computed', 'service', 'controller'].includes(decoratorName) && decoratorArgs.length === 0

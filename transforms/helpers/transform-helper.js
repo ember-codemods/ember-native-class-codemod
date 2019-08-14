@@ -305,10 +305,7 @@ function createCallExpressionProp(j, callExprProp) {
     callExprLastArg = callExprArgs.pop();
   }
 
-  const lastArgType =
-    !callExprProp.hasMapDecorator &&
-    !callExprProp.hasFilterDecorator &&
-    get(callExprLastArg, 'type');
+  const lastArgType = get(callExprLastArg, 'type');
 
   if (callExprProp.shouldRemoveLastArg) {
     if (lastArgType === 'FunctionExpression') {
@@ -398,6 +395,7 @@ function createClass(
       classBody.push(createClassProp(j, prop));
     }
   });
+
   return withDecorators(
     j.classDeclaration(
       className ? j.identifier(className) : null,

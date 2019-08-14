@@ -10,6 +10,6 @@ function fullNameMacro() {
 
 @classic
 export default class TestComponentComponent extends Component {
-  @fullNameMacro
+  @fullNameMacro()
   fullName;
 }

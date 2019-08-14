@@ -3,9 +3,9 @@ import Service, { service as injectService } from '@ember/service';
 
 @classic
 export default class InjectingServiceInputService extends Service {
-  @service
+  @injectService()
   something;
 
-  @service('some-thing')
+  @injectService('some-thing')
   otherThing;
 }
