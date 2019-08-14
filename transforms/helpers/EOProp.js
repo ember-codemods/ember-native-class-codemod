@@ -14,11 +14,60 @@ const {
  * A wrapper object for ember object properties
  */
 class EOProp {
-  constructor(eoProp) {
+  constructor(eoProp, runtimeData, importedDecoratedProps) {
     this._prop = eoProp;
     this.decorators = [];
     this.modifiers = [];
     this.decoratorArgs = {};
+
+    if (runtimeData.type) {
+      const {
+        type,
+        computedProperties = [],
+        offProperties = {},
+        overriddenActions = [],
+        overriddenProperties = [],
+        unobservedProperties = {},
+      } = runtimeData;
+
+      this.emberType = type;
+
+      const name = this.name;
+      if (Object.keys(unobservedProperties).includes(name)) {
+        this.decorators.push({ name: 'unobserves' });
+        this.decoratorArgs['unobserves'] = unobservedProperties[name];
+      }
+      if (Object.keys(offProperties).includes(name)) {
+        this.decorators.push({ name: 'off' });
+        this.decoratorArgs['off'] = offProperties[name];
+      }
+      if (computedProperties.includes(name)) {
+        this.isComputed = true;
+      }
+      if (this.isActions) {
+        this.overriddenActions = overriddenActions;
+      }
+      this.isOverridden = overriddenProperties.includes(name);
+      this.runtimeType = type;
+    }
+
+    if (this.isCallExpression) {
+      let calleeObject = get(this._prop, 'value');
+      const modifiers = [getModifier(calleeObject)];
+      while (get(calleeObject, 'callee.type') === 'MemberExpression') {
+        calleeObject = get(calleeObject, 'callee.object');
+        modifiers.push(getModifier(calleeObject));
+      }
+      this.calleeObject = calleeObject;
+      this.modifiers = modifiers.reverse();
+      this.modifiers.shift();
+
+      if (importedDecoratedProps[this.calleeName]) {
+        this.decorators.push(importedDecoratedProps[this.calleeName]);
+      } else if (this.isComputed) {
+        this.decorators.push({ name: this.calleeName });
+      }
+    }
   }
 
   get value() {
@@ -131,16 +180,16 @@ class EOProp {
     return this.name === 'classNames';
   }
 
-  get isAction() {
+  get isClassNameBindings() {
+    return this.name === 'classNameBindings';
+  }
+
+  get isAttributeBindings() {
+    return this.name === 'attributeBindings';
+  }
+
+  get isActions() {
     return this.name === 'actions';
-  }
-
-  get hasClassNameDecorator() {
-    return this.decoratorNames.includes('className');
-  }
-
-  get hasAttributeDecorator() {
-    return this.decoratorNames.includes('attribute');
   }
 
   get hasUnobservesDecorator() {
@@ -161,74 +210,6 @@ class EOProp {
 
   get hasMetaDecorator() {
     return this.decorators.find(d => d.isMetaDecorator);
-  }
-
-  setCallExpressionProps() {
-    let calleeObject = get(this._prop, 'value');
-    const modifiers = [getModifier(calleeObject)];
-    while (get(calleeObject, 'callee.type') === 'MemberExpression') {
-      calleeObject = get(calleeObject, 'callee.object');
-      modifiers.push(getModifier(calleeObject));
-    }
-    this.calleeObject = calleeObject;
-    this.modifiers = modifiers.reverse();
-    this.modifiers.shift();
-  }
-
-  setDecorators(importedDecoratedProps) {
-    if (this.isCallExpression) {
-      this.setCallExpressionProps();
-
-      if (importedDecoratedProps[this.calleeName]) {
-        this.decorators.push(importedDecoratedProps[this.calleeName]);
-      } else if (this.isComputed) {
-        this.decorators.push({ name: this.calleeName });
-      }
-    }
-  }
-
-  addBindingProps(attributeBindingsProps, classNameBindingsProps) {
-    if (attributeBindingsProps[this.name]) {
-      this.decorators.push({ name: 'attribute' });
-      this.propList = attributeBindingsProps[this.name];
-    } else if (classNameBindingsProps[this.name]) {
-      this.decorators.push({ name: 'className' });
-      this.propList = classNameBindingsProps[this.name];
-    }
-  }
-
-  setRuntimeData({
-    computedProperties = [],
-    // observedProperties = [],
-    // observerProperties = {},
-    offProperties = {},
-    overriddenActions = [],
-    overriddenProperties = [],
-    // ownProperties = [],
-    type = '',
-    unobservedProperties = {},
-  }) {
-    if (!type) {
-      return;
-    }
-
-    const name = this.name;
-    if (Object.keys(unobservedProperties).includes(name)) {
-      this.decorators.push({ name: 'unobserves' });
-      this.decoratorArgs['unobserves'] = unobservedProperties[name];
-    }
-    if (Object.keys(offProperties).includes(name)) {
-      this.decorators.push({ name: 'off' });
-      this.decoratorArgs['off'] = offProperties[name];
-    }
-    if (computedProperties.includes(name)) {
-      this.isComputed = true;
-    }
-    if (this.isAction) {
-      this.overriddenActions = overriddenActions;
-    }
-    this.isOverridden = overriddenProperties.includes(name);
-    this.runtimeType = type;
   }
 }
 

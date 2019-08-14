@@ -1,5 +1,13 @@
 import classic from 'ember-classic-decorator';
-import { attribute, className, classNames, tagName, layout as templateLayout } from '@ember-decorators/component';
+
+import {
+  classNames,
+  attributeBindings,
+  classNameBindings,
+  tagName,
+  layout as templateLayout,
+} from '@ember-decorators/component';
+
 import { observes as watcher, on } from '@ember-decorators/object';
 import { inject as controller } from '@ember/controller';
 import { inject as service } from '@ember/service';
@@ -80,20 +88,16 @@ class Foo extends EmberObject {
 }
 
 @classic
+@classNameBindings('isEnabled:enabled:disabled', 'a:b:c', 'c:d')
+@attributeBindings('customHref:href')
 class Comp extends EmberObject {
   @computed('a', 'c')
-  @className('enabled', 'disabled')
   get isEnabled() {
     return false;
   }
 
-  @className('b', 'c')
   a = true;
-
-  @className('d')
   c = '';
-
-  @attribute('href')
   customHref = 'http://emberjs.com';
 }
 
