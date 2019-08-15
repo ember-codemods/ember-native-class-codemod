@@ -5,12 +5,12 @@ import loadInitializers from 'ember-load-initializers';
 import config from './config/environment';
 
 @classic
-class AppApplication extends Application {
+class App extends Application {
   modulePrefix = config.modulePrefix;
   podModulePrefix = config.podModulePrefix;
   Resolver = Resolver;
 }
 
-loadInitializers(AppApplication, config.modulePrefix);
+loadInitializers(App, config.modulePrefix);
 
-export default AppApplication;
+export default App;

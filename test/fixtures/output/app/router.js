@@ -3,11 +3,11 @@ import EmberRouter from '@ember/routing/router';
 import config from './config/environment';
 
 @classic
-class RouterRouter extends EmberRouter {
+class Router extends EmberRouter {
   location = config.locationType;
   rootURL = config.rootURL;
 }
 
-RouterRouter.map(function() {});
+Router.map(function() {});
 
-export default RouterRouter;
+export default Router;

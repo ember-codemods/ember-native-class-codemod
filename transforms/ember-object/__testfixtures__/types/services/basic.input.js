@@ -1,4 +1,6 @@
+import Service from '@ember/service';
+
 /**
  * Program comments
  */
-const Foo = Test.extend({});
+export default Service.extend({});

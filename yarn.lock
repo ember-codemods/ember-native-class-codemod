@@ -1718,10 +1718,10 @@ code-point-at@^1.0.0:
   resolved "https://registry.yarnpkg.com/code-point-at/-/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
   integrity sha1-DQcLTQQ6W+ozovGkDi7bPZpMz3c=
 
-codemod-cli@^1.0.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/codemod-cli/-/codemod-cli-1.1.0.tgz#c1e59a9430f8a17a7fc9dc9a91f8c477a1b4dc6f"
-  integrity sha512-sPqwdXeK1lKF+Z+JLrKMiFgxAQlk/+cI/9kFMS6h+ufTpjw5vIBCRujWTfs1pasliT6u3uzkM25uBQTlHrUvuQ==
+codemod-cli@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/codemod-cli/-/codemod-cli-2.0.0.tgz#c8c88b1a6ecba6e357a4c0439856366074826734"
+  integrity sha512-gpFtCbDQ4kzCahqL6eXoxk+u/vH3Nfn0gatiwpsMHBk3zJMqQ1g1N4n6Fz+J9F9VsEEshgtJ0sRrpFh7EQWMTQ==
   dependencies:
     "@babel/parser" "^7.4.5"
     chalk "^2.4.2"

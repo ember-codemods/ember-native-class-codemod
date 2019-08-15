@@ -90,7 +90,7 @@ class Foo extends EmberObject {
 @classic
 @classNameBindings('isEnabled:enabled:disabled', 'a:b:c', 'c:d')
 @attributeBindings('customHref:href')
-class Comp extends EmberObject {
+class comp extends EmberObject {
   @computed('a', 'c')
   get isEnabled() {
     return false;

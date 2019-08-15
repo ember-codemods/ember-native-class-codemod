@@ -5,17 +5,17 @@ import Controller from '@ember/controller';
 import Evented from '@ember/object/evented';
 
 @classic
-class Ser extends Service {}
+class ser extends Service {}
 
 @classic
-class Ctrl extends Controller {}
+class ctrl extends Controller {}
 
 @classic
-class Evt extends Service.extend(Evented) {
+class evt extends Service.extend(Evented) {
   @on('click')
   e() {
     return 'e';
   }
 }
 
-export { Ser, Ctrl, Evt };
+export { ser, ctrl, evt };

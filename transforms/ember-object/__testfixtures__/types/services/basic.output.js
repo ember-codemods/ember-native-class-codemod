@@ -1,7 +1,8 @@
 import classic from 'ember-classic-decorator';
+import Service from '@ember/service';
 
 /**
  * Program comments
  */
 @classic
-class Foo extends Test {}
+export default class BasicService extends Service {}

@@ -1,4 +1,4 @@
-import RuntimeInput from 'common/runtime/input';
+import Runtime from 'common/runtime';
 import { alias } from '@ember/object/computed';
 import { computed } from '@ember/object';
 import { service } from '@ember/service';
@@ -6,7 +6,7 @@ import { service } from '@ember/service';
 /**
  * Program comments
  */
-export default RuntimeInput.extend(MyMixin, {
+export default Runtime.extend(MyMixin, {
   /**
    * Property comments
    */
