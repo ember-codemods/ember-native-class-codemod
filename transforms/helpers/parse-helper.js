@@ -208,6 +208,11 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
     );
 
     const errors = hasValidProps(j, eoProps, options);
+
+    if (get(eoCallExpression, 'parentPath.value.type') === 'MemberExpression') {
+      errors.push('class has chained definition (e.g. EmberObject.extend().reopenClass();');
+    }
+
     if (errors.length) {
       logger.warn(`[${filePath}]: FAILURE \nValidation errors: \n\t${errors.join('\n\t')}`);
       return;
