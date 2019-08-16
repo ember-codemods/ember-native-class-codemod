@@ -121,13 +121,26 @@ function getExpressionToReplace(j, eoCallExpression) {
  * @param {String} filePath
  * @return {String}
  */
-function getClassName(j, classVariableName, filePath, superClassName, type = '') {
-  const className = classVariableName || camelCase(path.basename(filePath, 'js'));
-  let capitalizedClassName = `${capitalizeFirstLetter(className)}${capitalizeFirstLetter(type)}`;
-  if (capitalizedClassName === superClassName) {
-    capitalizedClassName = capitalizeFirstLetter(className);
+function getClassName(j, eoCallExpression, filePath, type = '') {
+  const varDeclaration = getClosestVariableDeclaration(j, eoCallExpression);
+  const classVariableName = getVariableName(varDeclaration);
+
+  if (classVariableName) {
+    return classVariableName;
   }
-  return capitalizedClassName;
+
+  let className = capitalizeFirstLetter(camelCase(path.basename(filePath, 'js')));
+  const capitalizedType = capitalizeFirstLetter(type);
+
+  if (capitalizedType === className) {
+    className = capitalizeFirstLetter(camelCase(path.basename(path.dirname(filePath))));
+  }
+
+  if (!['Component', 'Helper', 'EmberObject'].includes(type)) {
+    className = `${className}${capitalizedType}`;
+  }
+
+  return className;
 }
 
 /**
@@ -200,19 +213,12 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
       return;
     }
 
-    const superClassName = get(eoCallExpression, 'value.callee.object.name');
-    const varDeclaration = getClosestVariableDeclaration(j, eoCallExpression);
-    const classVariableName = getVariableName(varDeclaration);
-    const className = getClassName(
-      j,
-      classVariableName,
-      filePath,
-      superClassName,
-      get(options, 'runtimeData.type')
-    );
+    let className = getClassName(j, eoCallExpression, filePath, get(options, 'runtimeData.type'));
 
-    if (classVariableName) {
-      root.findVariableDeclarators(classVariableName).renameTo(className);
+    const superClassName = get(eoCallExpression, 'value.callee.object.name');
+
+    if (className === superClassName) {
+      className = `_${className}`;
     }
 
     const es6ClassDeclaration = createClass(j, className, eoProps, superClassName, mixins, options);

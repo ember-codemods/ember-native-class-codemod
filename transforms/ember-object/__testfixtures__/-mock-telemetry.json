@@ -1,5 +1,5 @@
 {
-  "runtime.input": {
+  "runtime": {
     "computedProperties": ["computedMacro", "anotherMacro", "numPlusOne", "numPlusPlus", "error", "errorService"],
     "observedProperties": [],
     "observerProperties": {},
@@ -10,7 +10,7 @@
     "type": "EmberObject",
     "unobservedProperties": { "unobservedProp": ["prop3", "prop4"] }
   },
-  "injecting-service.input": {
+  "injecting-service": {
     "computedProperties": ["something", "otherThing"],
     "observedProperties": [],
     "observerProperties": {},
@@ -20,5 +20,23 @@
     "ownProperties": [],
     "type": "Service",
     "unobservedProperties": {}
+  },
+  "types/components/basic": {
+    "type": "Component"
+  },
+  "types/controllers/basic": {
+    "type": "Controller"
+  },
+  "types/helpers/basic": {
+    "type": "Helper"
+  },
+  "types/routes/basic": {
+    "type": "Route"
+  },
+  "types/services/basic": {
+    "type": "Service"
+  },
+  "types/pods/foo/controller": {
+    "type": "Controller"
   }
 }

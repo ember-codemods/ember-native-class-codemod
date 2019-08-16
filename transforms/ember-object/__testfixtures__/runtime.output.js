@@ -2,14 +2,14 @@ import classic from 'ember-classic-decorator';
 import { off, unobserves } from '@ember-decorators/object';
 import { action, computed } from '@ember/object';
 import { alias } from '@ember/object/computed';
-import RuntimeInput from 'common/runtime/input';
+import Runtime from 'common/runtime';
 import { service } from '@ember/service';
 
 /**
  * Program comments
  */
 @classic
-export default class RuntimeInputEmberObject extends RuntimeInput.extend(MyMixin) {
+export default class _Runtime extends Runtime.extend(MyMixin) {
   /**
    * Property comments
    */

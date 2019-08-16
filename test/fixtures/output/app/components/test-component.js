@@ -9,7 +9,7 @@ function fullNameMacro() {
 }
 
 @classic
-export default class TestComponentComponent extends Component {
+export default class TestComponent extends Component {
   @fullNameMacro()
   fullName;
 }

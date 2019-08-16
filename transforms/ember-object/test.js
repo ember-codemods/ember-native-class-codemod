@@ -16,7 +16,7 @@ let testFiles = walkSync('./transforms/ember-object/__testfixtures__', {
 let mockTelemetry = {};
 
 for (let testFile of testFiles) {
-  let moduleName = testFile.replace(/\.[^/.]+$/, '');
+  let moduleName = testFile.replace(/\.input\.[^/.]+$/, '');
   let value = mockTelemetryData[moduleName] || {};
 
   mockTelemetry[path.resolve(__dirname, `./__testfixtures__/${moduleName}`)] = value;
