@@ -1,7 +1,7 @@
 const path = require('path');
 const camelCase = require('camelcase');
+const { getTelemetryFor } = require('ember-codemods-telemetry-helpers');
 const { capitalizeFirstLetter, get, startsWithUpperCaseLetter } = require('./util');
-const { getTelemetryFor } = require('./util/get-telemetry-for');
 const { hasValidProps, isFileOfType, isTestFile } = require('./validation-helper');
 const { createClass, withComments } = require('./transform-helper');
 const { createDecoratorImportDeclarations, getImportedDecoratedProps } = require('./import-helper');
