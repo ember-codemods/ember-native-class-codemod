@@ -25,13 +25,13 @@ npx ember-native-class-codemod http://localhost:4200/path/to/server [OPTIONS] pa
 
 The codemod accepts the following options:
 
-| Option              | Value   | Default                         | Details                                                                                                                                          |
-| ------------------- | ------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| --class-fields      | boolean | true                            | Enable/disable transformation using class fields                                                                                                 |
-| --decorators        | boolean | true                            | Enable/disable transformation using decorators                                                                                                   |
-| --classic-decorator | boolean | true                            | Enable/disable adding the [`@classic` decorator](https://github.com/pzuraq/ember-classic-decorator), which helps with transitioning Ember Octane |
-| --type              | String  | Empty (match all types in path) | Apply transformation to only passed type. The type can be one of `services`, `routes`, `components`, `controllers`                               |
-| --quote             | String  | 'single'                        | Whether to use double or single quotes by default for new statements that are added during the codemod.                                          |
+|        Option         |  Value  |             Default             |                                                                     Details                                                                      |
+| --------------------- | ------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--class-fields`      | boolean | `true`                          | Enable/disable transformation using class fields                                                                                                 |
+| `--decorators`        | boolean | `true`                          | Enable/disable transformation using decorators                                                                                                   |
+| `--classic-decorator` | boolean | `true`                          | Enable/disable adding the [`@classic` decorator](https://github.com/pzuraq/ember-classic-decorator), which helps with transitioning Ember Octane |
+| `--type`              | String  | Empty (match all types in path) | Apply transformation to only passed type. The type can be one of `services`, `routes`, `components`, `controllers`                               |
+| `--quote`             | String  | `'single'`                      | Whether to use double or single quotes by default for new statements that are added during the codemod.                                          |
 
 ### Gathering Runtime Data
 
