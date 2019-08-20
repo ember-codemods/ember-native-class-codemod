@@ -17,12 +17,16 @@ ember-native-class-codemod ember-object path/of/files/ or/some**/*glob.js
 <!--FIXTURES_TOC_START-->
 * [action-invalid](#action-invalid)
 * [basic](#basic)
+* [chained-class-definition](#chained-class-definition)
 * [class-fields](#class-fields)
+* [class-reopen](#class-reopen)
 * [decorators-invalid](#decorators-invalid)
 * [decorators](#decorators)
 * [default-export](#default-export)
 * [double-quotes](#double-quotes)
+* [ember-concurrency](#ember-concurrency)
 * [import](#import)
+* [injecting-service](#injecting-service)
 * [runtime](#runtime)
 <!--FIXTURES_TOC_END-->
 
@@ -219,6 +223,24 @@ class Foo extends EmberObject.extend(MixinA, MixinB) {}
 
 ```
 ---
+<a id="chained-class-definition">**chained-class-definition**</a>
+
+**Input** (<small>[chained-class-definition.input.js](transforms/ember-object/__testfixtures__/chained-class-definition.input.js)</small>):
+```js
+import EmberObject from '@ember/object';
+
+export default EmberObject.extend({}).reopenClass({});
+
+```
+
+**Output** (<small>[chained-class-definition.output.js](transforms/ember-object/__testfixtures__/chained-class-definition.output.js)</small>):
+```js
+import EmberObject from '@ember/object';
+
+export default EmberObject.extend({}).reopenClass({});
+
+```
+---
 <a id="class-fields">**class-fields**</a>
 
 **Input** (<small>[class-fields.input.js](transforms/ember-object/__testfixtures__/class-fields.input.js)</small>):
@@ -281,6 +303,34 @@ class Foo extends Test {
     super.anotherMethod(...arguments);
   }
 }
+
+```
+---
+<a id="class-reopen">**class-reopen**</a>
+
+**Input** (<small>[class-reopen.input.js](transforms/ember-object/__testfixtures__/class-reopen.input.js)</small>):
+```js
+import EmberObject from '@ember/object';
+
+const Foo = EmberObject.extend({});
+
+Foo.reopenClass({});
+
+export default Foo;
+
+```
+
+**Output** (<small>[class-reopen.output.js](transforms/ember-object/__testfixtures__/class-reopen.output.js)</small>):
+```js
+import classic from 'ember-classic-decorator';
+import EmberObject from '@ember/object';
+
+@classic
+class Foo extends EmberObject {}
+
+Foo.reopenClass({});
+
+export default Foo;
 
 ```
 ---
@@ -566,7 +616,15 @@ const Foo = EmberObject.extend({
 **Output** (<small>[decorators.output.js](transforms/ember-object/__testfixtures__/decorators.output.js)</small>):
 ```js
 import classic from 'ember-classic-decorator';
-import { attribute, className, classNames, tagName, layout as templateLayout } from '@ember-decorators/component';
+
+import {
+  classNames,
+  attributeBindings,
+  classNameBindings,
+  tagName,
+  layout as templateLayout,
+} from '@ember-decorators/component';
+
 import { observes as watcher, on } from '@ember-decorators/object';
 import { inject as controller } from '@ember/controller';
 import { inject as service } from '@ember/service';
@@ -647,20 +705,16 @@ class Foo extends EmberObject {
 }
 
 @classic
-class Comp extends EmberObject {
+@classNameBindings('isEnabled:enabled:disabled', 'a:b:c', 'c:d')
+@attributeBindings('customHref:href')
+class comp extends EmberObject {
   @computed('a', 'c')
-  @className('enabled', 'disabled')
   get isEnabled() {
     return false;
   }
 
-  @className('b', 'c')
   a = true;
-
-  @className('d')
   c = '';
-
-  @attribute('href')
   customHref = 'http://emberjs.com';
 }
 
@@ -784,7 +838,7 @@ export default EmberObject.extend({});
 ```js
 import classic from 'ember-classic-decorator';
 @classic
-export default class DefaultExportInput extends EmberObject {}
+export default class DefaultExport extends EmberObject {}
 
 ```
 ---
@@ -879,6 +933,43 @@ class Foo extends EmberObject.extend(MixinA, MixinB) {}
 
 ```
 ---
+<a id="ember-concurrency">**ember-concurrency**</a>
+
+**Input** (<small>[ember-concurrency.input.js](transforms/ember-object/__testfixtures__/ember-concurrency.input.js)</small>):
+```js
+import Component from '@ember/component';
+import { task } from 'ember-concurrency';
+
+export default Component.extend({
+  fetchAlerts: task(function*() {
+    let alerts = yield this.store.query('alert', {
+      filter: { id: this.get('alert.id') }
+    });
+    return alerts.sortBy('createdAt').reverse();
+  }).drop(),
+});
+
+```
+
+**Output** (<small>[ember-concurrency.output.js](transforms/ember-object/__testfixtures__/ember-concurrency.output.js)</small>):
+```js
+import classic from 'ember-classic-decorator';
+import Component from '@ember/component';
+import { task } from 'ember-concurrency';
+
+@classic
+export default class EmberConcurrency extends Component {
+  @(task(function*() {
+    let alerts = yield this.store.query('alert', {
+      filter: { id: this.get('alert.id') }
+    });
+    return alerts.sortBy('createdAt').reverse();
+  }).drop())
+  fetchAlerts;
+}
+
+```
+---
 <a id="import">**import**</a>
 
 **Input** (<small>[import.input.js](transforms/ember-object/__testfixtures__/import.input.js)</small>):
@@ -908,20 +999,49 @@ import Controller from '@ember/controller';
 import Evented from '@ember/object/evented';
 
 @classic
-class Ser extends Service {}
+class ser extends Service {}
 
 @classic
-class Ctrl extends Controller {}
+class ctrl extends Controller {}
 
 @classic
-class Evt extends Service.extend(Evented) {
+class evt extends Service.extend(Evented) {
   @on('click')
   e() {
     return 'e';
   }
 }
 
-export { Ser, Ctrl, Evt };
+export { ser, ctrl, evt };
+
+```
+---
+<a id="injecting-service">**injecting-service**</a>
+
+**Input** (<small>[injecting-service.input.js](transforms/ember-object/__testfixtures__/injecting-service.input.js)</small>):
+```js
+import Service, { service as injectService } from '@ember/service';
+
+export default Service.extend({
+  something: injectService(),
+  otherThing: injectService('some-thing'),
+});
+
+```
+
+**Output** (<small>[injecting-service.output.js](transforms/ember-object/__testfixtures__/injecting-service.output.js)</small>):
+```js
+import classic from 'ember-classic-decorator';
+import Service, { service as injectService } from '@ember/service';
+
+@classic
+export default class InjectingServiceService extends Service {
+  @injectService()
+  something;
+
+  @injectService('some-thing')
+  otherThing;
+}
 
 ```
 ---
@@ -929,14 +1049,15 @@ export { Ser, Ctrl, Evt };
 
 **Input** (<small>[runtime.input.js](transforms/ember-object/__testfixtures__/runtime.input.js)</small>):
 ```js
-import RuntimeInput from 'common/runtime/input';
+import Runtime from 'common/runtime';
 import { alias } from '@ember/object/computed';
 import { computed } from '@ember/object';
+import { service } from '@ember/service';
 
 /**
  * Program comments
  */
-export default RuntimeInput.extend(MyMixin, {
+export default Runtime.extend(MyMixin, {
   /**
    * Property comments
    */
@@ -945,6 +1066,9 @@ export default RuntimeInput.extend(MyMixin, {
   numProp: 123,
   [MY_VAL]: 'val',
   queryParams: {},
+
+  error: service(),
+  errorService: service('error'),
 
   unobservedProp: null,
   offProp: null,
@@ -956,6 +1080,11 @@ export default RuntimeInput.extend(MyMixin, {
   numPlusPlus: alias('numPlusOne'),
 
   computedMacro: customMacro(),
+
+  anotherMacro: customMacroWithInput({
+    foo: 123,
+    bar: 'baz'
+  }),
 
   /**
    * Method comments
@@ -1001,13 +1130,14 @@ import classic from 'ember-classic-decorator';
 import { off, unobserves } from '@ember-decorators/object';
 import { action, computed } from '@ember/object';
 import { alias } from '@ember/object/computed';
-import RuntimeInput from 'common/runtime/input';
+import Runtime from 'common/runtime';
+import { service } from '@ember/service';
 
 /**
  * Program comments
  */
 @classic
-export default class RuntimeInputEmberObject extends RuntimeInput.extend(MyMixin) {
+export default class _Runtime extends Runtime.extend(MyMixin) {
   /**
    * Property comments
    */
@@ -1017,6 +1147,12 @@ export default class RuntimeInputEmberObject extends RuntimeInput.extend(MyMixin
   numProp = 123;
   [MY_VAL] = 'val';
   queryParams = {};
+
+  @service
+  error;
+
+  @service('error')
+  errorService;
 
   @unobserves('prop3', 'prop4')
   unobservedProp;
@@ -1032,8 +1168,14 @@ export default class RuntimeInputEmberObject extends RuntimeInput.extend(MyMixin
   @alias('numPlusOne')
   numPlusPlus;
 
-  @customMacro
+  @customMacro()
   computedMacro;
+
+  @customMacroWithInput({
+    foo: 123,
+    bar: 'baz'
+  })
+  anotherMacro;
 
   /**
    * Method comments
