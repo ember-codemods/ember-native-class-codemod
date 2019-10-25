@@ -1,5 +1,5 @@
 const path = require('path');
-const { getOptions } = require('codemod-cli');
+const { getCoercedOptions } = require('../helpers/options');
 const { replaceEmberObjectExpressions } = require('../helpers/parse-helper');
 
 const DEFAULT_OPTIONS = {
@@ -18,7 +18,11 @@ module.exports = function transformer(file, api) {
   }
 
   const j = api.jscodeshift;
-  const options = Object.assign({}, DEFAULT_OPTIONS, getOptions());
+  const options = Object.assign(
+    {},
+    DEFAULT_OPTIONS,
+    getCoercedOptions(['decorators', 'classFields', 'classicDecorator'])
+  );
   let { source } = file;
 
   const root = j(source);
