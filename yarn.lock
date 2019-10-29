@@ -2188,9 +2188,9 @@ electron-to-chromium@^1.3.103:
   integrity sha512-De+lPAxEcpxvqPTyZAXELNpRZXABRxf+uL/rSykstQhzj/B0l1150G/ExIIxKc16lI89Hgz81J0BHAcbTqK49g==
 
 ember-codemods-telemetry-helpers@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/ember-codemods-telemetry-helpers/-/ember-codemods-telemetry-helpers-1.0.0.tgz#372bc6ceb0aecb42506d9e5918bff1b9beda8a18"
-  integrity sha512-aF87JWxCuwPirxBg9ZVwUYXsOAlg8BWSsps2r33vV2/vq+/xP1bYW4FBZ9crBzn6Ieb3A6ONcXPI/7n/69VSHg==
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/ember-codemods-telemetry-helpers/-/ember-codemods-telemetry-helpers-1.0.1.tgz#98bc4a31c593aecb777550d3b88503f009a245ea"
+  integrity sha512-npgoYq0Yqgt1ERyVlpk4kkl2kxQyaO4d4/QeWk9zSzza+qwAA/UnmJwuXbhBuRaJsw0JYA7p8lF/CEQYNnvsnw==
   dependencies:
     fs-extra "^8.1.0"
     git-repo-info "^2.1.0"
