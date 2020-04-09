@@ -79,7 +79,7 @@ transformation of
 - `ember-data` classes such as `DS.Model`, `DS.Adapter` etc
 - Mixins
 - Ember Objects with objects or arrays as direct properties (`actions` and
-  `queryParams` are the exception). See `eslint-plugin-ember/avoid-leaking-state-in-ember-objects`
+  `queryParams` are the exception). See [eslint-plugin-ember/avoid-leaking-state-in-ember-objects](https://github.com/ember-cli/eslint-plugin-ember/blob/master/docs/rules/avoid-leaking-state-in-ember-objects.md)
   for more details.
 - Ember objects with computed properties that use the `meta` or `property`
   modifiers.
