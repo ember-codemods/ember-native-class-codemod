@@ -81,7 +81,7 @@ class EOProp {
     if (
       kind === 'init' &&
       this.hasDecorators &&
-      this.decorators.find(d => d.importedName === 'computed')
+      this.decorators.find((d) => d.importedName === 'computed')
     ) {
       kind = 'get';
     }
@@ -122,7 +122,7 @@ class EOProp {
   }
 
   get decoratorNames() {
-    return this.decorators.map(d => d.name);
+    return this.decorators.map((d) => d.name);
   }
 
   get classDecoratorName() {
@@ -157,15 +157,15 @@ class EOProp {
   }
 
   get hasModifierWithArgs() {
-    return this.modifiers.some(modifier => modifier.args.length);
+    return this.modifiers.some((modifier) => modifier.args.length);
   }
 
   get hasVolatile() {
-    return this.modifiers.some(modifier => get(modifier, 'prop.name') === 'volatile');
+    return this.modifiers.some((modifier) => get(modifier, 'prop.name') === 'volatile');
   }
 
   get hasReadOnly() {
-    return this.modifiers.some(modifier => get(modifier, 'prop.name') === 'readOnly');
+    return this.modifiers.some((modifier) => get(modifier, 'prop.name') === 'readOnly');
   }
 
   get isVolatileReadOnly() {
@@ -205,11 +205,11 @@ class EOProp {
   }
 
   get hasMethodDecorator() {
-    return this.decorators.find(d => d.isMethodDecorator);
+    return this.decorators.find((d) => d.isMethodDecorator);
   }
 
   get hasMetaDecorator() {
-    return this.decorators.find(d => d.isMetaDecorator);
+    return this.decorators.find((d) => d.isMetaDecorator);
   }
 }
 

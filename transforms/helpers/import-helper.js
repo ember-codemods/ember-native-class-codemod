@@ -143,8 +143,8 @@ function createNewImportDeclarations(
 
   // Create new import statements which do not have any matching existing imports
   Object.keys(EMBER_DECORATOR_SPECIFIERS)
-    .filter(path => !decoratorPathsToIgnore.includes(path))
-    .forEach(path => {
+    .filter((path) => !decoratorPathsToIgnore.includes(path))
+    .forEach((path) => {
       const specifiers = createEmberDecoratorSpecifiers(
         j,
         EMBER_DECORATOR_SPECIFIERS[path],
@@ -219,7 +219,7 @@ function getDecoratorPathSpecifiers(j, root, decoratorsToImport = []) {
               existingSpecifier
             );
           } else {
-            const isSpecifierPresent = decoratedSpecifiers.some(specifier => {
+            const isSpecifierPresent = decoratedSpecifiers.some((specifier) => {
               return (
                 !get(specifier, 'local.name') &&
                 get(specifier, 'imported.name') === get(existingSpecifier, 'imported.name')
@@ -291,7 +291,7 @@ function createDecoratorImportDeclarations(j, root, decoratorsToImport = [], opt
   const firstDeclaration = getFirstDeclaration(j, root);
   const decoratorPathsImported = Object.keys(decoratorPathSpecifierMap);
   // Create import statement replacing the existing ones with specifiers importing from ember-decorators namespace
-  decoratorPathsImported.forEach(decoratorPath => {
+  decoratorPathsImported.forEach((decoratorPath) => {
     const specifiers = decoratorPathSpecifierMap[decoratorPath];
     const existingImport = getExistingImportForPath(j, root, decoratorPath);
     if (existingImport) {

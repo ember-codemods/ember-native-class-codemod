@@ -26,7 +26,7 @@ function getEmberObjectProps(j, eoExpression, importedDecoratedProps = {}, runti
 
   return {
     instanceProps: objProps.map(
-      objProp => new EOProp(objProp, runtimeData, importedDecoratedProps)
+      (objProp) => new EOProp(objProp, runtimeData, importedDecoratedProps)
     ),
   };
 }
@@ -65,7 +65,7 @@ function getEmberObjectCallExpressions(j, root) {
   return root
     .find(j.CallExpression, { callee: { property: { name: 'extend' } } })
     .filter(
-      eoCallExpression =>
+      (eoCallExpression) =>
         startsWithUpperCaseLetter(get(eoCallExpression, 'value.callee.object.name')) &&
         get(eoCallExpression, 'parentPath.value.type') !== 'ClassDeclaration'
     );
@@ -155,7 +155,7 @@ function parseEmberObjectCallExpression(eoCallExpression) {
     eoExpression: null,
     mixins: [],
   };
-  callExpressionArgs.forEach(callExpressionArg => {
+  callExpressionArgs.forEach((callExpressionArg) => {
     if (callExpressionArg.type === 'ObjectExpression') {
       props.eoExpression = callExpressionArg;
     } else {
@@ -197,7 +197,7 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
   let transformed = false;
   let decoratorsToImportMap = {};
 
-  getEmberObjectCallExpressions(j, root).forEach(eoCallExpression => {
+  getEmberObjectCallExpressions(j, root).forEach((eoCallExpression) => {
     const { eoExpression, mixins } = parseEmberObjectCallExpression(eoCallExpression);
 
     const eoProps = getEmberObjectProps(
@@ -242,7 +242,7 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
   // one object from a file is transformed and other is not
   if (transformed) {
     const decoratorsToImport = Object.keys(decoratorsToImportMap).filter(
-      key => decoratorsToImportMap[key]
+      (key) => decoratorsToImportMap[key]
     );
     createDecoratorImportDeclarations(j, root, decoratorsToImport, options);
     logger.info(`[${filePath}]: SUCCESS`);

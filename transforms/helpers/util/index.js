@@ -154,7 +154,7 @@ const LIFECYCLE_HOOKS = [
  * @returns {Any}
  */
 function get(obj, path) {
-  return path.split('.').reduce(function(currentObject, pathSegment) {
+  return path.split('.').reduce(function (currentObject, pathSegment) {
     return typeof currentObject == 'undefined' || currentObject === null
       ? currentObject
       : currentObject[pathSegment];
@@ -168,12 +168,7 @@ function get(obj, path) {
  * @param {File} root
  */
 function getFirstDeclaration(j, root) {
-  return j(
-    root
-      .find(j.Declaration)
-      .at(0)
-      .get()
-  );
+  return j(root.find(j.Declaration).at(0).get());
 }
 
 /**
@@ -217,7 +212,7 @@ function shouldSetValue(prop) {
     return true;
   }
   return prop.decoratorNames.every(
-    decoratorName => decoratorName === 'className' || decoratorName === 'attribute'
+    (decoratorName) => decoratorName === 'className' || decoratorName === 'attribute'
   );
 }
 

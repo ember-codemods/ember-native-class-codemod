@@ -33,7 +33,7 @@ function withComments(to, from) {
  * @returns {CommentLine[]}
  */
 function createLineComments(j, lines = []) {
-  return lines.map(line => j.commentLine(line));
+  return lines.map((line) => j.commentLine(line));
 }
 
 /**
@@ -46,7 +46,7 @@ function createLineComments(j, lines = []) {
  * @returns {ExpressionStatement[]}
  */
 function instancePropsToExpressions(j, instanceProps) {
-  return instanceProps.map(instanceProp =>
+  return instanceProps.map((instanceProp) =>
     withComments(
       j.expressionStatement(
         j.assignmentExpression(
@@ -93,7 +93,7 @@ function replaceSuperExpressions(j, methodDefinition, functionProp) {
   if (!superExprs.length) {
     return methodDefinition;
   }
-  superExprs.forEach(superExpr => {
+  superExprs.forEach((superExpr) => {
     if (replaceWithUndefined) {
       j(superExpr).replaceWith(j.identifier('undefined'));
     } else {
@@ -279,7 +279,7 @@ function createActionDecoratedProps(j, actionsProp) {
   const actionProps = get(actionsProp, 'value.properties');
   const overriddenActions = get(actionsProp, 'overriddenActions') || [];
   const actionDecorators = createIdentifierDecorators(j);
-  return actionProps.map(actionProp => {
+  return actionProps.map((actionProp) => {
     if (get(actionProp, 'value.type') === 'Identifier') {
       return convertIdentifierActionToMethod(j, actionProp, actionDecorators);
     } else {
@@ -318,7 +318,7 @@ function createCallExpressionProp(j, callExprProp) {
       };
       return [createMethodProp(j, functionExpr, createInstancePropDecorators(j, callExprProp))];
     } else if (lastArgType === 'ObjectExpression') {
-      const callExprMethods = callExprLastArg.properties.map(callExprFunction => {
+      const callExprMethods = callExprLastArg.properties.map((callExprFunction) => {
         callExprFunction.isComputed = true;
         callExprFunction.kind = getPropName(callExprFunction);
         callExprFunction.key = callExprProp.key;
@@ -382,7 +382,7 @@ function createClass(
     classDecorators.push(j.decorator(j.identifier('classic')));
   }
 
-  instanceProps.forEach(prop => {
+  instanceProps.forEach((prop) => {
     if (prop.isClassDecorator) {
       classDecorators.push(createClassDecorator(j, prop));
     } else if (prop.type === 'FunctionExpression') {
@@ -428,8 +428,8 @@ function createImportDeclaration(j, specifiers, path) {
  */
 function createEmberDecoratorSpecifiers(j, pathSpecifiers = [], decoratorsToImport = []) {
   return pathSpecifiers
-    .filter(specifier => decoratorsToImport.includes(specifier))
-    .map(specifier => {
+    .filter((specifier) => decoratorsToImport.includes(specifier))
+    .map((specifier) => {
       const importedSpecifier =
         specifier === LAYOUT_DECORATOR_LOCAL_NAME ? LAYOUT_DECORATOR_NAME : specifier;
       return j.importSpecifier(j.identifier(importedSpecifier), j.identifier(specifier));
