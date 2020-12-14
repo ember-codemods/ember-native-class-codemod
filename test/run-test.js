@@ -20,8 +20,8 @@ const execOpts = { cwd: inputDir, stderr: 'inherit' };
   const emberServe = spawn('yarn', ['start'], execOpts);
   emberServe.stderr.pipe(process.stderr);
 
-  await new Promise(resolve => {
-    emberServe.stdout.on('data', data => {
+  await new Promise((resolve) => {
+    emberServe.stdout.on('data', (data) => {
       if (data.toString().includes('Build successful')) {
         resolve();
       }

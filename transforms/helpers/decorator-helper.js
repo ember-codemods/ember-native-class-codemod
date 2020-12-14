@@ -79,7 +79,14 @@ function createCallExpressionDecorators(j, decoratorName, instanceProp) {
  * @returns {Decorator[]}
  */
 function createDecoratorsWithArgs(j, identifier, args) {
-  return [j.decorator(j.callExpression(j.identifier(identifier), args.map(arg => j.literal(arg))))];
+  return [
+    j.decorator(
+      j.callExpression(
+        j.identifier(identifier),
+        args.map((arg) => j.literal(arg))
+      )
+    ),
+  ];
 }
 
 /**
@@ -104,7 +111,7 @@ function createIdentifierDecorators(j, identifier = 'action') {
 function createBindingDecorators(j, decoratorName, instanceProp) {
   const propList = get(instanceProp, 'propList');
   if (propList && propList.length) {
-    const propArgs = propList.map(prop => j.literal(prop));
+    const propArgs = propList.map((prop) => j.literal(prop));
     return [j.decorator(j.callExpression(j.identifier(decoratorName), propArgs))];
   }
   return [j.decorator(j.identifier(decoratorName))];
