@@ -15,12 +15,6 @@
   },
   "license": "MIT",
   "author": "",
-  "files": [
-    "/bin",
-    "/lib",
-    "/transforms/helpers",
-    "/transforms/ember-object/index.js"
-  ],
   "main": ".eslintrc.js",
   "bin": {
     "ember-native-class-codemod": "./bin/cli.js"
@@ -29,6 +23,12 @@
     "lib": "lib",
     "test": "test"
   },
+  "files": [
+    "/bin",
+    "/lib",
+    "/transforms/helpers",
+    "/transforms/ember-object/index.js"
+  ],
   "scripts": {
     "release": "release-it",
     "test": "eslint . && codemod-cli test && node ./test/run-test.js",
@@ -52,8 +52,8 @@
     "execa": "^4.0.0",
     "jest": "^25.2.0",
     "prettier": "^2.0.4",
-    "release-it": "^13.5.4",
-    "release-it-lerna-changelog": "^2.1.2"
+    "release-it": "^14.2.1",
+    "release-it-lerna-changelog": "^3.1.0"
   },
   "engines": {
     "node": "10.* || 12.* || >= 14"
@@ -67,14 +67,16 @@
     },
     "plugins": {
       "release-it-lerna-changelog": {
-        "infile": "CHANGELOG.md"
+        "infile": "CHANGELOG.md",
+        "launchEditor": true
       }
     },
     "git": {
       "tagName": "v${version}"
     },
     "github": {
-      "release": true
+      "release": true,
+      "tokenRef": "GITHUB_AUTH"
     }
   }
 }
