@@ -1,5 +1,23 @@
 # Changelog
 
+## v2.0.0 (2020-12-14)
+
+#### :boom: Breaking Change
+* [#391](https://github.com/ember-codemods/ember-native-class-codemod/pull/391) Drop Node < 10 and bump telemetry helpers ([@suchitadoshi1987](https://github.com/suchitadoshi1987))
+
+#### :memo: Documentation
+* [#280](https://github.com/ember-codemods/ember-native-class-codemod/pull/280) docs: add lint rule link ([@bmish](https://github.com/bmish))
+
+#### :house: Internal
+* [#213](https://github.com/ember-codemods/ember-native-class-codemod/pull/213) Update telemetry helpers ([@tylerturdenpants](https://github.com/tylerturdenpants))
+
+#### Committers: 4
+- Bryan Mishkin ([@bmish](https://github.com/bmish))
+- Ryan Mark ([@tylerturdenpants](https://github.com/tylerturdenpants))
+- Suchita Doshi ([@suchitadoshi1987](https://github.com/suchitadoshi1987))
+- [@dependabot-preview[bot]](https://github.com/apps/dependabot-preview)
+
+
 ## v1.1.0 (2019-08-20)
 
 #### :rocket: Enhancement
