@@ -1,5 +1,14 @@
 # Changelog
 
+## v2.1.0 (2021-04-13)
+
+#### :rocket: Enhancement
+* [#432](https://github.com/ember-codemods/ember-native-class-codemod/pull/432) Support running codemod against an addon's dummy app ([@tylerbecks](https://github.com/tylerbecks))
+
+#### Committers: 1
+- Tyler Becks ([@tylerbecks](https://github.com/tylerbecks))
+
+
 ## v2.0.0 (2020-12-14)
 
 #### :boom: Breaking Change
