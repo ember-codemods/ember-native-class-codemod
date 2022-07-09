@@ -31,7 +31,8 @@
   ],
   "scripts": {
     "release": "release-it",
-    "test": "eslint . && codemod-cli test && node ./test/run-test.js",
+    "lint:js": "eslint .",
+    "test": "codemod-cli test && node ./test/run-test.js",
     "update-docs": "codemod-cli update-docs"
   },
   "dependencies": {
