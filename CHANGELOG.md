@@ -1,5 +1,18 @@
 # Changelog
 
+## v3.0.0 (2022-11-14)
+
+#### :boom: Breaking Change
+* [#490](https://github.com/ember-codemods/ember-native-class-codemod/pull/490) Drop support for EOL Node versions ([@mansona](https://github.com/mansona))
+
+#### :house: Internal
+* [#491](https://github.com/ember-codemods/ember-native-class-codemod/pull/491) update codemods-telemetry-helpers ([@mansona](https://github.com/mansona))
+* [#486](https://github.com/ember-codemods/ember-native-class-codemod/pull/486) update to the latest puppeteer ([@mansona](https://github.com/mansona))
+* [#487](https://github.com/ember-codemods/ember-native-class-codemod/pull/487) move from travis to github actions ([@mansona](https://github.com/mansona))
+
+#### Committers: 1
+- Chris Manson ([@mansona](https://github.com/mansona))
+
 ## v2.1.0 (2021-04-13)
 
 #### :rocket: Enhancement
