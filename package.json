@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "camelcase": "^6.3.0",
-    "codemod-cli": "^2.0.0",
+    "codemod-cli": "^3.2.0",
     "ember-codemods-telemetry-helpers": "^3.0.0",
     "fs-extra": "^8.0.1",
     "git-repo-info": "^2.1.0",
@@ -53,7 +53,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.12",
-    "@tsconfig/node-lts-strictest-esm": "^18.12.1",
+    "@tsconfig/node-lts-strictest": "^18.12.1",
     "@types/jscodeshift": "^0.11.6",
     "eslint": "^6.0.0",
     "eslint-config-prettier": "^6.0.0",
