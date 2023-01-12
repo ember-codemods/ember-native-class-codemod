@@ -4,7 +4,6 @@ const {
   LAYOUT_DECORATOR_NAME,
   get,
   getPropName,
-  shouldSetValue,
 } = require('./util');
 const {
   withDecorators,
@@ -12,6 +11,21 @@ const {
   createInstancePropDecorators,
   createIdentifierDecorators,
 } = require('./decorator-helper');
+
+/**
+ * Returns true if class property should have value
+ *
+ * @param {EOProp} prop
+ * @returns {Boolean}
+ */
+function shouldSetValue(prop) {
+  if (!prop.hasDecorators) {
+    return true;
+  }
+  return prop.decoratorNames.every(
+    (decoratorName) => decoratorName === 'className' || decoratorName === 'attribute'
+  );
+}
 
 /**
  * Copy comments `from` => `to`

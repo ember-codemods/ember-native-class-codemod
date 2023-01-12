@@ -1,20 +1,17 @@
-import type { CallExpression, ObjectExpression } from 'jscodeshift';
+import type { CallExpression } from 'jscodeshift';
 import type { RuntimeData } from './runtime-data';
 import {
   LAYOUT_DECORATOR_LOCAL_NAME,
   LAYOUT_DECORATOR_NAME,
   get,
-  getModifier,
   getPropName,
   getPropType,
   isClassDecoratorProp,
-  // @ts-expect-error
 } from './util';
-import type { JsonValue } from './util/types';
+import type { ObjectExpressionProp } from './util/ast';
+import { JsonValue, assert } from './util/types';
 
-type ObjectExpressionProp = ObjectExpression['properties'][number];
-
-interface ImportedDecoratedProps {}
+type ImportedDecoratedProps = object;
 
 interface EODecorator {
   name: 'unobserves' | 'off';
@@ -29,7 +26,18 @@ interface EODecoratorArgs {
 }
 
 interface EOModifier {
-  args: unknown[];
+  prop: Extract<CallExpression['callee'], { property: any }>['property'] | undefined;
+  args: CallExpression['arguments'];
+}
+
+/**
+ * Get property modifier from the property callee object
+ */
+function getModifier(calleeObject: CallExpression): EOModifier {
+  return {
+    prop: 'property' in calleeObject.callee ? calleeObject.callee.property : undefined,
+    args: calleeObject.arguments,
+  };
 }
 
 /**
@@ -149,6 +157,7 @@ export default class EOProp {
   }
 
   get calleeName() {
+    assert(this.calleeObject !== undefined, 'Cannot find calleeObject');
     return get(this.calleeObject, 'callee.name');
   }
 
@@ -192,7 +201,8 @@ export default class EOProp {
   }
 
   get callExprArgs() {
-    return get(this.calleeObject, 'arguments') || [];
+    assert(this.calleeObject !== undefined, 'Cannot find calleeObject');
+    return this.calleeObject.arguments;
   }
 
   get shouldRemoveLastArg() {

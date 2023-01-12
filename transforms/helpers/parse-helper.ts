@@ -18,7 +18,6 @@ import type {
 import { createClass, withComments } from './transform-helper';
 import { DEFAULT_OPTIONS } from './options';
 import type { RuntimeData } from './runtime-data';
-// @ts-expect-error FIXME
 import { capitalizeFirstLetter, get, startsWithUpperCaseLetter } from './util';
 import { isRecord, verified } from './util/types';
 // @ts-expect-error FIXME
