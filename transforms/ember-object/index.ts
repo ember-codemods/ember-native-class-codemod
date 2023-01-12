@@ -1,15 +1,30 @@
-const path = require('path');
-const { getOptions } = require('codemod-cli');
-const { replaceEmberObjectExpressions } = require('../helpers/parse-helper');
+import { getOptions } from 'codemod-cli';
+import type { Transform } from 'jscodeshift';
+import path from 'path';
+// @ts-expect-error
+import { replaceEmberObjectExpressions } from '../helpers/parse-helper';
+import { isRecord, verified } from '../helpers/util/types';
+
+export interface Options {
+  decorators?: boolean;
+  classFields?: boolean;
+  classicDecorator?: boolean;
+  quote?: 'single' | 'double';
+  quotes?: 'single' | 'double';
+  /** @private */
+  runtimeData?: RuntimeData;
+}
+
+export interface RuntimeData {}
 
 const DEFAULT_OPTIONS = {
   decorators: true,
   classFields: true,
   classicDecorator: true,
   quote: 'single',
-};
+} as const;
 
-module.exports = function transformer(file, api) {
+const transformer: Transform = function (file, api) {
   const extension = path.extname(file.path);
 
   if (!['.js', '.ts'].includes(extension.toLowerCase())) {
@@ -18,7 +33,7 @@ module.exports = function transformer(file, api) {
   }
 
   const j = api.jscodeshift;
-  const options = Object.assign({}, DEFAULT_OPTIONS, getOptions());
+  const options = Object.assign({}, DEFAULT_OPTIONS, verified<Options>(getOptions(), isRecord));
   let { source } = file;
 
   const root = j(source);
@@ -32,5 +47,7 @@ module.exports = function transformer(file, api) {
   return source;
 };
 
+export default transformer;
+
 // Set the parser, needed for supporting decorators
-module.exports.parser = 'flow';
+export const parser = 'flow';
