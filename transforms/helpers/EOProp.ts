@@ -1,24 +1,64 @@
-const {
-  get,
-  getPropName,
-  getPropType,
-  getModifier,
-  isClassDecoratorProp,
+import type { CallExpression, ObjectExpression } from 'jscodeshift';
+import type { RuntimeData } from './runtime-data';
+import {
   LAYOUT_DECORATOR_LOCAL_NAME,
   LAYOUT_DECORATOR_NAME,
-} = require('./util');
+  get,
+  getModifier,
+  getPropName,
+  getPropType,
+  isClassDecoratorProp,
+  // @ts-expect-error
+} from './util';
+import type { JsonValue } from './util/types';
+
+type ObjectExpressionProp = ObjectExpression['properties'][number];
+
+interface ImportedDecoratedProps {}
+
+interface EODecorator {
+  name: 'unobserves' | 'off';
+  importedName?: 'computed';
+  isMethodDecorator?: boolean;
+  isMetaDecorator?: boolean;
+}
+
+interface EODecoratorArgs {
+  unobserves?: JsonValue | undefined;
+  off?: JsonValue | undefined;
+}
+
+interface EOModifier {
+  args: unknown[];
+}
 
 /**
- * Ember Objet Property
+ * Ember Object Property
  *
  * A wrapper object for ember object properties
  */
-class EOProp {
-  constructor(eoProp, runtimeData, importedDecoratedProps) {
+export default class EOProp {
+  readonly _prop: ObjectExpressionProp;
+
+  /** Runtime Data */
+  readonly decorators: EODecorator[] = [];
+  readonly modifiers: EOModifier[] = [];
+  readonly decoratorArgs: EODecoratorArgs = {};
+  readonly emberType: string | undefined;
+  readonly isComputed: boolean | undefined;
+  readonly overriddenActions: JsonValue[] | undefined;
+  readonly isOverridden: boolean | undefined;
+  readonly runtimeType: string | undefined;
+
+  /** CallExpression data */
+  calleeObject: CallExpression | undefined;
+
+  constructor(
+    eoProp: ObjectExpressionProp,
+    runtimeData: RuntimeData,
+    importedDecoratedProps: ImportedDecoratedProps
+  ) {
     this._prop = eoProp;
-    this.decorators = [];
-    this.modifiers = [];
-    this.decoratorArgs = {};
 
     if (runtimeData.type) {
       const {
@@ -51,10 +91,11 @@ class EOProp {
       this.runtimeType = type;
     }
 
-    if (this.isCallExpression) {
-      let calleeObject = get(this._prop, 'value');
+    // FIXME: Extract `is` method?
+    if ('value' in this._prop && this._prop.value.type === 'CallExpression') {
+      let calleeObject = this._prop.value;
       const modifiers = [getModifier(calleeObject)];
-      while (get(calleeObject, 'callee.type') === 'MemberExpression') {
+      while (calleeObject.callee.type === 'MemberExpression') {
         calleeObject = get(calleeObject, 'callee.object');
         modifiers.push(getModifier(calleeObject));
       }
@@ -62,7 +103,9 @@ class EOProp {
       this.modifiers = modifiers.reverse();
       this.modifiers.shift();
 
+      // @ts-expect-error
       if (importedDecoratedProps[this.calleeName]) {
+        // @ts-expect-error
         this.decorators.push(importedDecoratedProps[this.calleeName]);
       } else if (this.isComputed) {
         this.decorators.push({ name: this.calleeName });
@@ -74,9 +117,9 @@ class EOProp {
     return get(this._prop, 'value');
   }
 
-  get kind() {
-    let kind = get(this._prop, 'kind');
-    let method = get(this._prop, 'method');
+  get kind(): 'init' | 'get' | 'set' | 'method' | undefined {
+    let kind = 'kind' in this._prop ? this._prop.kind : undefined;
+    let method = 'method' in this._prop ? this._prop.method : undefined;
 
     if (
       kind === 'init' &&
@@ -114,7 +157,7 @@ class EOProp {
   }
 
   get computed() {
-    return this._prop.computed;
+    return 'computed' in this._prop && this._prop.computed;
   }
 
   get isClassDecorator() {
@@ -212,5 +255,3 @@ class EOProp {
     return this.decorators.find((d) => d.isMetaDecorator);
   }
 }
-
-module.exports = EOProp;

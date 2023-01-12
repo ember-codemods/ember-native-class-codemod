@@ -1,7 +1,6 @@
 import camelCase from 'camelcase';
 import { getTelemetryFor } from 'ember-codemods-telemetry-helpers';
 import path from 'path';
-// @ts-expect-error FIXME
 import EOProp from './EOProp';
 // @ts-expect-error FIXME
 import { createDecoratorImportDeclarations, getImportedDecoratedProps } from './import-helper';
@@ -44,28 +43,27 @@ export function getEmberObjectProps(
   _j: JSCodeshift, // FIXME: Remove?
   eoExpression: ObjectExpression | null,
   importedDecoratedProps = {},
-  runtimeData = {}
+  runtimeData: RuntimeData = {}
 ): EOProps {
-  const objProps = get(eoExpression, 'properties') || [];
+  const objProps = eoExpression?.properties || [];
 
   return {
     instanceProps: objProps.map(
-      // @ts-expect-error
       (objProp) => new EOProp(objProp, runtimeData, importedDecoratedProps)
     ),
   };
 }
 
 interface DecoratorsToImportMap {
-  action?: unknown;
-  classNames?: unknown;
-  classNameBindings?: unknown;
-  attributeBindings?: unknown;
-  layout?: unknown;
-  templateLayout?: unknown;
-  off?: unknown;
-  tagName?: unknown;
-  unobserves?: unknown;
+  action: boolean;
+  classNames: boolean;
+  classNameBindings: boolean;
+  attributeBindings: boolean;
+  layout: boolean;
+  templateLayout: boolean;
+  off: boolean;
+  tagName: boolean;
+  unobserves: boolean;
 }
 
 /**
@@ -74,21 +72,35 @@ interface DecoratorsToImportMap {
  */
 function getDecoratorsToImportMap(
   instanceProps: EOProp[],
-  decoratorsMap: DecoratorsToImportMap = {}
+  decoratorsMap: Partial<DecoratorsToImportMap> = {}
 ): DecoratorsToImportMap {
-  return instanceProps.reduce((specs, prop) => {
-    return {
-      action: specs.action || prop.isActions,
-      classNames: specs.classNames || prop.isClassNames,
-      classNameBindings: specs.classNameBindings || prop.isClassNameBindings,
-      attributeBindings: specs.attributeBindings || prop.isAttributeBindings,
-      layout: specs.layout || prop.isLayoutDecorator,
-      templateLayout: specs.templateLayout || prop.isTemplateLayoutDecorator,
-      off: specs.off || prop.hasOffDecorator,
-      tagName: specs.tagName || prop.isTagName,
-      unobserves: specs.unobserves || prop.hasUnobservesDecorator,
-    };
-  }, decoratorsMap);
+  return instanceProps.reduce(
+    (specs, prop) => {
+      return {
+        action: specs.action || prop.isActions,
+        classNames: specs.classNames || prop.isClassNames,
+        classNameBindings: specs.classNameBindings || prop.isClassNameBindings,
+        attributeBindings: specs.attributeBindings || prop.isAttributeBindings,
+        layout: specs.layout || prop.isLayoutDecorator,
+        templateLayout: specs.templateLayout || prop.isTemplateLayoutDecorator,
+        off: specs.off || prop.hasOffDecorator,
+        tagName: specs.tagName || prop.isTagName,
+        unobserves: specs.unobserves || prop.hasUnobservesDecorator,
+      };
+    },
+    {
+      action: false,
+      classNames: false,
+      classNameBindings: false,
+      attributeBindings: false,
+      layout: false,
+      templateLayout: false,
+      off: false,
+      tagName: false,
+      unobserves: false,
+      ...decoratorsMap,
+    }
+  );
 }
 
 /** Find the `EmberObject.extend` statements */
@@ -226,7 +238,7 @@ export function replaceEmberObjectExpressions(
   // Parse the import statements
   const importedDecoratedProps = getImportedDecoratedProps(j, root);
   let transformed = false;
-  let decoratorsToImportMap: DecoratorsToImportMap = {};
+  let decoratorsToImportMap: Partial<DecoratorsToImportMap> = {};
 
   getEmberObjectCallExpressions(j, root).forEach((eoCallExpression) => {
     const { eoExpression, mixins } = parseEmberObjectCallExpression(eoCallExpression);
@@ -249,7 +261,7 @@ export function replaceEmberObjectExpressions(
       return;
     }
 
-    let className = getClassName(j, eoCallExpression, filePath, get(options, 'runtimeData.type'));
+    let className = getClassName(j, eoCallExpression, filePath, options.runtimeData?.type);
 
     const superClassName = get(eoCallExpression, 'value.callee.object.name');
 
