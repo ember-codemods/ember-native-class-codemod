@@ -1,5 +1,6 @@
 import type {
   Collection,
+  Declaration,
   JSCodeshift,
   ObjectMethod,
   PropertyPattern,
@@ -14,7 +15,12 @@ import { assert } from './types';
 export const LAYOUT_DECORATOR_NAME = 'layout' as const;
 export const LAYOUT_DECORATOR_LOCAL_NAME = 'templateLayout' as const;
 
-export const DECORATOR_PATHS = {
+export interface DecoratorPathInfo {
+  readonly importPropDecoratorMap?: Record<string, string>;
+  readonly decoratorPath: string;
+}
+
+export const DECORATOR_PATHS: Record<string, DecoratorPathInfo> = {
   '@ember/object': {
     importPropDecoratorMap: {
       observer: 'observes',
@@ -43,13 +49,13 @@ export const DECORATOR_PATHS = {
   '@ember/object/computed': {
     decoratorPath: '@ember/object/computed',
   },
-} as const;
+};
 
-export const DECORATOR_PATH_OVERRIDES = {
+export const DECORATOR_PATH_OVERRIDES: Record<string, string> = {
   observes: '@ember-decorators/object',
-} as const;
+};
 
-export const EMBER_DECORATOR_SPECIFIERS = {
+export const EMBER_DECORATOR_SPECIFIERS: Record<string, string[]> = {
   '@ember/object': ['action'],
   '@ember-decorators/object': ['off', 'on', 'unobserves'],
   '@ember-decorators/component': [
@@ -60,7 +66,7 @@ export const EMBER_DECORATOR_SPECIFIERS = {
     'tagName',
     LAYOUT_DECORATOR_LOCAL_NAME,
   ],
-} as const;
+};
 
 export const METHOD_DECORATORS = ['action', 'on', 'observer'] as const;
 
@@ -176,7 +182,7 @@ export function get(obj: object, path: string): any {
 export function getFirstDeclaration(
   j: JSCodeshift,
   root: Collection<unknown>
-): Collection<unknown> {
+): Collection<Declaration> {
   return j(root.find(j.Declaration).at(0).get());
 }
 

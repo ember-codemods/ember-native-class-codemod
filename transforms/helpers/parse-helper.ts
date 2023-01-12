@@ -3,7 +3,6 @@ import { getTelemetryFor } from 'ember-codemods-telemetry-helpers';
 import path from 'path';
 import type { EOProps } from './EOProp';
 import EOProp from './EOProp';
-// @ts-expect-error FIXME
 import { createDecoratorImportDeclarations, getImportedDecoratedProps } from './import-helper';
 import type {
   ASTPath,

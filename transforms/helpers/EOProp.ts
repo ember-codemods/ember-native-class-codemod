@@ -66,7 +66,7 @@ export default class EOProp {
   calleeObject: CallExpression | undefined;
 
   constructor(
-    eoProp: EOExpressionProp,
+    eoProp: EOExpressionProp, // FIXME: Change to Property
     runtimeData: RuntimeData,
     importedDecoratedProps: ImportedDecoratedProps
   ) {

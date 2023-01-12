@@ -26,6 +26,11 @@ export function verified<T>(
   return value as T;
 }
 
+export function defined<T>(value: T | undefined, message = 'Assert Exists Error'): T {
+  assert(value !== undefined, message);
+  return value;
+}
+
 export type JsonValue = string | boolean | number | null | JsonObject | JsonArray;
 export type JsonArray = JsonValue[];
 export interface JsonObject extends Record<string, JsonValue> {}
