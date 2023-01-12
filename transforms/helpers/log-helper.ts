@@ -1,11 +1,14 @@
-const { createLogger, format, transports } = require('winston');
+import { createLogger, format, transports } from 'winston';
+
 const { combine, timestamp, printf } = format;
 
 const logFormatter = printf((info) => {
-  return `${info.timestamp} [${info.level}] ${info.message}`;
+  return `${info['timestamp']} [${info.level}] ${info.message}`;
 });
 
-module.exports = createLogger({
+const logger = createLogger({
   format: combine(timestamp(), logFormatter),
   transports: [new transports.File({ filename: 'codemods.log' })],
 });
+
+export default logger;

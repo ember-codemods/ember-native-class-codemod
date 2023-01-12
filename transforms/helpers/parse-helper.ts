@@ -13,7 +13,6 @@ import type {
   ObjectExpression,
   VariableDeclaration,
 } from 'jscodeshift';
-// @ts-expect-error FIXME
 import logger from './log-helper';
 import { DEFAULT_OPTIONS } from './options';
 import type { RuntimeData } from './runtime-data';
