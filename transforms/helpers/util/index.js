@@ -149,6 +149,7 @@ const LIFECYCLE_HOOKS = [
 /**
  * Get a property from and object, useful to get nested props without checking for null values
  *
+ * @deprecated
  * @param {Object} obj
  * @param {String} key
  * @returns {Any}

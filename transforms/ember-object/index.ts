@@ -1,28 +1,10 @@
 import { getOptions } from 'codemod-cli';
 import type { Transform } from 'jscodeshift';
 import path from 'path';
-// @ts-expect-error
+import type { Options } from '../helpers/options';
+import { DEFAULT_OPTIONS } from '../helpers/options';
 import { replaceEmberObjectExpressions } from '../helpers/parse-helper';
 import { isRecord, verified } from '../helpers/util/types';
-
-export interface Options {
-  decorators?: boolean;
-  classFields?: boolean;
-  classicDecorator?: boolean;
-  quote?: 'single' | 'double';
-  quotes?: 'single' | 'double';
-  /** @private */
-  runtimeData?: RuntimeData;
-}
-
-export interface RuntimeData {}
-
-const DEFAULT_OPTIONS = {
-  decorators: true,
-  classFields: true,
-  classicDecorator: true,
-  quote: 'single',
-} as const;
 
 const transformer: Transform = function (file, api) {
   const extension = path.extname(file.path);
@@ -33,7 +15,7 @@ const transformer: Transform = function (file, api) {
   }
 
   const j = api.jscodeshift;
-  const options = Object.assign({}, DEFAULT_OPTIONS, verified<Options>(getOptions(), isRecord));
+  const options = { ...DEFAULT_OPTIONS, ...verified<Partial<Options>>(getOptions(), isRecord) };
   let { source } = file;
 
   const root = j(source);

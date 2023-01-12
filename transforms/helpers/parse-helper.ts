@@ -1,12 +1,33 @@
-const path = require('path');
-const camelCase = require('camelcase');
-const { getTelemetryFor } = require('ember-codemods-telemetry-helpers');
-const { capitalizeFirstLetter, get, startsWithUpperCaseLetter } = require('./util');
-const { hasValidProps, isFileOfType, isTestFile } = require('./validation-helper');
-const { createClass, withComments } = require('./transform-helper');
-const { createDecoratorImportDeclarations, getImportedDecoratedProps } = require('./import-helper');
-const EOProp = require('./EOProp');
-const logger = require('./log-helper');
+import camelCase from 'camelcase';
+import { getTelemetryFor } from 'ember-codemods-telemetry-helpers';
+import path from 'path';
+// @ts-expect-error FIXME
+import EOProp from './EOProp';
+// @ts-expect-error FIXME
+import { createDecoratorImportDeclarations, getImportedDecoratedProps } from './import-helper';
+// @ts-expect-error FIXME
+import logger from './log-helper';
+import type {
+  ASTPath,
+  CallExpression,
+  Collection,
+  JSCodeshift,
+  ObjectExpression,
+  VariableDeclaration,
+} from 'jscodeshift';
+// @ts-expect-error FIXME
+import { createClass, withComments } from './transform-helper';
+import { DEFAULT_OPTIONS } from './options';
+import type { RuntimeData } from './runtime-data';
+// @ts-expect-error FIXME
+import { capitalizeFirstLetter, get, startsWithUpperCaseLetter } from './util';
+import { isRecord, verified } from './util/types';
+// @ts-expect-error FIXME
+import { hasValidProps, isFileOfType, isTestFile } from './validation-helper';
+
+interface EOProps {
+  instanceProps: EOProp[];
+}
 
 /**
  * Return the map of instance props and functions from Ember Object
@@ -17,28 +38,44 @@ const logger = require('./log-helper');
  * {
  *   instanceProps: [ Property({key: value}) ]
  *  }
- * @param {Object} j - jscodeshift lib reference
- * @param {ObjectExpression} emberObjectExpression
- * @returns {Object} Object of instance and function properties
  */
-function getEmberObjectProps(j, eoExpression, importedDecoratedProps = {}, runtimeData = {}) {
+// FIXME: Why export?
+export function getEmberObjectProps(
+  _j: JSCodeshift, // FIXME: Remove?
+  eoExpression: ObjectExpression | null,
+  importedDecoratedProps = {},
+  runtimeData = {}
+): EOProps {
   const objProps = get(eoExpression, 'properties') || [];
 
   return {
     instanceProps: objProps.map(
+      // @ts-expect-error
       (objProp) => new EOProp(objProp, runtimeData, importedDecoratedProps)
     ),
   };
 }
 
+interface DecoratorsToImportMap {
+  action?: unknown;
+  classNames?: unknown;
+  classNameBindings?: unknown;
+  attributeBindings?: unknown;
+  layout?: unknown;
+  templateLayout?: unknown;
+  off?: unknown;
+  tagName?: unknown;
+  unobserves?: unknown;
+}
+
 /**
  * Get the map of decorators to import other than the computed props, services etc
  * which already have imports in the code
- *
- * @param {EOProp[]} instanceProps
- * @param {Object} decoratorsMap
  */
-function getDecoratorsToImportMap(instanceProps, decoratorsMap = {}) {
+function getDecoratorsToImportMap(
+  instanceProps: EOProp[],
+  decoratorsMap: DecoratorsToImportMap = {}
+): DecoratorsToImportMap {
   return instanceProps.reduce((specs, prop) => {
     return {
       action: specs.action || prop.isActions,
@@ -54,14 +91,12 @@ function getDecoratorsToImportMap(instanceProps, decoratorsMap = {}) {
   }, decoratorsMap);
 }
 
-/**
- * Find the `EmberObject.extend` statements
- *
- * @param {Object} j - jscodeshift lib reference
- * @param {File} root
- * @returns {CallExpression[]}
- */
-function getEmberObjectCallExpressions(j, root) {
+/** Find the `EmberObject.extend` statements */
+// FIXME: Why export?
+export function getEmberObjectCallExpressions(
+  j: JSCodeshift,
+  root: Collection<unknown>
+): Collection<CallExpression> {
   return root
     .find(j.CallExpression, { callee: { property: { name: 'extend' } } })
     .filter(
@@ -71,24 +106,12 @@ function getEmberObjectCallExpressions(j, root) {
     );
 }
 
-/**
- * Returns the variable name
- *
- * @param {VariableDeclaration} varDeclaration
- * @returns {String}
- */
-function getVariableName(varDeclaration) {
-  return get(varDeclaration, 'value.declarations.0.id.name');
-}
-
-/**
- * Return closest parent var declaration statement
- *
- * @param {Object} j - jscodeshift lib reference
- * @param {CallExpression} eoCallExpression
- * @returns {VariableDeclaration}
- */
-function getClosestVariableDeclaration(j, eoCallExpression) {
+/** Return closest parent var declaration statement */
+export function getClosestVariableDeclaration(
+  j: JSCodeshift,
+  eoCallExpression: ASTPath<CallExpression>
+  // FIXME: Verify return type
+): ASTPath<VariableDeclaration> {
   const varDeclarations = j(eoCallExpression).closest(j.VariableDeclaration);
   return varDeclarations.length > 0 ? varDeclarations.get() : null;
 }
@@ -97,33 +120,33 @@ function getClosestVariableDeclaration(j, eoCallExpression) {
  * Get the expression to replace
  *
  * It returns either VariableDeclaration or the CallExpression depending on how the object is created
- *
- * @param {Object} j - jscodeshift lib reference
- * @param {CallExpression} eoCallExpression
- * @returns {CallExpression|VariableDeclaration}
  */
-function getExpressionToReplace(j, eoCallExpression) {
+export function getExpressionToReplace(
+  j: JSCodeshift,
+  eoCallExpression: ASTPath<CallExpression>
+  // FIXME: Verify return type
+): ASTPath<CallExpression> | ASTPath<VariableDeclaration> {
   const varDeclaration = getClosestVariableDeclaration(j, eoCallExpression);
   const isFollowedByCreate = get(eoCallExpression, 'parentPath.value.property.name') === 'create';
 
-  let expressionToReplace = eoCallExpression;
+  let expressionToReplace:
+    | ASTPath<CallExpression>
+    | ASTPath<VariableDeclaration> = eoCallExpression;
   if (varDeclaration && !isFollowedByCreate) {
     expressionToReplace = varDeclaration;
   }
   return expressionToReplace;
 }
 
-/**
- * Returns name of class to be created
- *
- * @param {Object} j - jscodeshift lib reference
- * @param {String} classVariableName
- * @param {String} filePath
- * @return {String}
- */
-function getClassName(j, eoCallExpression, filePath, type = '') {
+/** Returns name of class to be created */
+export function getClassName(
+  j: JSCodeshift,
+  eoCallExpression: ASTPath<CallExpression>,
+  filePath: string,
+  type = ''
+) {
   const varDeclaration = getClosestVariableDeclaration(j, eoCallExpression);
-  const classVariableName = getVariableName(varDeclaration);
+  const classVariableName = get(varDeclaration, 'value.declarations.0.id.name');
 
   if (classVariableName) {
     return classVariableName;
@@ -143,15 +166,25 @@ function getClassName(j, eoCallExpression, filePath, type = '') {
   return className;
 }
 
+type EOCallExpressionArgs = ASTPath<CallExpression>['value']['arguments'];
+
+type EOCallExpressionArg = EOCallExpressionArgs[number];
+
+type EOCallExpressionMixin = Exclude<EOCallExpressionArg, ObjectExpression>;
+
+interface EOCallExpressionProps {
+  eoExpression: ObjectExpression | null;
+  mixins: EOCallExpressionMixin[];
+}
+
 /**
  * Parse ember object call expression, returns EmberObjectExpression and list of mixins
- *
- * @param {CallExpression} eoCallExpression
- * @returns {Object}
  */
-function parseEmberObjectCallExpression(eoCallExpression) {
-  const callExpressionArgs = get(eoCallExpression, 'value.arguments') || [];
-  const props = {
+function parseEmberObjectCallExpression(
+  eoCallExpression: ASTPath<CallExpression>
+): EOCallExpressionProps {
+  const callExpressionArgs = eoCallExpression.value.arguments;
+  const props: EOCallExpressionProps = {
     eoExpression: null,
     mixins: [],
   };
@@ -165,16 +198,14 @@ function parseEmberObjectCallExpression(eoCallExpression) {
   return props;
 }
 
-/**
- * Main entry point for parsing and replacing ember objects
- *
- * @param {Object} j - jscodeshift lib reference
- * @param {File} root
- * @param {String} filePath
- * @param {Object} options
- */
-function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
-  options.runtimeData = getTelemetryFor(path.resolve(filePath));
+/** Main entry point for parsing and replacing ember objects */
+export function replaceEmberObjectExpressions(
+  j: JSCodeshift,
+  root: Collection<unknown>,
+  filePath: string,
+  options = DEFAULT_OPTIONS
+): boolean | undefined {
+  options.runtimeData = verified<RuntimeData>(getTelemetryFor(path.resolve(filePath)), isRecord);
 
   if (!options.runtimeData) {
     logger.warn(`[${filePath}]: SKIPPED Could not find runtime data NO_RUNTIME_DATA`);
@@ -195,7 +226,7 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
   // Parse the import statements
   const importedDecoratedProps = getImportedDecoratedProps(j, root);
   let transformed = false;
-  let decoratorsToImportMap = {};
+  let decoratorsToImportMap: DecoratorsToImportMap = {};
 
   getEmberObjectCallExpressions(j, root).forEach((eoCallExpression) => {
     const { eoExpression, mixins } = parseEmberObjectCallExpression(eoCallExpression);
@@ -242,20 +273,10 @@ function replaceEmberObjectExpressions(j, root, filePath, options = {}) {
   // one object from a file is transformed and other is not
   if (transformed) {
     const decoratorsToImport = Object.keys(decoratorsToImportMap).filter(
-      (key) => decoratorsToImportMap[key]
+      (key) => decoratorsToImportMap[key as keyof DecoratorsToImportMap]
     );
     createDecoratorImportDeclarations(j, root, decoratorsToImport, options);
     logger.info(`[${filePath}]: SUCCESS`);
   }
   return transformed;
 }
-
-module.exports = {
-  getClassName,
-  getClosestVariableDeclaration,
-  getEmberObjectCallExpressions,
-  getEmberObjectProps,
-  getExpressionToReplace,
-  getVariableName,
-  replaceEmberObjectExpressions,
-};
