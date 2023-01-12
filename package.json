@@ -1,6 +1,5 @@
 {
   "name": "ember-native-class-codemod",
-  "type": "module",
   "version": "3.0.0",
   "description": "Codemods for transforming ember app code to native class syntax with decorators.",
   "keywords": [
@@ -34,7 +33,7 @@
     "release": "release-it",
     "build": "tsc",
     "clean": "tsc --build --clean",
-    "fixme": "yarn build; codemod-cli test; yarn clean",
+    "fixme": "yarn build; codemod-cli test; node ./test/run-test.js; yarn clean",
     "lint:js": "eslint .",
     "lint:ts": "tsc --noEmit",
     "test": "yarn build && codemod-cli test && node ./test/run-test.js && yarn clean",

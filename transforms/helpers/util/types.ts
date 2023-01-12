@@ -18,7 +18,9 @@ export function assert(condition: unknown, message = 'Assertion Error'): asserts
 export function verified<T>(
   value: unknown,
   condition: (value: unknown) => value is T,
-  message = condition.name ? `Verification Error: ${condition.name}` : 'Verification Error'
+  message = condition.name
+    ? `Verification Error: ${condition.name}; value is ${value}`
+    : 'Verification Error'
 ): T {
   assert(condition(value), message);
   return value as T;

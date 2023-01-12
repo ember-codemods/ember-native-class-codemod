@@ -13,7 +13,7 @@ export interface Options {
   /** Apply transformation to only passed type. */
   type?: 'services' | 'routes' | 'components' | 'controllers';
   /** @private */
-  runtimeData?: RuntimeData;
+  runtimeData?: RuntimeData | undefined;
 }
 
 export const DEFAULT_OPTIONS: Options = {

@@ -1,11 +1,10 @@
 import camelCase from 'camelcase';
 import { getTelemetryFor } from 'ember-codemods-telemetry-helpers';
 import path from 'path';
+import type { EOProps } from './EOProp';
 import EOProp from './EOProp';
 // @ts-expect-error FIXME
 import { createDecoratorImportDeclarations, getImportedDecoratedProps } from './import-helper';
-// @ts-expect-error FIXME
-import logger from './log-helper';
 import type {
   ASTPath,
   CallExpression,
@@ -15,17 +14,15 @@ import type {
   VariableDeclaration,
 } from 'jscodeshift';
 // @ts-expect-error FIXME
-import { createClass, withComments } from './transform-helper';
+import logger from './log-helper';
 import { DEFAULT_OPTIONS } from './options';
 import type { RuntimeData } from './runtime-data';
+// @ts-expect-error FIXME
+import { createClass, withComments } from './transform-helper';
 import { capitalizeFirstLetter, get, startsWithUpperCaseLetter } from './util';
 import { isRecord, verified } from './util/types';
-// @ts-expect-error FIXME
 import { hasValidProps, isFileOfType, isTestFile } from './validation-helper';
-
-interface EOProps {
-  instanceProps: EOProp[];
-}
+import type { EOExpressionProp } from './util/ast';
 
 /**
  * Return the map of instance props and functions from Ember Object
@@ -48,7 +45,8 @@ export function getEmberObjectProps(
 
   return {
     instanceProps: objProps.map(
-      (objProp) => new EOProp(objProp, runtimeData, importedDecoratedProps)
+      // FIXME: Remove cast
+      (objProp) => new EOProp(objProp as EOExpressionProp, runtimeData, importedDecoratedProps)
     ),
   };
 }
@@ -216,7 +214,13 @@ export function replaceEmberObjectExpressions(
   filePath: string,
   options = DEFAULT_OPTIONS
 ): boolean | undefined {
-  options.runtimeData = verified<RuntimeData>(getTelemetryFor(path.resolve(filePath)), isRecord);
+  options.runtimeData = verified(
+    getTelemetryFor(path.resolve(filePath)),
+    // FIXME: move to runtime-data.ts
+    function isRuntimeData(v: unknown): v is RuntimeData | undefined {
+      return v === undefined || isRecord(v);
+    }
+  );
 
   if (!options.runtimeData) {
     logger.warn(`[${filePath}]: SKIPPED Could not find runtime data NO_RUNTIME_DATA`);

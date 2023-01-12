@@ -1,3 +1,5 @@
 import type { ObjectExpression } from 'jscodeshift';
 
-export type ObjectExpressionProp = ObjectExpression['properties'][number];
+type ObjectExpressionProp = ObjectExpression['properties'][number];
+
+export type EOExpressionProp = Extract<ObjectExpressionProp, { value: unknown }>;

@@ -8,8 +8,12 @@ import {
   getPropType,
   isClassDecoratorProp,
 } from './util';
-import type { ObjectExpressionProp } from './util/ast';
+import type { EOExpressionProp } from './util/ast';
 import { JsonValue, assert } from './util/types';
+
+export interface EOProps {
+  instanceProps: EOProp[];
+}
 
 type ImportedDecoratedProps = object;
 
@@ -46,7 +50,7 @@ function getModifier(calleeObject: CallExpression): EOModifier {
  * A wrapper object for ember object properties
  */
 export default class EOProp {
-  readonly _prop: ObjectExpressionProp;
+  readonly _prop: EOExpressionProp;
 
   /** Runtime Data */
   readonly decorators: EODecorator[] = [];
@@ -62,7 +66,7 @@ export default class EOProp {
   calleeObject: CallExpression | undefined;
 
   constructor(
-    eoProp: ObjectExpressionProp,
+    eoProp: EOExpressionProp,
     runtimeData: RuntimeData,
     importedDecoratedProps: ImportedDecoratedProps
   ) {
@@ -121,12 +125,14 @@ export default class EOProp {
     }
   }
 
-  get value() {
-    return get(this._prop, 'value');
+  get value(): EOExpressionProp['value'] {
+    return this._prop.value;
   }
 
   get kind(): 'init' | 'get' | 'set' | 'method' | undefined {
-    let kind = 'kind' in this._prop ? this._prop.kind : undefined;
+    // FIXME: Are these ever undefined?
+    let kind: 'init' | 'get' | 'set' | 'method' | undefined =
+      'kind' in this._prop ? this._prop.kind : undefined;
     let method = 'method' in this._prop ? this._prop.method : undefined;
 
     if (
@@ -145,7 +151,7 @@ export default class EOProp {
   }
 
   get key() {
-    return get(this._prop, 'key');
+    return this._prop.key;
   }
 
   get name() {
@@ -178,7 +184,11 @@ export default class EOProp {
   }
 
   get classDecoratorName() {
-    if (this.name === LAYOUT_DECORATOR_NAME && this.value.name === LAYOUT_DECORATOR_NAME) {
+    if (
+      this.name === LAYOUT_DECORATOR_NAME &&
+      'name' in this.value && // e.g. CallExpression doesn't have `name`
+      this.value.name === LAYOUT_DECORATOR_NAME
+    ) {
       return LAYOUT_DECORATOR_LOCAL_NAME;
     }
     return this.name;
