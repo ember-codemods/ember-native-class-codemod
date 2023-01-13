@@ -5,10 +5,10 @@ import {
   LAYOUT_DECORATOR_NAME,
   get,
   getPropName,
-  getPropType,
   isClassDecoratorProp,
 } from './util';
-import { JsonValue, assert } from './util/types';
+import type { JsonValue } from './util/types';
+import { assert, isString, verified } from './util/types';
 
 export interface EOProps {
   instanceProps: EOProp[];
@@ -17,7 +17,7 @@ export interface EOProps {
 type ImportedDecoratedProps = object;
 
 interface EODecorator {
-  name: 'unobserves' | 'off' | 'className' | 'attribute';
+  name: 'unobserves' | 'off' | 'className' | 'attribute' | string;
   importedName?: 'computed';
   isMethodDecorator?: boolean;
   isMetaDecorator?: boolean;
@@ -29,7 +29,9 @@ interface EODecoratorArgs {
 }
 
 interface EOModifier {
-  prop: Extract<CallExpression['callee'], { property: any }>['property'] | undefined;
+  prop:
+    | Extract<CallExpression['callee'], { property: any }>['property']
+    | undefined;
   args: CallExpression['arguments'];
 }
 
@@ -38,11 +40,15 @@ interface EOModifier {
  */
 function getModifier(calleeObject: CallExpression): EOModifier {
   return {
-    prop: 'property' in calleeObject.callee ? calleeObject.callee.property : undefined,
+    prop:
+      'property' in calleeObject.callee
+        ? calleeObject.callee.property
+        : undefined,
     args: calleeObject.arguments,
   };
 }
 
+// FIXME: Mark public/private props
 /**
  * Ember Object Property
  *
@@ -103,6 +109,7 @@ export default class EOProp {
     }
 
     // FIXME: Extract `is` method?
+    // FIXME: Split out this type into a separate class?
     if ('value' in this._prop && this._prop.value.type === 'CallExpression') {
       let calleeObject = this._prop.value;
       const modifiers = [getModifier(calleeObject)];
@@ -132,12 +139,12 @@ export default class EOProp {
     // FIXME: Are these ever undefined?
     let kind: 'init' | 'get' | 'set' | 'method' | undefined =
       'kind' in this._prop ? this._prop.kind : undefined;
-    let method = 'method' in this._prop ? this._prop.method : undefined;
+    const method = 'method' in this._prop ? this._prop.method : undefined;
 
     if (
       kind === 'init' &&
       this.hasDecorators &&
-      this.decorators.find((d) => d.importedName === 'computed')
+      this.decorators.some((d) => d.importedName === 'computed')
     ) {
       kind = 'get';
     }
@@ -149,40 +156,41 @@ export default class EOProp {
     return kind;
   }
 
-  get key() {
+  get key(): Property['key'] {
     return this._prop.key;
   }
 
-  get name() {
+  get name(): string {
     return getPropName(this._prop);
   }
 
-  get type() {
-    return getPropType(this._prop);
+  get type(): Property['value']['type'] {
+    return this._prop.value.type;
   }
 
-  get calleeName() {
+  get calleeName(): string {
     assert(this.calleeObject !== undefined, 'Cannot find calleeObject');
-    return get(this.calleeObject, 'callee.name');
+    assert('name' in this.calleeObject.callee);
+    return verified(this.calleeObject.callee.name, isString);
   }
 
-  get comments() {
+  get comments(): Property['comments'] {
     return this._prop.comments;
   }
 
-  get computed() {
+  get computed(): boolean {
     return 'computed' in this._prop && this._prop.computed;
   }
 
-  get isClassDecorator() {
+  get isClassDecorator(): boolean {
     return isClassDecoratorProp(this.name);
   }
 
-  get decoratorNames() {
+  get decoratorNames(): string[] {
     return this.decorators.map((d) => d.name);
   }
 
-  get classDecoratorName() {
+  get classDecoratorName(): string {
     if (
       this.name === LAYOUT_DECORATOR_NAME &&
       'name' in this.value && // e.g. CallExpression doesn't have `name`
@@ -193,84 +201,88 @@ export default class EOProp {
     return this.name;
   }
 
-  get isLayoutDecorator() {
+  get isLayoutDecorator(): boolean {
     return this.classDecoratorName === LAYOUT_DECORATOR_NAME;
   }
 
-  get isTemplateLayoutDecorator() {
+  get isTemplateLayoutDecorator(): boolean {
     return this.classDecoratorName === LAYOUT_DECORATOR_LOCAL_NAME;
   }
 
-  get isCallExpression() {
+  get isCallExpression(): boolean {
     return this.type === 'CallExpression';
   }
 
-  get hasDecorators() {
-    return this.decorators.length;
+  get hasDecorators(): boolean {
+    return this.decorators.length > 0;
   }
 
-  get callExprArgs() {
+  get callExprArgs(): CallExpression['arguments'] {
     assert(this.calleeObject !== undefined, 'Cannot find calleeObject');
     return this.calleeObject.arguments;
   }
 
-  get shouldRemoveLastArg() {
+  get shouldRemoveLastArg(): boolean {
     return this.kind === 'method' || this.kind === 'get';
   }
 
-  get hasModifierWithArgs() {
+  get hasModifierWithArgs(): boolean {
     return this.modifiers.some((modifier) => modifier.args.length);
   }
 
-  get hasVolatile() {
-    return this.modifiers.some((modifier) => get(modifier, 'prop.name') === 'volatile');
+  get hasVolatile(): boolean {
+    return this.modifiers.some(
+      (modifier) => get(modifier, 'prop.name') === 'volatile'
+    );
   }
 
-  get hasReadOnly() {
-    return this.modifiers.some((modifier) => get(modifier, 'prop.name') === 'readOnly');
+  get hasReadOnly(): boolean {
+    return this.modifiers.some(
+      (modifier) => get(modifier, 'prop.name') === 'readOnly'
+    );
   }
 
-  get isVolatileReadOnly() {
+  get isVolatileReadOnly(): boolean {
     return this.modifiers.length === 2 && this.hasVolatile && this.hasReadOnly;
   }
 
-  get isTagName() {
+  get isTagName(): boolean {
     return this.name === 'tagName';
   }
 
-  get isClassNames() {
+  get isClassNames(): boolean {
     return this.name === 'classNames';
   }
 
-  get isClassNameBindings() {
+  get isClassNameBindings(): boolean {
     return this.name === 'classNameBindings';
   }
 
-  get isAttributeBindings() {
+  get isAttributeBindings(): boolean {
     return this.name === 'attributeBindings';
   }
 
-  get isActions() {
+  get isActions(): boolean {
     return this.name === 'actions';
   }
 
-  get hasUnobservesDecorator() {
+  get hasUnobservesDecorator(): boolean {
     return this.decoratorNames.includes('unobserves');
   }
 
-  get hasOffDecorator() {
+  get hasOffDecorator(): boolean {
     return this.decoratorNames.includes('off');
   }
 
-  get hasRuntimeData() {
+  get hasRuntimeData(): boolean {
     return !!this.runtimeType;
   }
 
-  get hasMethodDecorator() {
-    return this.decorators.find((d) => d.isMethodDecorator);
+  get hasMethodDecorator(): boolean {
+    return this.decorators.some((d) => d.isMethodDecorator);
   }
 
-  get hasMetaDecorator() {
-    return this.decorators.find((d) => d.isMetaDecorator);
+  get hasMetaDecorator(): boolean {
+    return this.decorators.some((d) => d.isMetaDecorator);
   }
 }

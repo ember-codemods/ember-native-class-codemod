@@ -9,15 +9,25 @@ import type {
   VariableDeclaration,
 } from 'jscodeshift';
 import path from 'path';
-import type { EOProps } from './EOProp';
-import EOProp from './EOProp';
-import { createDecoratorImportDeclarations, getImportedDecoratedProps } from './import-helper';
+import type { EOProps } from './eo-prop';
+import EOProp from './eo-prop';
+import {
+  createDecoratorImportDeclarations,
+  getImportedDecoratedProps,
+} from './import-helper';
 import logger from './log-helper';
 import { DEFAULT_OPTIONS } from './options';
 import type { RuntimeData } from './runtime-data';
 import { createClass, withComments } from './transform-helper';
 import { capitalizeFirstLetter, get, startsWithUpperCaseLetter } from './util';
-import { assert, defined, isPropertyNode, isRecord, isString, verified } from './util/types';
+import {
+  assert,
+  defined,
+  isPropertyNode,
+  isRecord,
+  isString,
+  verified,
+} from './util/types';
 import { hasValidProps, isFileOfType, isTestFile } from './validation-helper';
 
 /**
@@ -42,7 +52,11 @@ export function getEmberObjectProps(
   return {
     instanceProps: objProps.map(
       (objProp) =>
-        new EOProp(verified(objProp, isPropertyNode), runtimeData, importedDecoratedProps)
+        new EOProp(
+          verified(objProp, isPropertyNode),
+          runtimeData,
+          importedDecoratedProps
+        )
     ),
   };
 }
@@ -106,7 +120,9 @@ export function getEmberObjectCallExpressions(
     .find(j.CallExpression, { callee: { property: { name: 'extend' } } })
     .filter(
       (eoCallExpression) =>
-        startsWithUpperCaseLetter(get(eoCallExpression, 'value.callee.object.name')) &&
+        startsWithUpperCaseLetter(
+          get(eoCallExpression, 'value.callee.object.name')
+        ) &&
         get(eoCallExpression, 'parentPath.value.type') !== 'ClassDeclaration'
     );
 }
@@ -131,7 +147,8 @@ export function getExpressionToReplace(
   // FIXME: Verify return type
 ): ASTPath<CallExpression> | ASTPath<VariableDeclaration> {
   const varDeclaration = getClosestVariableDeclaration(j, eoCallExpression);
-  const isFollowedByCreate = get(eoCallExpression, 'parentPath.value.property.name') === 'create';
+  const isFollowedByCreate =
+    get(eoCallExpression, 'parentPath.value.property.name') === 'create';
 
   let expressionToReplace:
     | ASTPath<CallExpression>
@@ -158,16 +175,23 @@ export function getClassName(
     );
 
     const identifier = firstDeclarator.id;
-    assert(identifier.type === 'Identifier', 'expected firstDeclarator.id to be an Identifier');
+    assert(
+      identifier.type === 'Identifier',
+      'expected firstDeclarator.id to be an Identifier'
+    );
 
     return identifier.name;
   }
 
-  let className = capitalizeFirstLetter(camelCase(path.basename(filePath, 'js')));
+  let className = capitalizeFirstLetter(
+    camelCase(path.basename(filePath, 'js'))
+  );
   const capitalizedType = capitalizeFirstLetter(type);
 
   if (capitalizedType === className) {
-    className = capitalizeFirstLetter(camelCase(path.basename(path.dirname(filePath))));
+    className = capitalizeFirstLetter(
+      camelCase(path.basename(path.dirname(filePath)))
+    );
   }
 
   if (!['Component', 'Helper', 'EmberObject'].includes(type)) {
@@ -181,7 +205,10 @@ type EOCallExpressionArgs = ASTPath<CallExpression>['value']['arguments'];
 
 type EOCallExpressionArg = EOCallExpressionArgs[number];
 
-export type EOCallExpressionMixin = Exclude<EOCallExpressionArg, ObjectExpression>;
+export type EOCallExpressionMixin = Exclude<
+  EOCallExpressionArg,
+  ObjectExpression
+>;
 
 interface EOCallExpressionProps {
   eoExpression: ObjectExpression | null;
@@ -225,7 +252,9 @@ export function replaceEmberObjectExpressions(
   );
 
   if (!options.runtimeData) {
-    logger.warn(`[${filePath}]: SKIPPED Could not find runtime data NO_RUNTIME_DATA`);
+    logger.warn(
+      `[${filePath}]: SKIPPED Could not find runtime data NO_RUNTIME_DATA`
+    );
     return;
   }
 
@@ -246,7 +275,8 @@ export function replaceEmberObjectExpressions(
   let decoratorsToImportMap: Partial<DecoratorsToImportMap> = {};
 
   getEmberObjectCallExpressions(j, root).forEach((eoCallExpression) => {
-    const { eoExpression, mixins } = parseEmberObjectCallExpression(eoCallExpression);
+    const { eoExpression, mixins } =
+      parseEmberObjectCallExpression(eoCallExpression);
 
     const eoProps = getEmberObjectProps(
       j,
@@ -258,26 +288,45 @@ export function replaceEmberObjectExpressions(
     const errors = hasValidProps(j, eoProps, options);
 
     if (get(eoCallExpression, 'parentPath.value.type') === 'MemberExpression') {
-      errors.push('class has chained definition (e.g. EmberObject.extend().reopenClass();');
+      errors.push(
+        'class has chained definition (e.g. EmberObject.extend().reopenClass();'
+      );
     }
 
-    if (errors.length) {
-      logger.warn(`[${filePath}]: FAILURE \nValidation errors: \n\t${errors.join('\n\t')}`);
+    if (errors.length > 0) {
+      logger.warn(
+        `[${filePath}]: FAILURE \nValidation errors: \n\t${errors.join('\n\t')}`
+      );
       return;
     }
 
-    let className = getClassName(j, eoCallExpression, filePath, options.runtimeData?.type);
+    let className = getClassName(
+      j,
+      eoCallExpression,
+      filePath,
+      options.runtimeData?.type
+    );
 
     const callee = eoCallExpression.value.callee;
     assert('object' in callee, 'expected object in callee');
-    assert(callee.object && 'name' in callee.object, 'expected object in callee.object');
+    assert(
+      callee.object && 'name' in callee.object,
+      'expected object in callee.object'
+    );
     const superClassName = verified(callee.object.name, isString);
 
     if (className === superClassName) {
       className = `_${className}`;
     }
 
-    const es6ClassDeclaration = createClass(j, className, eoProps, superClassName, mixins, options);
+    const es6ClassDeclaration = createClass(
+      j,
+      className,
+      eoProps,
+      superClassName,
+      mixins,
+      options
+    );
 
     const expressionToReplace = getExpressionToReplace(j, eoCallExpression);
     j(expressionToReplace).replaceWith(
@@ -287,11 +336,16 @@ export function replaceEmberObjectExpressions(
 
     transformed = true;
 
-    decoratorsToImportMap = getDecoratorsToImportMap(eoProps.instanceProps, decoratorsToImportMap);
+    decoratorsToImportMap = getDecoratorsToImportMap(
+      eoProps.instanceProps,
+      decoratorsToImportMap
+    );
   });
 
   // Need to find another way, as there might be a case where
   // one object from a file is transformed and other is not
+  // FIXME: Is this always falsy?
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (transformed) {
     const decoratorsToImport = Object.keys(decoratorsToImportMap).filter(
       (key) => decoratorsToImportMap[key as keyof DecoratorsToImportMap]

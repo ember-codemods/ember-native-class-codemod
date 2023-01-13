@@ -2,6 +2,13 @@
 
 module.exports = {
   singleQuote: true,
-  trailingComma: 'es5',
   printWidth: 100,
+  overrides: [
+    {
+      files: '*.ts',
+      options: {
+        printWidth: 80,
+      },
+    },
+  ],
 };

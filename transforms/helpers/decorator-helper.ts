@@ -1,5 +1,5 @@
 import type { Decorator, JSCodeshift } from 'jscodeshift';
-import type EOProp from './EOProp';
+import type EOProp from './eo-prop';
 import { get } from './util';
 import { defined } from './util/types';
 
@@ -12,16 +12,21 @@ export function withDecorators<T>(to: T, decorators: Decorator[] = []): T {
   return to;
 }
 
-export function createClassDecorator(j: JSCodeshift, classDecoratorProp: EOProp): Decorator {
-  let decoratorArgs = [];
-  if (classDecoratorProp.type === 'ArrayExpression') {
-    // @ts-expect-error
-    decoratorArgs = classDecoratorProp.value.elements;
-  } else {
-    decoratorArgs = [classDecoratorProp.value];
-  }
+/** FIXME: Document */
+export function createClassDecorator(
+  j: JSCodeshift,
+  classDecoratorProp: EOProp
+): Decorator {
+  const decoratorArgs =
+    classDecoratorProp.type === 'ArrayExpression'
+      ? // @ts-expect-error
+        classDecoratorProp.value.elements
+      : [classDecoratorProp.value];
+
   return j.decorator(
-    j.callExpression(j.identifier(classDecoratorProp.classDecoratorName), [...decoratorArgs])
+    j.callExpression(j.identifier(classDecoratorProp.classDecoratorName), [
+      ...decoratorArgs,
+    ])
   );
 }
 
@@ -43,18 +48,22 @@ export function createCallExpressionDecorators(
     : instanceProp.callExprArgs.slice(0);
 
   let decoratorExpression =
-    ['computed', 'service', 'controller'].includes(decoratorName) && decoratorArgs.length === 0
+    ['computed', 'service', 'controller'].includes(decoratorName) &&
+    decoratorArgs.length === 0
       ? j.identifier(decoratorName)
       : j.callExpression(j.identifier(decoratorName), decoratorArgs);
 
   decoratorExpression = instanceProp.modifiers.reduce(
     (callExpr, modifier) =>
-      // @ts-expect-error
-      j.callExpression(j.memberExpression(callExpr, modifier.prop), modifier.args),
+      j.callExpression(
+        // @ts-expect-error
+        j.memberExpression(callExpr, modifier.prop),
+        modifier.args
+      ),
     decoratorExpression
   );
 
-  if (!instanceProp.modifiers.length) {
+  if (instanceProp.modifiers.length === 0) {
     return j.decorator(decoratorExpression);
   }
 
@@ -80,38 +89,55 @@ function createDecoratorsWithArgs(
 }
 
 /** Create `@action` decorator */
-export function createIdentifierDecorators(j: JSCodeshift, identifier = 'action'): [Decorator] {
+export function createIdentifierDecorators(
+  j: JSCodeshift,
+  identifier = 'action'
+): [Decorator] {
   return [j.decorator(j.identifier(identifier))];
 }
 
 /**
  * Create decorators for props from `classNameBindings` and `attributeBindings`
  */
-// @ts-expect-error
-function createBindingDecorators(j: JSCodeshift, decoratorName: string, instanceProp): [Decorator] {
+function createBindingDecorators(
+  j: JSCodeshift,
+  decoratorName: string,
+  instanceProp: EOProp
+): [Decorator] {
   const propList = get(instanceProp, 'propList');
-  if (propList && propList.length) {
+  if (propList && propList.length > 0) {
     // @ts-expect-error
     const propArgs = propList.map((prop) => j.literal(prop));
-    return [j.decorator(j.callExpression(j.identifier(decoratorName), propArgs))];
+    return [
+      j.decorator(j.callExpression(j.identifier(decoratorName), propArgs)),
+    ];
   }
   return [j.decorator(j.identifier(decoratorName))];
 }
 
 /** Handles decorators for instance properties */
-export function createInstancePropDecorators(j: JSCodeshift, instanceProp: EOProp): Decorator[] {
+export function createInstancePropDecorators(
+  j: JSCodeshift,
+  instanceProp: EOProp
+): Decorator[] {
   return instanceProp.decoratorNames.reduce((decorators, decorator) => {
     if (!decorator) {
       return decorators;
-    }
-    if (decorator === 'className' || decorator === 'attribute') {
-      return decorators.concat(createBindingDecorators(j, decorator, instanceProp));
-    }
-    if (decorator === 'off' || decorator === 'unobserves') {
+    } else if (decorator === 'className' || decorator === 'attribute') {
       return decorators.concat(
-        createDecoratorsWithArgs(j, decorator, defined(instanceProp.decoratorArgs[decorator]))
+        createBindingDecorators(j, decorator, instanceProp)
+      );
+    } else if (decorator === 'off' || decorator === 'unobserves') {
+      return decorators.concat(
+        createDecoratorsWithArgs(
+          j,
+          decorator,
+          defined(instanceProp.decoratorArgs[decorator])
+        )
       );
     }
-    return decorators.concat(createCallExpressionDecorators(j, decorator, instanceProp));
+    return decorators.concat(
+      createCallExpressionDecorators(j, decorator, instanceProp)
+    );
   }, [] as Decorator[]);
 }

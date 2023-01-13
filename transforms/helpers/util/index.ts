@@ -1,4 +1,9 @@
-import type { Collection, Declaration, JSCodeshift, Property } from 'jscodeshift';
+import type {
+  Collection,
+  Declaration,
+  JSCodeshift,
+  Property,
+} from 'jscodeshift';
 import { assert } from './types';
 
 export const LAYOUT_DECORATOR_NAME = 'layout' as const;
@@ -155,16 +160,19 @@ export const LIFECYCLE_HOOKS = [
 ];
 
 /**
- * Get a property from and object, useful to get nested props without checking for null values
+ * Get a property from and object, useful to get nested props without checking
+ * for null values
  *
  * @deprecated
  */
 export function get(obj: object, path: string): any {
-  return path.split('.').reduce(function (currentObject, pathSegment) {
-    return typeof currentObject == 'undefined' || currentObject === null
-      ? currentObject
-      : currentObject[pathSegment as keyof typeof currentObject];
-  }, obj);
+  return path
+    .split('.')
+    .reduce<object | null | undefined>(function (currentObject, pathSegment) {
+      return currentObject === undefined || currentObject === null
+        ? currentObject
+        : currentObject[pathSegment as keyof typeof currentObject];
+    }, obj);
 }
 
 /** Get the first declaration in the program */
@@ -177,16 +185,11 @@ export function getFirstDeclaration(
 
 /** Return name of the property */
 export function getPropName(prop: Property): string {
-  let key = prop.key;
+  const key = prop.key;
   assert('name' in key, 'expected name in prop.key');
-  let name = key.name;
+  const name = key.name;
   assert(typeof name === 'string', 'expected name to be a string');
   return name;
-}
-
-/** Return type of the property */
-export function getPropType(prop: Property) {
-  return prop.value.type;
 }
 
 /** Convert the first letter to uppercase */
@@ -196,9 +199,10 @@ export function capitalizeFirstLetter(name: string): string {
 
 /** Returns true if the first character in the word is uppercase */
 export function startsWithUpperCaseLetter(word = ''): boolean {
-  return !!word && word.charAt(0) !== word.charAt(0).toLowerCase();
+  return !!word && !word.startsWith(word.charAt(0).toLowerCase());
 }
 
+// FIXME: Switch more of the `includes` checks to this style.
 const ClassDecoratorPropNames = new Set([
   'layout',
   'tagName',

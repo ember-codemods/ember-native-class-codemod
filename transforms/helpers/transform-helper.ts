@@ -13,8 +13,8 @@ import type {
   MethodDefinition,
   Node,
 } from 'jscodeshift';
-import type EOProp from './EOProp';
-import type { EOProps } from './EOProp';
+import type EOProp from './eo-prop';
+import type { EOProps } from './eo-prop';
 import {
   createClassDecorator,
   createIdentifierDecorators,
@@ -37,12 +37,16 @@ function shouldSetValue(prop: EOProp): boolean {
     return true;
   }
   return prop.decoratorNames.every(
-    (decoratorName) => decoratorName === 'className' || decoratorName === 'attribute'
+    (decoratorName) =>
+      decoratorName === 'className' || decoratorName === 'attribute'
   );
 }
 
 /** Copy comments `from` => `to` */
-export function withComments<T extends Node>(to: T, from: { comments: Node['comments'] }): T {
+export function withComments<T extends Node>(
+  to: T,
+  from: { comments: Node['comments'] }
+): T {
   if (from.comments) {
     to.comments = from.comments;
   } else {
@@ -52,7 +56,10 @@ export function withComments<T extends Node>(to: T, from: { comments: Node['comm
 }
 
 /** Creates line comments from passed lines */
-function createLineComments(j: JSCodeshift, lines: readonly string[] = []): CommentLine[] {
+function createLineComments(
+  j: JSCodeshift,
+  lines: readonly string[] = []
+): CommentLine[] {
   return lines.map((line) => j.commentLine(line));
 }
 
@@ -68,7 +75,9 @@ function replaceSuperExpressions(
   methodDefinition: MethodDefinition,
   functionProp: EOProp // FIXME: | FunctionExpression ?
 ): MethodDefinition {
-  const replaceWithUndefined = functionProp.hasRuntimeData ? !functionProp.isOverridden : false;
+  const replaceWithUndefined = functionProp.hasRuntimeData
+    ? !functionProp.isOverridden
+    : false;
   const superExprs = j(methodDefinition).find(j.CallExpression, {
     callee: {
       type: 'MemberExpression',
@@ -79,7 +88,7 @@ function replaceSuperExpressions(
     },
   });
 
-  if (!superExprs.length) {
+  if (superExprs.length === 0) {
     return methodDefinition;
   }
   superExprs.forEach((superExpr) => {
@@ -102,7 +111,10 @@ function replaceSuperExpressions(
           ),
           [j.thisExpression(), ...superMethodArgs]
         );
-        superMethodCall.comments = createLineComments(j, ACTION_SUPER_EXPRESSION_COMMENT);
+        superMethodCall.comments = createLineComments(
+          j,
+          ACTION_SUPER_EXPRESSION_COMMENT
+        );
       } else {
         superMethodCall = j.callExpression(
           j.memberExpression(j.super(), methodDefinition.key),
@@ -126,7 +138,8 @@ function createMethodProp(
   functionProp: EOProp,
   decorators: Decorator[] = []
 ): MethodDefinition {
-  const propKind = functionProp.kind === 'init' ? 'method' : defined(functionProp.kind);
+  const propKind =
+    functionProp.kind === 'init' ? 'method' : defined(functionProp.kind);
 
   return withDecorators(
     withComments(
@@ -148,7 +161,7 @@ function createClassProp(
   instanceProp: EOProp,
   decorators: Decorator[] = []
 ): ClassProperty {
-  if (!decorators.length) {
+  if (decorators.length === 0) {
     decorators = createInstancePropDecorators(j, instanceProp);
   }
 
@@ -202,11 +215,11 @@ function convertIdentifierActionToMethod(
 ): MethodDefinition {
   const returnBlock = j.blockStatement([
     j.returnStatement(
-      // @ts-expect-error
-      j.callExpression(j.memberExpression(idAction.value, j.identifier('call')), [
-        j.thisExpression(),
-        j.spreadElement(j.identifier('arguments')),
-      ])
+      j.callExpression(
+        // @ts-expect-error
+        j.memberExpression(idAction.value, j.identifier('call')),
+        [j.thisExpression(), j.spreadElement(j.identifier('arguments'))]
+      )
     ),
   ]);
   const expr = j.functionExpression(null, [], returnBlock);
@@ -235,7 +248,10 @@ function convertIdentifierActionToMethod(
  * }
  * ```
  */
-function createActionDecoratedProps(j: JSCodeshift, actionsProp: EOProp): MethodDefinition[] {
+function createActionDecoratedProps(
+  j: JSCodeshift,
+  actionsProp: EOProp
+): MethodDefinition[] {
   const actionProps = get(actionsProp, 'value.properties');
   const overriddenActions = get(actionsProp, 'overriddenActions') || [];
   const actionDecorators = createIdentifierDecorators(j);
@@ -252,16 +268,13 @@ function createActionDecoratedProps(j: JSCodeshift, actionsProp: EOProp): Method
   });
 }
 
-/**
- * Iterate and covert the computed properties to class methods
- *
- * @param {Object} j - jscodeshift lib reference
- * @param {EOProp} callExprProp
- * @return {Property[]}
- */
-function createCallExpressionProp(j: JSCodeshift, callExprProp: EOProp) {
+/** Iterate and covert the computed properties to class methods */
+function createCallExpressionProp(
+  j: JSCodeshift,
+  callExprProp: EOProp
+): MethodDefinition[] | ClassProperty[] {
   const callExprArgs = callExprProp.callExprArgs.slice(0);
-  let callExprLastArg: typeof callExprArgs[number] | undefined = undefined;
+  let callExprLastArg: (typeof callExprArgs)[number] | undefined;
   if (callExprProp.shouldRemoveLastArg) {
     callExprLastArg = defined(callExprArgs.pop());
 
@@ -275,31 +288,46 @@ function createCallExpressionProp(j: JSCodeshift, callExprProp: EOProp) {
         value: callExprLastArg,
         comments: callExprProp.comments,
       };
-      // @ts-expect-error
-      return [createMethodProp(j, functionExpr, createInstancePropDecorators(j, callExprProp))];
+      return [
+        createMethodProp(
+          j,
+          // @ts-expect-error
+          functionExpr,
+          createInstancePropDecorators(j, callExprProp)
+        ),
+      ];
     } else if (lastArgType === 'ObjectExpression') {
-      const callExprMethods = callExprLastArg.properties.map((callExprFunction) => {
-        // FIXME: Clean up all these asserts. Generally check all asserts/verified/etc
-        // assert('isComputed' in callExprFunction); FIXME: This doesn't work
-        // @ts-expect-error
-        callExprFunction.isComputed = true;
-        assert('kind' in callExprFunction);
-        assert('key' in callExprFunction);
-        assert('name' in callExprFunction.key);
-        assert(typeof callExprFunction.key.name === 'string');
-        assert(
-          (['init', 'method', 'get', 'set'] as const).includes(
-            callExprFunction.key.name as 'init' | 'method' | 'get' | 'set'
-          )
-        );
-        callExprFunction.kind = callExprFunction.key.name as 'init' | 'method' | 'get' | 'set';
-        callExprFunction.key = callExprProp.key;
-        if ('value' in callExprFunction && 'params' in callExprFunction.value) {
-          callExprFunction.value.params.shift();
+      const callExprMethods = callExprLastArg.properties.map(
+        (callExprFunction) => {
+          // FIXME: Clean up all these asserts. Generally check all asserts/verified/etc
+          // assert('isComputed' in callExprFunction); FIXME: This doesn't work
+          // @ts-expect-error
+          callExprFunction.isComputed = true;
+          assert('kind' in callExprFunction);
+          assert('key' in callExprFunction);
+          assert('name' in callExprFunction.key);
+          assert(typeof callExprFunction.key.name === 'string');
+          assert(
+            (['init', 'method', 'get', 'set'] as const).includes(
+              callExprFunction.key.name as 'init' | 'method' | 'get' | 'set'
+            )
+          );
+          callExprFunction.kind = callExprFunction.key.name as
+            | 'init'
+            | 'method'
+            | 'get'
+            | 'set';
+          callExprFunction.key = callExprProp.key;
+          if (
+            'value' in callExprFunction &&
+            'params' in callExprFunction.value
+          ) {
+            callExprFunction.value.params.shift();
+          }
+          // @ts-expect-error
+          return createMethodProp(j, callExprFunction);
         }
-        // @ts-expect-error
-        return createMethodProp(j, callExprFunction);
-      });
+      );
 
       withDecorators(
         withComments(defined(callExprMethods[0]), callExprProp),
@@ -333,19 +361,19 @@ function createSuperClassExpression(
 export function createClass(
   j: JSCodeshift,
   className: string,
-  { instanceProps }: EOProps = { instanceProps: [] },
-  superClassName: string = '',
+  { instanceProps }: EOProps,
+  superClassName = '',
   mixins: EOCallExpressionMixin[] = [],
   options = DEFAULT_OPTIONS
 ): ClassDeclaration {
   let classBody: Parameters<typeof j.classBody>[0] = [];
-  let classDecorators = [];
+  const classDecorators = [];
 
   if (options.classicDecorator) {
     classDecorators.push(j.decorator(j.identifier('classic')));
   }
 
-  for (let prop of instanceProps) {
+  for (const prop of instanceProps) {
     if (prop.isClassDecorator) {
       classDecorators.push(createClassDecorator(j, prop));
     } else if (prop.type === 'FunctionExpression') {
@@ -391,7 +419,12 @@ export function createEmberDecoratorSpecifiers(
     .filter((specifier) => decoratorsToImport.includes(specifier))
     .map((specifier) => {
       const importedSpecifier =
-        specifier === LAYOUT_DECORATOR_LOCAL_NAME ? LAYOUT_DECORATOR_NAME : specifier;
-      return j.importSpecifier(j.identifier(importedSpecifier), j.identifier(specifier));
+        specifier === LAYOUT_DECORATOR_LOCAL_NAME
+          ? LAYOUT_DECORATOR_NAME
+          : specifier;
+      return j.importSpecifier(
+        j.identifier(importedSpecifier),
+        j.identifier(specifier)
+      );
     });
 }

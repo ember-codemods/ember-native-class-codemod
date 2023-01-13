@@ -6,5 +6,8 @@ export interface RuntimeData {
   offProperties?: Record<string, Array<string | boolean | number | null>>;
   overriddenActions?: JsonArray;
   overriddenProperties?: JsonArray;
-  unobservedProperties?: Record<string, Array<string | boolean | number | null>>;
+  unobservedProperties?: Record<
+    string,
+    Array<string | boolean | number | null>
+  >;
 }

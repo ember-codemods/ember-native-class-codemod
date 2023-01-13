@@ -1,8 +1,9 @@
 import type { JSCodeshift } from 'jscodeshift';
 import minimatch from 'minimatch';
-import type EOProp from './EOProp';
-import type { EOProps } from './EOProp';
-import { DEFAULT_OPTIONS, Options } from './options';
+import type EOProp from './eo-prop';
+import type { EOProps } from './eo-prop';
+import type { Options } from './options';
+import { DEFAULT_OPTIONS } from './options';
 import { LIFECYCLE_HOOKS, getPropName } from './util';
 import { assert, isPropertyNode, verified } from './util/types';
 
@@ -31,23 +32,27 @@ export function isTestFile(file: string): boolean {
  * The glob patterns are specified by `TYPE_PATTERNS`
  */
 export function isFileOfType(file: string, type: Options['type']): boolean {
-  if (!type || !TYPE_PATTERNS[type]) {
-    return true;
-  }
-  return minimatch(file, TYPE_PATTERNS[type]);
+  return (
+    // FIXME: False positive?
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    !!type && !!TYPE_PATTERNS[type] && minimatch(file, TYPE_PATTERNS[type])
+  );
 }
 
 /**
- * Iterates through instance properties to verify if there are any props that can not be transformed
+ * Iterates through instance properties to verify if there are any props that
+ * can not be transformed
  */
 export function hasValidProps(
   j: JSCodeshift,
-  { instanceProps }: EOProps = { instanceProps: [] },
+  { instanceProps }: EOProps,
   { decorators, classFields }: Options = DEFAULT_OPTIONS
 ): string[] {
-  const unsupportedPropNames: readonly string[] = decorators ? [] : UNSUPPORTED_PROP_NAMES;
+  const unsupportedPropNames: readonly string[] = decorators
+    ? []
+    : UNSUPPORTED_PROP_NAMES;
 
-  return instanceProps.reduce((errors, instanceProp) => {
+  return instanceProps.reduce<string[]>((errors, instanceProp) => {
     if (!classFields && instanceProp.type === 'Literal') {
       errors.push(`[${instanceProp.name}]: Need option '--class-fields=true'`);
     }
@@ -67,7 +72,8 @@ export function hasValidProps(
     }
 
     if (
-      (!decorators && (instanceProp.hasDecorators || instanceProp.isClassDecorator)) ||
+      (!decorators &&
+        (instanceProp.hasDecorators || instanceProp.isClassDecorator)) ||
       unsupportedPropNames.includes(instanceProp.name) ||
       (instanceProp.isCallExpression && !instanceProp.hasDecorators)
     ) {
@@ -88,7 +94,7 @@ export function hasValidProps(
       );
     }
     return errors;
-  }, [] as string[]);
+  }, []);
 }
 
 /**
@@ -96,14 +102,17 @@ export function hasValidProps(
  * The transformation is not supported if an action has the same name as lifecycle hook
  * Reference: https://github.com/scalvert/ember-native-class-codemod/issues/34
  */
-function getLifecycleHookErrors(actionsProp: EOProp) {
+function getLifecycleHookErrors(actionsProp: EOProp): string[] {
   // FIXME: If this never gets hit we can narrow prop type
-  assert('properties' in actionsProp.value, 'expected prop value to have properties');
+  assert(
+    'properties' in actionsProp.value,
+    'expected prop value to have properties'
+  );
   const actionProps = actionsProp.value.properties;
-  let errors: string[] = [];
-  for (let actionProp of actionProps) {
+  const errors: string[] = [];
+  for (const actionProp of actionProps) {
     const actionName = getPropName(verified(actionProp, isPropertyNode));
-    // not sure if actionName is ever falsey here? aside from ''...
+    // not sure if actionName is ever falsy here? aside from ''...
     if (actionName && LIFECYCLE_HOOKS.includes(actionName)) {
       errors.push(
         `[${actionName}]: Transform not supported - action name matches one of the lifecycle hooks. Rename and try again. See https://github.com/scalvert/ember-native-class-codemod/issues/34 for more details`
@@ -116,12 +125,15 @@ function getLifecycleHookErrors(actionsProp: EOProp) {
 /**
  * Validation against pattern mentioned https://github.com/scalvert/eslint-plugin-ember-es6-class/pull/2
  */
-function getInfiniteLoopErrors(j: JSCodeshift, actionsProp: EOProp) {
+function getInfiniteLoopErrors(j: JSCodeshift, actionsProp: EOProp): string[] {
   // FIXME: If this never gets hit we can narrow prop type
-  assert('properties' in actionsProp.value, 'expected prop value to have properties');
+  assert(
+    'properties' in actionsProp.value,
+    'expected prop value to have properties'
+  );
   const actionProps = actionsProp.value.properties;
-  let errors: string[] = [];
-  for (let actionProp of actionProps) {
+  const errors: string[] = [];
+  for (const actionProp of actionProps) {
     const actionName = getPropName(verified(actionProp, isPropertyNode));
     if (actionName) {
       // FIXME: If this never gets hit we can narrow prop type
@@ -145,7 +157,7 @@ function getInfiniteLoopErrors(j: JSCodeshift, actionsProp: EOProp) {
       // Occurrences of this.get('actionName')() or get(this, 'actionName')()
       const actionLiterals = functExpr.find(j.Literal, { value: actionName });
 
-      if (actionLiterals.length || actionCalls.length) {
+      if (actionLiterals.length > 0 || actionCalls.length > 0) {
         errors.push(
           `[${actionName}]: Transform not supported - calling the passed action would cause an infinite loop. See https://github.com/scalvert/eslint-plugin-ember-es6-class/pull/2 for more details`
         );

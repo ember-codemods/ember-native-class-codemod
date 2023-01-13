@@ -2,25 +2,34 @@ import type { Property } from 'jscodeshift';
 
 export type AnyObject<T = unknown> = Record<PropertyKey, T>;
 
-/** Checks if the given value is a `Record<string, unknown>`. */
-export function isRecord<R extends Record<string, unknown>>(value: unknown): value is R {
+/** Type predicate. Checks if the given value is a `Record<string, unknown>`. */
+export function isRecord<R extends Record<string, unknown>>(
+  value: unknown
+): value is R {
   return value !== null && typeof value === 'object';
 }
 
+/** Type predicate. */
 export function isString(value: unknown): value is string {
   return typeof value === 'string';
 }
 
+/** Type predicate. */
 export function isPropertyNode(value: unknown): value is Property {
   return isRecord(value) && value['type'] === 'Property';
 }
 
-export function assert(condition: unknown, message = 'Assertion Error'): asserts condition {
+/** Assertion function. Throws if the given condition is falsy */
+export function assert(
+  condition: unknown,
+  message = 'Assertion Error'
+): asserts condition {
   if (!condition) {
-    throw Error(message);
+    throw new Error(message);
   }
 }
 
+/** Asserts that the given value matches the given condition before returning it. */
 export function verified<T>(
   value: unknown,
   condition: (value: unknown) => value is T,
@@ -32,11 +41,25 @@ export function verified<T>(
   return value as T;
 }
 
-export function defined<T>(value: T | undefined, message = 'Assert Exists Error'): T {
+/** Asserts that the given value is defined before returning it. */
+export function defined<T>(
+  value: T | undefined,
+  message = 'Assert Exists Error'
+): T {
   assert(value !== undefined, message);
   return value;
 }
 
-export type JsonValue = string | boolean | number | null | JsonObject | JsonArray;
+export type JsonValue =
+  | string
+  | boolean
+  | number
+  | null
+  | JsonObject
+  | JsonArray;
+
 export type JsonArray = JsonValue[];
-export interface JsonObject extends Record<string, JsonValue> {}
+
+export interface JsonObject {
+  [key: string]: JsonValue;
+}

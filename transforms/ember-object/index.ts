@@ -15,7 +15,10 @@ const transformer: Transform = function (file, api) {
   }
 
   const j = api.jscodeshift;
-  const options = { ...DEFAULT_OPTIONS, ...verified<Partial<Options>>(getOptions(), isRecord) };
+  const options = {
+    ...DEFAULT_OPTIONS,
+    ...verified<Partial<Options>>(getOptions(), isRecord),
+  };
   let { source } = file;
 
   const root = j(source);
