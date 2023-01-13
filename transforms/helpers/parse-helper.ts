@@ -17,8 +17,7 @@ import { DEFAULT_OPTIONS } from './options';
 import type { RuntimeData } from './runtime-data';
 import { createClass, withComments } from './transform-helper';
 import { capitalizeFirstLetter, get, startsWithUpperCaseLetter } from './util';
-import type { EOExpressionProp } from './util/ast';
-import { assert, defined, isRecord, isString, verified } from './util/types';
+import { assert, defined, isPropertyNode, isRecord, isString, verified } from './util/types';
 import { hasValidProps, isFileOfType, isTestFile } from './validation-helper';
 
 /**
@@ -42,8 +41,8 @@ export function getEmberObjectProps(
 
   return {
     instanceProps: objProps.map(
-      // FIXME: Remove cast
-      (objProp) => new EOProp(objProp as EOExpressionProp, runtimeData, importedDecoratedProps)
+      (objProp) =>
+        new EOProp(verified(objProp, isPropertyNode), runtimeData, importedDecoratedProps)
     ),
   };
 }

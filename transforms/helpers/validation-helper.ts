@@ -4,7 +4,7 @@ import type EOProp from './EOProp';
 import type { EOProps } from './EOProp';
 import { DEFAULT_OPTIONS, Options } from './options';
 import { LIFECYCLE_HOOKS, getPropName } from './util';
-import { assert } from './util/types';
+import { assert, isPropertyNode, verified } from './util/types';
 
 const UNSUPPORTED_PROP_NAMES = ['actions', 'layout'] as const;
 
@@ -102,7 +102,7 @@ function getLifecycleHookErrors(actionsProp: EOProp) {
   const actionProps = actionsProp.value.properties;
   let errors: string[] = [];
   for (let actionProp of actionProps) {
-    const actionName = getPropName(actionProp);
+    const actionName = getPropName(verified(actionProp, isPropertyNode));
     // not sure if actionName is ever falsey here? aside from ''...
     if (actionName && LIFECYCLE_HOOKS.includes(actionName)) {
       errors.push(
@@ -122,7 +122,7 @@ function getInfiniteLoopErrors(j: JSCodeshift, actionsProp: EOProp) {
   const actionProps = actionsProp.value.properties;
   let errors: string[] = [];
   for (let actionProp of actionProps) {
-    const actionName = getPropName(actionProp);
+    const actionName = getPropName(verified(actionProp, isPropertyNode));
     if (actionName) {
       // FIXME: If this never gets hit we can narrow prop type
       assert('value' in actionProp, 'expected value in actionProp');

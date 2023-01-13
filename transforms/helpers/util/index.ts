@@ -1,15 +1,4 @@
-import type {
-  Collection,
-  Declaration,
-  JSCodeshift,
-  ObjectMethod,
-  PropertyPattern,
-  RestProperty,
-  SpreadElement,
-  SpreadProperty,
-  SpreadPropertyPattern,
-} from 'jscodeshift';
-import type { EOExpressionProp } from './ast';
+import type { Collection, Declaration, JSCodeshift, Property } from 'jscodeshift';
 import { assert } from './types';
 
 export const LAYOUT_DECORATOR_NAME = 'layout' as const;
@@ -187,26 +176,16 @@ export function getFirstDeclaration(
 }
 
 /** Return name of the property */
-export function getPropName(
-  prop:
-    | EOExpressionProp
-    | ObjectMethod
-    | SpreadProperty
-    | SpreadElement
-    | PropertyPattern
-    | SpreadPropertyPattern
-    | RestProperty
-) {
-  // FIXME: If these don't get hit, we can narrow the types
-  assert('key' in prop, 'expected key in prop');
-  assert('name' in prop.key, 'expected name in prop.key');
-  let name = prop.key.name;
+export function getPropName(prop: Property): string {
+  let key = prop.key;
+  assert('name' in key, 'expected name in prop.key');
+  let name = key.name;
   assert(typeof name === 'string', 'expected name to be a string');
   return name;
 }
 
 /** Return type of the property */
-export function getPropType(prop: EOExpressionProp) {
+export function getPropType(prop: Property) {
   return prop.value.type;
 }
 

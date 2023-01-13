@@ -1,4 +1,4 @@
-import type { CallExpression } from 'jscodeshift';
+import type { CallExpression, Property } from 'jscodeshift';
 import type { RuntimeData } from './runtime-data';
 import {
   LAYOUT_DECORATOR_LOCAL_NAME,
@@ -8,7 +8,6 @@ import {
   getPropType,
   isClassDecoratorProp,
 } from './util';
-import type { EOExpressionProp } from './util/ast';
 import { JsonValue, assert } from './util/types';
 
 export interface EOProps {
@@ -50,7 +49,7 @@ function getModifier(calleeObject: CallExpression): EOModifier {
  * A wrapper object for ember object properties
  */
 export default class EOProp {
-  readonly _prop: EOExpressionProp;
+  readonly _prop: Property;
 
   /** Runtime Data */
   readonly decorators: EODecorator[] = [];
@@ -66,7 +65,7 @@ export default class EOProp {
   calleeObject: CallExpression | undefined;
 
   constructor(
-    eoProp: EOExpressionProp, // FIXME: Change to Property
+    eoProp: Property,
     runtimeData: RuntimeData,
     importedDecoratedProps: ImportedDecoratedProps
   ) {
@@ -125,7 +124,7 @@ export default class EOProp {
     }
   }
 
-  get value(): EOExpressionProp['value'] {
+  get value(): Property['value'] {
     return this._prop.value;
   }
 

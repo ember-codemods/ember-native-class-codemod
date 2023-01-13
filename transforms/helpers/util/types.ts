@@ -1,3 +1,5 @@
+import type { Property } from 'jscodeshift';
+
 export type AnyObject<T = unknown> = Record<PropertyKey, T>;
 
 /** Checks if the given value is a `Record<string, unknown>`. */
@@ -7,6 +9,10 @@ export function isRecord<R extends Record<string, unknown>>(value: unknown): val
 
 export function isString(value: unknown): value is string {
   return typeof value === 'string';
+}
+
+export function isPropertyNode(value: unknown): value is Property {
+  return isRecord(value) && value['type'] === 'Property';
 }
 
 export function assert(condition: unknown, message = 'Assertion Error'): asserts condition {
