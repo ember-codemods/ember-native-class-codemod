@@ -25,8 +25,8 @@ interface EODecorator {
 }
 
 interface EODecoratorArgs {
-  unobserves?: JsonValue | undefined;
-  off?: JsonValue | undefined;
+  unobserves?: Array<string | boolean | number | null> | undefined;
+  off?: Array<string | boolean | number | null> | undefined;
 }
 
 interface EOModifier {

@@ -1,28 +1,21 @@
-const { get } = require('./util');
+import type { Decorator, JSCodeshift } from 'jscodeshift';
+import type EOProp from './EOProp';
+import { get } from './util';
+import { defined } from './util/types';
 
-/**
- * Copy decorators `from` => `to`
- * @param {Object} to
- * @param {Object} decorators
- * @returns {Object}
- */
-function withDecorators(to, decorators = []) {
+/** Copy decorators `from` => `to` */
+export function withDecorators<T>(to: T, decorators: Decorator[] = []): T {
   if (decorators.length > 0) {
+    // @ts-expect-error
     to.decorators = decorators;
   }
   return to;
 }
 
-/**
- * Creates a list of class decorators `tagName` and `classNames`
- *
- * @param {Object} j - jscodeshift lib reference
- * @param {Property} classDecoratorProp
- * @returns {Decorator[]}
- */
-function createClassDecorator(j, classDecoratorProp) {
+export function createClassDecorator(j: JSCodeshift, classDecoratorProp: EOProp): Decorator {
   let decoratorArgs = [];
   if (classDecoratorProp.type === 'ArrayExpression') {
+    // @ts-expect-error
     decoratorArgs = classDecoratorProp.value.elements;
   } else {
     decoratorArgs = [classDecoratorProp.value];
@@ -35,13 +28,12 @@ function createClassDecorator(j, classDecoratorProp) {
 /**
  * Create decorators for computed properties and methods
  * This method handles decorators for `DECORATOR_PROPS` defined in `util.js`
- *
- * @param {Object} j - jscodeshift lib reference
- * @param {String} decoratorName
- * @param {Property} instanceProp
- * @returns {Decorator[]}
  */
-function createCallExpressionDecorators(j, decoratorName, instanceProp) {
+export function createCallExpressionDecorators(
+  j: JSCodeshift,
+  decoratorName: string,
+  instanceProp: EOProp
+): Decorator | Decorator[] {
   if (instanceProp.isVolatileReadOnly) {
     return [];
   }
@@ -57,6 +49,7 @@ function createCallExpressionDecorators(j, decoratorName, instanceProp) {
 
   decoratorExpression = instanceProp.modifiers.reduce(
     (callExpr, modifier) =>
+      // @ts-expect-error
       j.callExpression(j.memberExpression(callExpr, modifier.prop), modifier.args),
     decoratorExpression
   );
@@ -70,15 +63,12 @@ function createCallExpressionDecorators(j, decoratorName, instanceProp) {
   return j.decorator(j.callExpression(j.identifier(''), [decoratorExpression]));
 }
 
-/**
- * Create decorators which need arguments
- *
- * @param {Object} j - jscodeshift lib reference
- * @param {String} identifier
- * @param {String[]} args
- * @returns {Decorator[]}
- */
-function createDecoratorsWithArgs(j, identifier, args) {
+/** Create decorators which need arguments */
+function createDecoratorsWithArgs(
+  j: JSCodeshift,
+  identifier: string,
+  args: Array<string | number | boolean | RegExp | null>
+): [Decorator] {
   return [
     j.decorator(
       j.callExpression(
@@ -89,42 +79,27 @@ function createDecoratorsWithArgs(j, identifier, args) {
   ];
 }
 
-/**
- * Create `@action` decorator
- *
- * @param {Object} j - jscodeshift lib reference
- * @param {String} identifier
- * @returns {Decorator[]}
- */
-function createIdentifierDecorators(j, identifier = 'action') {
+/** Create `@action` decorator */
+export function createIdentifierDecorators(j: JSCodeshift, identifier = 'action'): [Decorator] {
   return [j.decorator(j.identifier(identifier))];
 }
 
 /**
  * Create decorators for props from `classNameBindings` and `attributeBindings`
- *
- * @param {Object} j - jscodeshift lib reference
- * @param {String} decoratorName
- * @param {Property[]} instanceProp
- * @returns {Decorator[]}
  */
-function createBindingDecorators(j, decoratorName, instanceProp) {
+// @ts-expect-error
+function createBindingDecorators(j: JSCodeshift, decoratorName: string, instanceProp): [Decorator] {
   const propList = get(instanceProp, 'propList');
   if (propList && propList.length) {
+    // @ts-expect-error
     const propArgs = propList.map((prop) => j.literal(prop));
     return [j.decorator(j.callExpression(j.identifier(decoratorName), propArgs))];
   }
   return [j.decorator(j.identifier(decoratorName))];
 }
 
-/**
- * Handles decorators for instance properties
- *
- * @param {Object} j - jscodeshift lib reference
- * @param {Property[]} instanceProp
- * @returns {Decorator[]}
- */
-function createInstancePropDecorators(j, instanceProp) {
+/** Handles decorators for instance properties */
+export function createInstancePropDecorators(j: JSCodeshift, instanceProp: EOProp): Decorator[] {
   return instanceProp.decoratorNames.reduce((decorators, decorator) => {
     if (!decorator) {
       return decorators;
@@ -134,17 +109,9 @@ function createInstancePropDecorators(j, instanceProp) {
     }
     if (decorator === 'off' || decorator === 'unobserves') {
       return decorators.concat(
-        createDecoratorsWithArgs(j, decorator, instanceProp.decoratorArgs[decorator])
+        createDecoratorsWithArgs(j, decorator, defined(instanceProp.decoratorArgs[decorator]))
       );
     }
     return decorators.concat(createCallExpressionDecorators(j, decorator, instanceProp));
-  }, []);
+  }, [] as Decorator[]);
 }
-
-module.exports = {
-  withDecorators,
-  createClassDecorator,
-  createIdentifierDecorators,
-  createCallExpressionDecorators,
-  createInstancePropDecorators,
-};

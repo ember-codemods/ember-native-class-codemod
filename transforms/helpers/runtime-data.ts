@@ -1,10 +1,10 @@
-import type { JsonValue, JsonObject } from './util/types';
+import type { JsonArray } from './util/types';
 
 export interface RuntimeData {
   type?: string;
-  computedProperties?: JsonValue[];
-  offProperties?: JsonObject;
-  overriddenActions?: JsonValue[];
-  overriddenProperties?: JsonValue[];
-  unobservedProperties?: JsonObject;
+  computedProperties?: JsonArray;
+  offProperties?: Record<string, Array<string | boolean | number | null>>;
+  overriddenActions?: JsonArray;
+  overriddenProperties?: JsonArray;
+  unobservedProperties?: Record<string, Array<string | boolean | number | null>>;
 }

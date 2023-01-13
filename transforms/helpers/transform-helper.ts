@@ -3,6 +3,7 @@ import type {
   ClassDeclaration,
   ClassProperty,
   CommentLine,
+  Decorator,
   Identifier,
   ImportDeclaration,
   ImportDefaultSpecifier,
@@ -19,7 +20,6 @@ import {
   createIdentifierDecorators,
   createInstancePropDecorators,
   withDecorators,
-  // @ts-expect-error
 } from './decorator-helper';
 import { DEFAULT_OPTIONS } from './options';
 import type { EOCallExpressionMixin } from './parse-helper';
@@ -121,7 +121,11 @@ function replaceSuperExpressions(
  *
  * For example { foo: function() { }} --> { foo() { }}
  */
-function createMethodProp(j: JSCodeshift, functionProp: EOProp, decorators = []): MethodDefinition {
+function createMethodProp(
+  j: JSCodeshift,
+  functionProp: EOProp,
+  decorators: Decorator[] = []
+): MethodDefinition {
   const propKind = functionProp.kind === 'init' ? 'method' : defined(functionProp.kind);
 
   return withDecorators(
@@ -139,7 +143,11 @@ function createMethodProp(j: JSCodeshift, functionProp: EOProp, decorators = [])
 }
 
 /** Create the class property from passed instance property */
-function createClassProp(j: JSCodeshift, instanceProp: EOProp, decorators = []): ClassProperty {
+function createClassProp(
+  j: JSCodeshift,
+  instanceProp: EOProp,
+  decorators: Decorator[] = []
+): ClassProperty {
   if (!decorators.length) {
     decorators = createInstancePropDecorators(j, instanceProp);
   }
@@ -190,7 +198,7 @@ function createClassProp(j: JSCodeshift, instanceProp: EOProp, decorators = []):
 function convertIdentifierActionToMethod(
   j: JSCodeshift,
   idAction: EOProp,
-  decorators = []
+  decorators: Decorator[] = []
 ): MethodDefinition {
   const returnBlock = j.blockStatement([
     j.returnStatement(
