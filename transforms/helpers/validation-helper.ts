@@ -67,8 +67,8 @@ export function hasValidProps(
     }
 
     if (instanceProp.isActions) {
-      errors = errors.concat(getLifecycleHookErrors(instanceProp));
-      errors = errors.concat(getInfiniteLoopErrors(j, instanceProp));
+      errors = [...errors, ...getLifecycleHookErrors(instanceProp)];
+      errors = [...errors, ...getInfiniteLoopErrors(j, instanceProp)];
     }
 
     if (

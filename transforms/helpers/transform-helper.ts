@@ -274,7 +274,7 @@ function createCallExpressionProp(
   j: JSCodeshift,
   callExprProp: EOProp
 ): MethodDefinition[] | ClassProperty[] {
-  const callExprArgs = callExprProp.callExprArgs.slice(0);
+  const callExprArgs = [...callExprProp.callExprArgs];
   let callExprLastArg: (typeof callExprArgs)[number] | undefined;
   if (callExprProp.shouldRemoveLastArg) {
     callExprLastArg = defined(callExprArgs.pop());
@@ -380,9 +380,9 @@ export function createClass(
     } else if (prop.type === 'FunctionExpression') {
       classBody.push(createMethodProp(j, prop));
     } else if (prop.isCallExpression) {
-      classBody = classBody.concat(createCallExpressionProp(j, prop));
+      classBody = [...classBody, ...createCallExpressionProp(j, prop)];
     } else if (prop.name === 'actions') {
-      classBody = classBody.concat(createActionDecoratedProps(j, prop));
+      classBody = [...classBody, ...createActionDecoratedProps(j, prop)];
     } else {
       classBody.push(createClassProp(j, prop));
     }

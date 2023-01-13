@@ -38,14 +38,15 @@ export function createCallExpressionDecorators(
   j: JSCodeshift,
   decoratorName: string,
   instanceProp: EOProp
-): Decorator | Decorator[] {
+): Decorator[] {
   if (instanceProp.isVolatileReadOnly) {
     return [];
   }
 
   const decoratorArgs = instanceProp.shouldRemoveLastArg
     ? instanceProp.callExprArgs.slice(0, -1)
-    : instanceProp.callExprArgs.slice(0);
+    : // eslint-disable-next-line unicorn/prefer-spread
+      instanceProp.callExprArgs.slice(0);
 
   let decoratorExpression =
     ['computed', 'service', 'controller'].includes(decoratorName) &&
@@ -64,12 +65,14 @@ export function createCallExpressionDecorators(
   );
 
   if (instanceProp.modifiers.length === 0) {
-    return j.decorator(decoratorExpression);
+    return [j.decorator(decoratorExpression)];
   }
 
   // If has modifiers wrap decorators in anonymous call expression
   // it transforms @computed('').readOnly() => @(computed('').readOnly())
-  return j.decorator(j.callExpression(j.identifier(''), [decoratorExpression]));
+  return [
+    j.decorator(j.callExpression(j.identifier(''), [decoratorExpression])),
+  ];
 }
 
 /** Create decorators which need arguments */
@@ -124,20 +127,23 @@ export function createInstancePropDecorators(
     if (!decorator) {
       return decorators;
     } else if (decorator === 'className' || decorator === 'attribute') {
-      return decorators.concat(
-        createBindingDecorators(j, decorator, instanceProp)
-      );
+      return [
+        ...decorators,
+        ...createBindingDecorators(j, decorator, instanceProp),
+      ];
     } else if (decorator === 'off' || decorator === 'unobserves') {
-      return decorators.concat(
-        createDecoratorsWithArgs(
+      return [
+        ...decorators,
+        ...createDecoratorsWithArgs(
           j,
           decorator,
           defined(instanceProp.decoratorArgs[decorator])
-        )
-      );
+        ),
+      ];
     }
-    return decorators.concat(
-      createCallExpressionDecorators(j, decorator, instanceProp)
-    );
+    return [
+      ...decorators,
+      ...createCallExpressionDecorators(j, decorator, instanceProp),
+    ];
   }, [] as Decorator[]);
 }
