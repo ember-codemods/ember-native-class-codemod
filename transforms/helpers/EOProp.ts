@@ -18,7 +18,7 @@ export interface EOProps {
 type ImportedDecoratedProps = object;
 
 interface EODecorator {
-  name: 'unobserves' | 'off';
+  name: 'unobserves' | 'off' | 'className' | 'attribute';
   importedName?: 'computed';
   isMethodDecorator?: boolean;
   isMetaDecorator?: boolean;

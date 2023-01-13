@@ -5,17 +5,15 @@ import type {
   ImportSpecifier,
   JSCodeshift,
 } from 'jscodeshift';
+import { DEFAULT_OPTIONS } from './options';
+import { createEmberDecoratorSpecifiers, createImportDeclaration } from './transform-helper';
 import {
   DECORATOR_PATHS,
   DECORATOR_PATH_OVERRIDES,
   EMBER_DECORATOR_SPECIFIERS,
   METHOD_DECORATORS,
-  get,
   getFirstDeclaration,
 } from './util';
-import { DEFAULT_OPTIONS } from './options';
-// @ts-expect-error
-import { createEmberDecoratorSpecifiers, createImportDeclaration } from './transform-helper';
 import { assert, defined, isString, verified } from './util/types';
 
 interface DecoratorInfo {
@@ -236,11 +234,9 @@ function getDecoratorPathSpecifiers(
             existingSpecifier,
           ];
         } else {
-          // @ts-expect-error
           const isSpecifierPresent = decoratedSpecifiers.some((specifier) => {
             return (
-              !get(specifier, 'local.name') &&
-              get(specifier, 'imported.name') === get(existingSpecifier, 'imported.name')
+              !specifier.local?.name && specifier.imported.name === existingSpecifier.imported.name
             );
           });
           if (!isSpecifierPresent) {
