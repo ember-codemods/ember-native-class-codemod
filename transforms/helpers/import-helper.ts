@@ -160,21 +160,23 @@ function createNewImportDeclarations(
   }
 
   // Create new import statements which do not have any matching existing imports
-  Object.keys(EMBER_DECORATOR_SPECIFIERS)
-    .filter((path) => !decoratorPathsToIgnore.includes(path))
-    .forEach((path) => {
-      const specifiers = createEmberDecoratorSpecifiers(
-        j,
-        EMBER_DECORATOR_SPECIFIERS[path],
-        decoratorsToImport
-      );
+  const paths = Object.keys(EMBER_DECORATOR_SPECIFIERS).filter(
+    (path) => !decoratorPathsToIgnore.includes(path)
+  );
 
-      if (specifiers.length > 0) {
-        firstDeclaration.insertBefore(
-          createImportDeclaration(j, specifiers, path)
-        );
-      }
-    });
+  for (const path of paths) {
+    const specifiers = createEmberDecoratorSpecifiers(
+      j,
+      EMBER_DECORATOR_SPECIFIERS[path],
+      decoratorsToImport
+    );
+
+    if (specifiers.length > 0) {
+      firstDeclaration.insertBefore(
+        createImportDeclaration(j, specifiers, path)
+      );
+    }
+  }
 }
 
 /**

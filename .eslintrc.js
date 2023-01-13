@@ -37,17 +37,8 @@ module.exports = {
     'unicorn/consistent-destructuring': 'off',
     'unicorn/consistent-function-scoping': ['error', { checkArrowFunctions: false }],
     'unicorn/custom-error-definition': 'error',
-    'unicorn/filename-case': [
-      'error',
-      {
-        case: 'kebabCase',
-        // ignore: [
-        //   /^-[\w-]+\.ts$/, // e.g. -testing.ts
-        // ],
-      },
-    ],
+    'unicorn/filename-case': ['error', { case: 'kebabCase' }],
     'unicorn/no-array-callback-reference': 'off',
-    'unicorn/no-array-for-each': 'off', // FIXME: Re-enable
     'unicorn/no-array-method-this-argument': 'off', // False positives
     'unicorn/no-array-reduce': 'off',
     'unicorn/no-null': 'off',
@@ -121,17 +112,10 @@ module.exports = {
         '@typescript-eslint/consistent-type-assertions': 'error',
         '@typescript-eslint/consistent-type-definitions': 'error',
         '@typescript-eslint/consistent-type-imports': 'error',
-        '@typescript-eslint/explicit-function-return-type': [
-          'error',
-          {
-            allowExpressions: true,
-          },
-        ],
+        '@typescript-eslint/explicit-function-return-type': ['error', { allowExpressions: true }],
         '@typescript-eslint/explicit-member-accessibility': [
           'error',
-          {
-            accessibility: 'no-public',
-          },
+          { accessibility: 'no-public' },
         ],
         '@typescript-eslint/method-signature-style': 'error',
         '@typescript-eslint/no-base-to-string': 'error',
@@ -147,18 +131,8 @@ module.exports = {
         '@typescript-eslint/no-unnecessary-boolean-literal-compare': 'error',
         '@typescript-eslint/no-unnecessary-qualifier': 'error',
         '@typescript-eslint/no-unnecessary-type-arguments': 'error',
-        '@typescript-eslint/no-unused-vars': [
-          'error',
-          {
-            argsIgnorePattern: '^_',
-          },
-        ],
-        '@typescript-eslint/no-use-before-define': [
-          'error',
-          {
-            functions: false,
-          },
-        ],
+        '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+        '@typescript-eslint/no-use-before-define': ['error', { functions: false }],
         '@typescript-eslint/prefer-enum-initializers': 'error',
         '@typescript-eslint/prefer-for-of': 'error',
         '@typescript-eslint/prefer-includes': 'error',

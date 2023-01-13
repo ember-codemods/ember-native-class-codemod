@@ -91,6 +91,7 @@ function replaceSuperExpressions(
   if (superExprs.length === 0) {
     return methodDefinition;
   }
+  // eslint-disable-next-line unicorn/no-array-for-each
   superExprs.forEach((superExpr) => {
     if (replaceWithUndefined) {
       j(superExpr).replaceWith(j.identifier('undefined'));

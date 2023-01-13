@@ -226,13 +226,13 @@ function parseEmberObjectCallExpression(
     eoExpression: null,
     mixins: [],
   };
-  callExpressionArgs.forEach((callExpressionArg) => {
+  for (const callExpressionArg of callExpressionArgs) {
     if (callExpressionArg.type === 'ObjectExpression') {
       props.eoExpression = callExpressionArg;
     } else {
       props.mixins.push(callExpressionArg);
     }
-  });
+  }
   return props;
 }
 
@@ -274,6 +274,7 @@ export function replaceEmberObjectExpressions(
   let transformed = false;
   let decoratorsToImportMap: Partial<DecoratorsToImportMap> = {};
 
+  // eslint-disable-next-line unicorn/no-array-for-each
   getEmberObjectCallExpressions(j, root).forEach((eoCallExpression) => {
     const { eoExpression, mixins } =
       parseEmberObjectCallExpression(eoCallExpression);
