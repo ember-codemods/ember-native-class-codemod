@@ -54,15 +54,13 @@ export function createCallExpressionDecorators(
       ? j.identifier(decoratorName)
       : j.callExpression(j.identifier(decoratorName), decoratorArgs);
 
-  decoratorExpression = instanceProp.modifiers.reduce(
-    (callExpr, modifier) =>
-      j.callExpression(
-        // @ts-expect-error
-        j.memberExpression(callExpr, modifier.prop),
-        modifier.args
-      ),
-    decoratorExpression
-  );
+  for (const modifier of instanceProp.modifiers) {
+    decoratorExpression = j.callExpression(
+      // @ts-expect-error
+      j.memberExpression(decoratorExpression, modifier.prop),
+      modifier.args
+    );
+  }
 
   if (instanceProp.modifiers.length === 0) {
     return [j.decorator(decoratorExpression)];
@@ -123,16 +121,15 @@ export function createInstancePropDecorators(
   j: JSCodeshift,
   instanceProp: EOProp
 ): Decorator[] {
-  return instanceProp.decoratorNames.reduce((decorators, decorator) => {
-    if (!decorator) {
-      return decorators;
-    } else if (decorator === 'className' || decorator === 'attribute') {
-      return [
+  let decorators: Decorator[] = [];
+  for (const decorator of instanceProp.decoratorNames) {
+    if (decorator === 'className' || decorator === 'attribute') {
+      decorators = [
         ...decorators,
         ...createBindingDecorators(j, decorator, instanceProp),
       ];
     } else if (decorator === 'off' || decorator === 'unobserves') {
-      return [
+      decorators = [
         ...decorators,
         ...createDecoratorsWithArgs(
           j,
@@ -140,10 +137,12 @@ export function createInstancePropDecorators(
           defined(instanceProp.decoratorArgs[decorator])
         ),
       ];
+    } else if (decorator) {
+      decorators = [
+        ...decorators,
+        ...createCallExpressionDecorators(j, decorator, instanceProp),
+      ];
     }
-    return [
-      ...decorators,
-      ...createCallExpressionDecorators(j, decorator, instanceProp),
-    ];
-  }, [] as Decorator[]);
+  }
+  return decorators;
 }

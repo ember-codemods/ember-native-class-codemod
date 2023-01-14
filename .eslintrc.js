@@ -40,7 +40,6 @@ module.exports = {
     'unicorn/filename-case': ['error', { case: 'kebabCase' }],
     'unicorn/no-array-callback-reference': 'off',
     'unicorn/no-array-method-this-argument': 'off', // False positives
-    'unicorn/no-array-reduce': 'off', // FIXME: Remove
     'unicorn/no-null': 'off',
     'unicorn/prefer-node-protocol': 'off',
     'unicorn/prefer-ternary': ['error', 'only-single-line'],

@@ -166,13 +166,16 @@ export const LIFECYCLE_HOOKS = [
  * @deprecated
  */
 export function get(obj: object, path: string): any {
-  return path
-    .split('.')
-    .reduce<object | null | undefined>(function (currentObject, pathSegment) {
-      return currentObject === undefined || currentObject === null
-        ? currentObject
-        : currentObject[pathSegment as keyof typeof currentObject];
-    }, obj);
+  return (
+    path
+      .split('.')
+      // eslint-disable-next-line unicorn/no-array-reduce
+      .reduce<object | null | undefined>(function (currentObject, pathSegment) {
+        return currentObject === undefined || currentObject === null
+          ? currentObject
+          : currentObject[pathSegment as keyof typeof currentObject];
+      }, obj)
+  );
 }
 
 /** Get the first declaration in the program */

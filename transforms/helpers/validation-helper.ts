@@ -52,7 +52,8 @@ export function hasValidProps(
     ? []
     : UNSUPPORTED_PROP_NAMES;
 
-  return instanceProps.reduce<string[]>((errors, instanceProp) => {
+  let errors: string[] = [];
+  for (const instanceProp of instanceProps) {
     if (!classFields && instanceProp.type === 'Literal') {
       errors.push(`[${instanceProp.name}]: Need option '--class-fields=true'`);
     }
@@ -93,8 +94,8 @@ export function hasValidProps(
         `[${instanceProp.name}]: Transform not supported - value has 'volatile' modifier with computed meta ('@ember/object/computed') is not supported`
       );
     }
-    return errors;
-  }, []);
+  }
+  return errors;
 }
 
 /**

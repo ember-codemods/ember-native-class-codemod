@@ -81,33 +81,32 @@ function getDecoratorsToImportMap(
   instanceProps: EOProp[],
   decoratorsMap: Partial<DecoratorsToImportMap> = {}
 ): DecoratorsToImportMap {
-  return instanceProps.reduce(
-    (specs, prop) => {
-      return {
-        action: specs.action || prop.isActions,
-        classNames: specs.classNames || prop.isClassNames,
-        classNameBindings: specs.classNameBindings || prop.isClassNameBindings,
-        attributeBindings: specs.attributeBindings || prop.isAttributeBindings,
-        layout: specs.layout || prop.isLayoutDecorator,
-        templateLayout: specs.templateLayout || prop.isTemplateLayoutDecorator,
-        off: specs.off || prop.hasOffDecorator,
-        tagName: specs.tagName || prop.isTagName,
-        unobserves: specs.unobserves || prop.hasUnobservesDecorator,
-      };
-    },
-    {
-      action: false,
-      classNames: false,
-      classNameBindings: false,
-      attributeBindings: false,
-      layout: false,
-      templateLayout: false,
-      off: false,
-      tagName: false,
-      unobserves: false,
-      ...decoratorsMap,
-    }
-  );
+  let specs = {
+    action: false,
+    classNames: false,
+    classNameBindings: false,
+    attributeBindings: false,
+    layout: false,
+    templateLayout: false,
+    off: false,
+    tagName: false,
+    unobserves: false,
+    ...decoratorsMap,
+  };
+  for (const prop of instanceProps) {
+    specs = {
+      action: specs.action || prop.isActions,
+      classNames: specs.classNames || prop.isClassNames,
+      classNameBindings: specs.classNameBindings || prop.isClassNameBindings,
+      attributeBindings: specs.attributeBindings || prop.isAttributeBindings,
+      layout: specs.layout || prop.isLayoutDecorator,
+      templateLayout: specs.templateLayout || prop.isTemplateLayoutDecorator,
+      off: specs.off || prop.hasOffDecorator,
+      tagName: specs.tagName || prop.isTagName,
+      unobserves: specs.unobserves || prop.hasUnobservesDecorator,
+    };
+  }
+  return specs;
 }
 
 /** Find the `EmberObject.extend` statements */
