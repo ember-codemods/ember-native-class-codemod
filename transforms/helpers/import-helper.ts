@@ -5,6 +5,8 @@ import type {
   ImportSpecifier,
   JSCodeshift,
 } from 'jscodeshift';
+import type { ImportPropDecoratorMap } from './decorator-info';
+import { getDecoratorInfo } from './decorator-info';
 import { DEFAULT_OPTIONS } from './options';
 import {
   createEmberDecoratorSpecifiers,
@@ -14,56 +16,9 @@ import {
   DECORATOR_PATHS,
   DECORATOR_PATH_OVERRIDES,
   EMBER_DECORATOR_SPECIFIERS,
-  METHOD_DECORATORS,
   getFirstDeclaration,
 } from './util';
 import { assert, defined, isString, verified } from './util/types';
-
-interface DecoratorInfo {
-  name: string;
-  importedName: string;
-  isImportedAs: boolean;
-  isMetaDecorator: boolean;
-  isMethodDecorator: boolean;
-  localName: string;
-}
-
-type ImportPropDecoratorMap = Record<string, DecoratorInfo>;
-
-/**
- * Return the decorator name for the specifier if any, using the importPropDecoratorMap from
- * `DECORATOR_PATHS` config (defined util.js)
- */
-function getDecoratorInfo(
-  specifier: ImportSpecifier,
-  importPropDecoratorMap: Record<string, string> | undefined
-): DecoratorInfo {
-  const localName = specifier.local?.name;
-  const importedName = specifier.imported.name;
-  const isImportedAs = importedName !== localName;
-  const isMetaDecorator = !importPropDecoratorMap;
-  let name: string;
-  if (isImportedAs || isMetaDecorator) {
-    assert(localName, 'expected local name');
-    name = localName;
-  } else {
-    const newName = importPropDecoratorMap[importedName];
-    assert(newName, 'expected importPropDecoratorMap[importedName]');
-    name = newName;
-  }
-
-  const isMethodDecorator = METHOD_DECORATORS.includes(
-    importedName as (typeof METHOD_DECORATORS)[number]
-  );
-  return {
-    name,
-    importedName,
-    isImportedAs,
-    isMetaDecorator,
-    isMethodDecorator,
-    localName,
-  };
-}
 
 /** Returns true of the specifier is a decorator */
 function isSpecifierDecorator(
@@ -115,8 +70,8 @@ function setSpecifierNames(
 function getExistingDecoratorImports(
   j: JSCodeshift,
   root: Collection<unknown>
-): ASTPath<ImportDeclaration>[] {
-  const imports: ASTPath<ImportDeclaration>[] = [];
+): Array<ASTPath<ImportDeclaration>> {
+  const imports: Array<ASTPath<ImportDeclaration>> = [];
 
   for (const path in DECORATOR_PATHS) {
     const decoratorImports = root.find(j.ImportDeclaration, {
@@ -126,7 +81,7 @@ function getExistingDecoratorImports(
     });
 
     if (decoratorImports.length > 0) {
-      imports.push(decoratorImports.get());
+      imports.push(decoratorImports.get() as ASTPath<ImportDeclaration>);
     }
   }
 
@@ -211,7 +166,7 @@ function getDecoratorPathSpecifiers(
     // Decorators to be imported for the path
     // These are typically additional decorators which need to be imported for a path
     // For example - `@action` decorator
-    const decoratorsForPath = edPathNameMap[decoratorPath] || [];
+    const decoratorsForPath = edPathNameMap[decoratorPath] ?? [];
     // delete the visited path to avoid duplicate imports
     // FIXME: Switch to actual Map
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
@@ -242,7 +197,7 @@ function getDecoratorPathSpecifiers(
           DECORATOR_PATH_OVERRIDES[existingSpecifier.imported.name];
         if (overriddenPath) {
           decoratorPathSpecifierMap[overriddenPath] = [
-            ...(decoratorPathSpecifierMap[overriddenPath] || []),
+            ...(decoratorPathSpecifierMap[overriddenPath] ?? []),
             existingSpecifier,
           ];
         } else {
@@ -264,7 +219,7 @@ function getDecoratorPathSpecifiers(
 
     if (decoratedSpecifiers.length > 0) {
       decoratorPathSpecifierMap[decoratorPath] = [
-        ...(decoratorPathSpecifierMap[decoratorPath] || []),
+        ...(decoratorPathSpecifierMap[decoratorPath] ?? []),
         ...decoratedSpecifiers,
       ];
 
@@ -290,7 +245,7 @@ function getExistingImportForPath(
   });
 
   if (decoratorImports.length > 0) {
-    return decoratorImports.get();
+    return decoratorImports.get() as ASTPath<ImportDeclaration>;
   }
   return;
 }

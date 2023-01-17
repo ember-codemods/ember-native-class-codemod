@@ -26,7 +26,7 @@ const transformer: Transform = function (file, api) {
   const replaced = replaceEmberObjectExpressions(j, root, file.path, options);
   if (replaced) {
     source = root.toSource({
-      quote: options.quotes || options.quote,
+      quote: options.quotes ?? options.quote,
     });
   }
   return source;

@@ -104,12 +104,7 @@ export function hasValidProps(
  * Reference: https://github.com/scalvert/ember-native-class-codemod/issues/34
  */
 function getLifecycleHookErrors(actionsProp: EOProp): string[] {
-  // FIXME: If this never gets hit we can narrow prop type
-  assert(
-    'properties' in actionsProp.value,
-    'expected prop value to have properties'
-  );
-  const actionProps = actionsProp.value.properties;
+  const actionProps = actionsProp.properties;
   const errors: string[] = [];
   for (const actionProp of actionProps) {
     const actionName = getPropName(verified(actionProp, isPropertyNode));
@@ -127,12 +122,7 @@ function getLifecycleHookErrors(actionsProp: EOProp): string[] {
  * Validation against pattern mentioned https://github.com/scalvert/eslint-plugin-ember-es6-class/pull/2
  */
 function getInfiniteLoopErrors(j: JSCodeshift, actionsProp: EOProp): string[] {
-  // FIXME: If this never gets hit we can narrow prop type
-  assert(
-    'properties' in actionsProp.value,
-    'expected prop value to have properties'
-  );
-  const actionProps = actionsProp.value.properties;
+  const actionProps = actionsProp.properties;
   const errors: string[] = [];
   for (const actionProp of actionProps) {
     const actionName = getPropName(verified(actionProp, isPropertyNode));

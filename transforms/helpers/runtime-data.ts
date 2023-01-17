@@ -4,7 +4,7 @@ export interface RuntimeData {
   type?: string;
   computedProperties?: JsonArray;
   offProperties?: Record<string, Array<string | boolean | number | null>>;
-  overriddenActions?: JsonArray;
+  overriddenActions?: string[];
   overriddenProperties?: JsonArray;
   unobservedProperties?: Record<
     string,

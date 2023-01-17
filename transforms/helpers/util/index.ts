@@ -1,10 +1,11 @@
 import type {
+  ASTPath,
   Collection,
   Declaration,
   JSCodeshift,
   Property,
 } from 'jscodeshift';
-import { assert } from './types';
+import { assert, isRecord, verified } from './types';
 
 export const LAYOUT_DECORATOR_NAME = 'layout' as const;
 export const LAYOUT_DECORATOR_LOCAL_NAME = 'templateLayout' as const;
@@ -165,7 +166,7 @@ export const LIFECYCLE_HOOKS = [
  *
  * @deprecated
  */
-export function get(obj: object, path: string): any {
+export function get(obj: object, path: string): unknown {
   return (
     path
       .split('.')
@@ -178,12 +179,30 @@ export function get(obj: object, path: string): any {
   );
 }
 
+/**
+ * Get a property from an object. Useful to get nested props on `any` types.
+ */
+export function dig<T>(
+  obj: unknown,
+  path: string,
+  condition: (value: unknown) => value is T,
+  message?: string
+): T {
+  const segments = path.split('.');
+  let current: unknown = obj;
+  for (const segment of segments) {
+    current = verified(current, isRecord)[segment];
+  }
+  return verified(current, condition, message);
+}
+
 /** Get the first declaration in the program */
 export function getFirstDeclaration(
   j: JSCodeshift,
   root: Collection<unknown>
 ): Collection<Declaration> {
-  return j(root.find(j.Declaration).at(0).get());
+  const path = root.find(j.Declaration).at(0).get() as ASTPath;
+  return j(path) as Collection<Declaration>;
 }
 
 /** Return name of the property */

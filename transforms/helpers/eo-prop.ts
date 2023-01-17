@@ -7,20 +7,16 @@ import {
   getPropName,
   isClassDecoratorProp,
 } from './util';
-import type { JsonValue } from './util/types';
 import { assert, isString, verified } from './util/types';
+import type { DecoratorInfo, ImportPropDecoratorMap } from './decorator-info';
+
+type CalleeObject = Extract<
+  CallExpression['callee'],
+  { callee: unknown; arguments: unknown }
+>;
 
 export interface EOProps {
   instanceProps: EOProp[];
-}
-
-type ImportedDecoratedProps = object;
-
-interface EODecorator {
-  name: 'unobserves' | 'off' | 'className' | 'attribute' | string;
-  importedName?: 'computed';
-  isMethodDecorator?: boolean;
-  isMetaDecorator?: boolean;
 }
 
 interface EODecoratorArgs {
@@ -30,7 +26,7 @@ interface EODecoratorArgs {
 
 interface EOModifier {
   prop:
-    | Extract<CallExpression['callee'], { property: any }>['property']
+    | Extract<CallExpression['callee'], { property: unknown }>['property']
     | undefined;
   args: CallExpression['arguments'];
 }
@@ -38,17 +34,16 @@ interface EOModifier {
 /**
  * Get property modifier from the property callee object
  */
-function getModifier(calleeObject: CallExpression): EOModifier {
+function getModifier(calleeObject: CalleeObject): EOModifier {
   return {
     prop:
-      'property' in calleeObject.callee
+      'callee' in calleeObject && 'property' in calleeObject.callee
         ? calleeObject.callee.property
         : undefined,
-    args: calleeObject.arguments,
+    args: 'arguments' in calleeObject ? calleeObject.arguments : [],
   };
 }
 
-// FIXME: Mark public/private props
 /**
  * Ember Object Property
  *
@@ -58,22 +53,22 @@ export default class EOProp {
   readonly _prop: Property;
 
   /** Runtime Data */
-  readonly decorators: EODecorator[] = [];
+  private readonly decorators: DecoratorInfo[] = [];
   readonly modifiers: EOModifier[] = [];
   readonly decoratorArgs: EODecoratorArgs = {};
-  readonly emberType: string | undefined;
+  // FIXME private readonly emberType: string | undefined;
   readonly isComputed: boolean | undefined;
-  readonly overriddenActions: JsonValue[] | undefined;
+  readonly overriddenActions: string[] = [];
   readonly isOverridden: boolean | undefined;
-  readonly runtimeType: string | undefined;
+  private readonly runtimeType: string | undefined;
 
   /** CallExpression data */
-  calleeObject: CallExpression | undefined;
+  private calleeObject: CalleeObject | undefined;
 
   constructor(
     eoProp: Property,
     runtimeData: RuntimeData,
-    importedDecoratedProps: ImportedDecoratedProps
+    importedDecoratedProps: ImportPropDecoratorMap
   ) {
     this._prop = eoProp;
 
@@ -87,16 +82,16 @@ export default class EOProp {
         unobservedProperties = {},
       } = runtimeData;
 
-      this.emberType = type;
+      // FIXME: this.emberType = type;
 
       const name = this.name;
       if (Object.keys(unobservedProperties).includes(name)) {
         this.decorators.push({ name: 'unobserves' });
-        this.decoratorArgs['unobserves'] = unobservedProperties[name];
+        this.decoratorArgs.unobserves = unobservedProperties[name];
       }
       if (Object.keys(offProperties).includes(name)) {
         this.decorators.push({ name: 'off' });
-        this.decoratorArgs['off'] = offProperties[name];
+        this.decoratorArgs.off = offProperties[name];
       }
       if (computedProperties.includes(name)) {
         this.isComputed = true;
@@ -110,21 +105,25 @@ export default class EOProp {
 
     // FIXME: Extract `is` method?
     // FIXME: Split out this type into a separate class?
-    if ('value' in this._prop && this._prop.value.type === 'CallExpression') {
-      let calleeObject = this._prop.value;
+    if (this._prop.value.type === 'CallExpression') {
+      let calleeObject: CalleeObject = this._prop.value;
       const modifiers = [getModifier(calleeObject)];
-      while (calleeObject.callee.type === 'MemberExpression') {
-        calleeObject = get(calleeObject, 'callee.object');
+      while (
+        'callee' in calleeObject &&
+        calleeObject.callee.type === 'MemberExpression'
+      ) {
+        assert(calleeObject.callee.object.type === 'CallExpression');
+        calleeObject = calleeObject.callee.object;
+        assert('callee' in calleeObject);
         modifiers.push(getModifier(calleeObject));
       }
       this.calleeObject = calleeObject;
       this.modifiers = modifiers.reverse();
       this.modifiers.shift();
 
-      // @ts-expect-error
-      if (importedDecoratedProps[this.calleeName]) {
-        // @ts-expect-error
-        this.decorators.push(importedDecoratedProps[this.calleeName]);
+      const decoratorInfo = importedDecoratedProps[this.calleeName];
+      if (decoratorInfo) {
+        this.decorators.push(decoratorInfo);
       } else if (this.isComputed) {
         this.decorators.push({ name: this.calleeName });
       }
@@ -168,7 +167,7 @@ export default class EOProp {
     return this._prop.value.type;
   }
 
-  get calleeName(): string {
+  private get calleeName(): string {
     assert(this.calleeObject !== undefined, 'Cannot find calleeObject');
     assert('name' in this.calleeObject.callee);
     return verified(this.calleeObject.callee.name, isString);
@@ -176,6 +175,18 @@ export default class EOProp {
 
   get comments(): Property['comments'] {
     return this._prop.comments;
+  }
+
+  get properties(): Extract<
+    Property['value'],
+    { properties: unknown }
+  >['properties'] {
+    // FIXME: If this never gets hit we can narrow prop type
+    assert(
+      'properties' in this._prop.value,
+      'expected prop value to have properties'
+    );
+    return this._prop.value.properties;
   }
 
   get computed(): boolean {
@@ -236,7 +247,7 @@ export default class EOProp {
     );
   }
 
-  get hasReadOnly(): boolean {
+  private get hasReadOnly(): boolean {
     return this.modifiers.some(
       (modifier) => get(modifier, 'prop.name') === 'readOnly'
     );
@@ -278,7 +289,7 @@ export default class EOProp {
     return !!this.runtimeType;
   }
 
-  get hasMethodDecorator(): boolean {
+  private get hasMethodDecorator(): boolean {
     return this.decorators.some((d) => d.isMethodDecorator);
   }
 

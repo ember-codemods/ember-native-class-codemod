@@ -19,7 +19,7 @@ import logger from './log-helper';
 import { DEFAULT_OPTIONS } from './options';
 import type { RuntimeData } from './runtime-data';
 import { createClass, withComments } from './transform-helper';
-import { capitalizeFirstLetter, get, startsWithUpperCaseLetter } from './util';
+import { capitalizeFirstLetter, dig, startsWithUpperCaseLetter } from './util';
 import {
   assert,
   defined,
@@ -29,6 +29,7 @@ import {
   verified,
 } from './util/types';
 import { hasValidProps, isFileOfType, isTestFile } from './validation-helper';
+import type { ImportPropDecoratorMap } from './decorator-info';
 
 /**
  * Return the map of instance props and functions from Ember Object
@@ -44,10 +45,10 @@ import { hasValidProps, isFileOfType, isTestFile } from './validation-helper';
 export function getEmberObjectProps(
   _j: JSCodeshift, // FIXME: Remove?
   eoExpression: ObjectExpression | null,
-  importedDecoratedProps = {},
+  importedDecoratedProps: ImportPropDecoratorMap = {},
   runtimeData: RuntimeData = {}
 ): EOProps {
-  const objProps = eoExpression?.properties || [];
+  const objProps = eoExpression?.properties ?? [];
 
   return {
     instanceProps: objProps.map(
@@ -110,20 +111,33 @@ function getDecoratorsToImportMap(
 }
 
 /** Find the `EmberObject.extend` statements */
-// FIXME: Why export?
-export function getEmberObjectCallExpressions(
+function getEmberObjectCallExpressions(
   j: JSCodeshift,
   root: Collection<unknown>
 ): Collection<CallExpression> {
   return root
     .find(j.CallExpression, { callee: { property: { name: 'extend' } } })
-    .filter(
-      (eoCallExpression) =>
-        startsWithUpperCaseLetter(
-          get(eoCallExpression, 'value.callee.object.name')
-        ) &&
-        get(eoCallExpression, 'parentPath.value.type') !== 'ClassDeclaration'
-    );
+    .filter((eoCallExpression) => {
+      return (
+        'object' in eoCallExpression.value.callee &&
+        eoCallExpression.value.callee.object !== null &&
+        'name' in eoCallExpression.value.callee.object &&
+        typeof eoCallExpression.value.callee.object.name === 'string' &&
+        startsWithUpperCaseLetter(eoCallExpression.value.callee.object.name) &&
+        dig(eoCallExpression, 'parentPath.value.type', isString) !==
+          'ClassDeclaration'
+      );
+    });
+}
+
+function isASTPathOfVariableDeclaration(
+  value: unknown
+): value is ASTPath<VariableDeclaration> {
+  return (
+    isRecord(value) &&
+    isRecord(value['node']) &&
+    value['node']['type'] === 'VariableDeclaration'
+  );
 }
 
 /** Return closest parent var declaration statement */
@@ -132,7 +146,9 @@ export function getClosestVariableDeclaration(
   eoCallExpression: ASTPath<CallExpression>
 ): ASTPath<VariableDeclaration> | null {
   const varDeclarations = j(eoCallExpression).closest(j.VariableDeclaration);
-  return varDeclarations.length > 0 ? varDeclarations.get() : null;
+  return varDeclarations.length > 0
+    ? verified(varDeclarations.get(), isASTPathOfVariableDeclaration)
+    : null;
 }
 
 /**
@@ -143,11 +159,12 @@ export function getClosestVariableDeclaration(
 export function getExpressionToReplace(
   j: JSCodeshift,
   eoCallExpression: ASTPath<CallExpression>
-  // FIXME: Verify return type
 ): ASTPath<CallExpression> | ASTPath<VariableDeclaration> {
   const varDeclaration = getClosestVariableDeclaration(j, eoCallExpression);
+  const parentValue = dig(eoCallExpression, 'parentPath.value', isRecord);
   const isFollowedByCreate =
-    get(eoCallExpression, 'parentPath.value.property.name') === 'create';
+    isRecord(parentValue['property']) &&
+    parentValue['property']['name'] === 'create';
 
   let expressionToReplace:
     | ASTPath<CallExpression>
@@ -287,7 +304,10 @@ export function replaceEmberObjectExpressions(
 
     const errors = hasValidProps(j, eoProps, options);
 
-    if (get(eoCallExpression, 'parentPath.value.type') === 'MemberExpression') {
+    if (
+      dig(eoCallExpression, 'parentPath.value.type', isString) ===
+      'MemberExpression'
+    ) {
       errors.push(
         'class has chained definition (e.g. EmberObject.extend().reopenClass();'
       );
@@ -330,7 +350,6 @@ export function replaceEmberObjectExpressions(
 
     const expressionToReplace = getExpressionToReplace(j, eoCallExpression);
     j(expressionToReplace).replaceWith(
-      // @ts-expect-error
       withComments(es6ClassDeclaration, expressionToReplace.value)
     );
 

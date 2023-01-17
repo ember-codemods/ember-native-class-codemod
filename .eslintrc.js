@@ -93,10 +93,11 @@ module.exports = {
       plugins: ['@typescript-eslint'],
       extends: [
         'plugin:@typescript-eslint/recommended',
-        // 'plugin:@typescript-eslint/recommended-requiring-type-checking', FIXME: Re-enable
-        // 'plugin:@typescript-eslint/strict', FIXME: Re-enable
+        'plugin:@typescript-eslint/recommended-requiring-type-checking',
+        'plugin:@typescript-eslint/strict',
       ],
       rules: {
+        '@typescript-eslint/array-type': ['error', { default: 'array-simple' }],
         // FIXME: Re-enable
         '@typescript-eslint/ban-ts-comment': 'off',
         // '@typescript-eslint/ban-ts-comment': [
@@ -116,12 +117,13 @@ module.exports = {
           { accessibility: 'no-public' },
         ],
         '@typescript-eslint/method-signature-style': 'error',
+        '@typescript-eslint/consistent-indexed-object-style': 'error',
         '@typescript-eslint/no-base-to-string': 'error',
         '@typescript-eslint/no-confusing-non-null-assertion': 'error',
         '@typescript-eslint/no-dynamic-delete': 'error',
         '@typescript-eslint/no-extra-semi': 'error',
         '@typescript-eslint/no-extraneous-class': 'error',
-        '@typescript-eslint/no-explicit-any': 'off', // FIXME: Re-Enable
+        '@typescript-eslint/no-explicit-any': 'error',
         '@typescript-eslint/no-implicit-any-catch': 'error',
         '@typescript-eslint/no-invalid-void-type': 'error',
         '@typescript-eslint/no-require-imports': 'error',
@@ -132,6 +134,7 @@ module.exports = {
         '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
         '@typescript-eslint/no-use-before-define': ['error', { functions: false }],
         '@typescript-eslint/prefer-enum-initializers': 'error',
+        '@typescript-eslint/prefer-nullish-coalescing': 'error',
         '@typescript-eslint/prefer-for-of': 'error',
         '@typescript-eslint/prefer-includes': 'error',
         '@typescript-eslint/prefer-literal-enum-member': 'error',

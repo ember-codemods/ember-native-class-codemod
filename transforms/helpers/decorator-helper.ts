@@ -1,6 +1,5 @@
 import type { Decorator, JSCodeshift } from 'jscodeshift';
 import type EOProp from './eo-prop';
-import { get } from './util';
 import { defined } from './util/types';
 
 /** Copy decorators `from` => `to` */
@@ -12,21 +11,24 @@ export function withDecorators<T>(to: T, decorators: Decorator[] = []): T {
   return to;
 }
 
+type CallExpressionArg = Parameters<JSCodeshift['callExpression']>[1][number];
+// type CallExpressionArgType = CallExpressionArg['type'];
+
 /** FIXME: Document */
 export function createClassDecorator(
   j: JSCodeshift,
   classDecoratorProp: EOProp
 ): Decorator {
+  const { value } = classDecoratorProp;
   const decoratorArgs =
-    classDecoratorProp.type === 'ArrayExpression'
-      ? // @ts-expect-error
-        classDecoratorProp.value.elements
-      : [classDecoratorProp.value];
+    value.type === 'ArrayExpression' ? value.elements : [value];
+
+  // FIXME: Assert that the cast below is correct
 
   return j.decorator(
     j.callExpression(j.identifier(classDecoratorProp.classDecoratorName), [
       ...decoratorArgs,
-    ])
+    ] as CallExpressionArg[])
   );
 }
 
@@ -103,16 +105,17 @@ export function createIdentifierDecorators(
 function createBindingDecorators(
   j: JSCodeshift,
   decoratorName: string,
-  instanceProp: EOProp
+  _instanceProp: EOProp
 ): [Decorator] {
-  const propList = get(instanceProp, 'propList');
-  if (propList && propList.length > 0) {
-    // @ts-expect-error
-    const propArgs = propList.map((prop) => j.literal(prop));
-    return [
-      j.decorator(j.callExpression(j.identifier(decoratorName), propArgs)),
-    ];
-  }
+  // FIXME: Investigate
+  // const propList = instanceProp.propList;
+  // if (propList && propList.length > 0) {
+  //   // @ts-expect-error
+  //   const propArgs = propList.map((prop) => j.literal(prop));
+  //   return [
+  //     j.decorator(j.callExpression(j.identifier(decoratorName), propArgs)),
+  //   ];
+  // }
   return [j.decorator(j.identifier(decoratorName))];
 }
 

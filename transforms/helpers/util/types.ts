@@ -25,6 +25,9 @@ export function assert(
   message = 'Assertion Error'
 ): asserts condition {
   if (!condition) {
+    // FIXME
+    // eslint-disable-next-line no-debugger
+    debugger;
     throw new Error(message);
   }
 }
@@ -34,11 +37,11 @@ export function verified<T>(
   value: unknown,
   condition: (value: unknown) => value is T,
   message = condition.name
-    ? `Verification Error: ${condition.name}; value is ${value}`
+    ? `Verification Error: ${condition.name}`
     : 'Verification Error'
 ): T {
   assert(condition(value), message);
-  return value as T;
+  return value;
 }
 
 /** Asserts that the given value is defined before returning it. */
@@ -60,6 +63,7 @@ export type JsonValue =
 
 export type JsonArray = JsonValue[];
 
+// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
 export interface JsonObject {
   [key: string]: JsonValue;
 }
