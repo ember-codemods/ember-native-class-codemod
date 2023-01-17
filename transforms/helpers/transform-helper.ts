@@ -22,8 +22,7 @@ import {
   createInstancePropDecorators,
   withDecorators,
 } from './decorator-helper';
-import type EOProp from './eo-prop';
-import type { EOProps } from './eo-prop';
+import type { EOProp, EOProps } from './eo-prop';
 import { DEFAULT_OPTIONS } from './options';
 import type { EOCallExpressionMixin } from './parse-helper';
 import {
@@ -32,6 +31,7 @@ import {
   LAYOUT_DECORATOR_NAME,
 } from './util';
 import { assert, defined, isRecord, verified } from './util/types';
+import EOCallExpressionProp from './eo-prop/private/call-expression';
 
 /** Returns true if class property should have value */
 function shouldSetValue(prop: EOProp): boolean {
@@ -300,7 +300,7 @@ function createActionDecoratedProps(
 /** Iterate and covert the computed properties to class methods */
 function createCallExpressionProp(
   j: JSCodeshift,
-  callExprProp: EOProp
+  callExprProp: EOCallExpressionProp
 ): MethodDefinition[] | ClassProperty[] {
   const callExprArgs = [...callExprProp.callExprArgs];
   let callExprLastArg: (typeof callExprArgs)[number] | undefined;
@@ -410,7 +410,7 @@ export function createClass(
       classDecorators.push(createClassDecorator(j, prop));
     } else if (prop.type === 'FunctionExpression') {
       classBody.push(createMethodProp(j, verified(prop, isFunctionProp)));
-    } else if (prop.isCallExpression) {
+    } else if (prop instanceof EOCallExpressionProp) {
       classBody = [...classBody, ...createCallExpressionProp(j, prop)];
     } else if (prop.name === 'actions') {
       classBody = [...classBody, ...createActionDecoratedProps(j, prop)];

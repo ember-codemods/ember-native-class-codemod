@@ -9,8 +9,9 @@ import type {
   VariableDeclaration,
 } from 'jscodeshift';
 import path from 'path';
-import type { EOProps } from './eo-prop';
-import EOProp from './eo-prop';
+import type { ImportPropDecoratorMap } from './decorator-info';
+import type { EOProp, EOProps } from './eo-prop';
+import makeEOProp from './eo-prop';
 import {
   createDecoratorImportDeclarations,
   getImportedDecoratedProps,
@@ -29,7 +30,6 @@ import {
   verified,
 } from './util/types';
 import { hasValidProps, isFileOfType, isTestFile } from './validation-helper';
-import type { ImportPropDecoratorMap } from './decorator-info';
 
 /**
  * Return the map of instance props and functions from Ember Object
@@ -51,13 +51,12 @@ export function getEmberObjectProps(
   const objProps = eoExpression?.properties ?? [];
 
   return {
-    instanceProps: objProps.map(
-      (objProp) =>
-        new EOProp(
-          verified(objProp, isPropertyNode),
-          runtimeData,
-          importedDecoratedProps
-        )
+    instanceProps: objProps.map((objProp) =>
+      makeEOProp(
+        verified(objProp, isPropertyNode),
+        runtimeData,
+        importedDecoratedProps
+      )
     ),
   };
 }

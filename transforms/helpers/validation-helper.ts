@@ -1,7 +1,7 @@
 import type { JSCodeshift } from 'jscodeshift';
 import minimatch from 'minimatch';
-import type EOProp from './eo-prop';
-import type { EOProps } from './eo-prop';
+import type { EOProp, EOProps } from './eo-prop';
+import EOCallExpressionProp from './eo-prop/private/call-expression';
 import type { Options } from './options';
 import { DEFAULT_OPTIONS } from './options';
 import { LIFECYCLE_HOOKS, getPropName } from './util';
@@ -76,23 +76,26 @@ export function hasValidProps(
       (!decorators &&
         (instanceProp.hasDecorators || instanceProp.isClassDecorator)) ||
       unsupportedPropNames.includes(instanceProp.name) ||
-      (instanceProp.isCallExpression && !instanceProp.hasDecorators)
+      (instanceProp instanceof EOCallExpressionProp &&
+        !instanceProp.hasDecorators)
     ) {
       errors.push(
         `[${instanceProp.name}]: Transform not supported - need option '--decorators=true' or the property type ${instanceProp.type} can not be transformed`
       );
     }
 
-    if (instanceProp.hasModifierWithArgs) {
-      errors.push(
-        `[${instanceProp.name}]: Transform not supported - value has modifiers like 'property' or 'meta'`
-      );
-    }
+    if (instanceProp instanceof EOCallExpressionProp) {
+      if (instanceProp.hasModifierWithArgs) {
+        errors.push(
+          `[${instanceProp.name}]: Transform not supported - value has modifiers like 'property' or 'meta'`
+        );
+      }
 
-    if (instanceProp.hasVolatile && instanceProp.hasMetaDecorator) {
-      errors.push(
-        `[${instanceProp.name}]: Transform not supported - value has 'volatile' modifier with computed meta ('@ember/object/computed') is not supported`
-      );
+      if (instanceProp.hasVolatile && instanceProp.hasMetaDecorator) {
+        errors.push(
+          `[${instanceProp.name}]: Transform not supported - value has 'volatile' modifier with computed meta ('@ember/object/computed') is not supported`
+        );
+      }
     }
   }
   return errors;

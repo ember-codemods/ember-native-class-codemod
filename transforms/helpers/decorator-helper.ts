@@ -1,6 +1,7 @@
 import type { Decorator, JSCodeshift } from 'jscodeshift';
-import type EOProp from './eo-prop';
-import { defined } from './util/types';
+import type { EOProp } from './eo-prop';
+import { assert, defined } from './util/types';
+import EOCallExpressionProp from './eo-prop/private/call-expression';
 
 /** Copy decorators `from` => `to` */
 export function withDecorators<T>(to: T, decorators: Decorator[] = []): T {
@@ -39,7 +40,7 @@ export function createClassDecorator(
 export function createCallExpressionDecorators(
   j: JSCodeshift,
   decoratorName: string,
-  instanceProp: EOProp
+  instanceProp: EOCallExpressionProp
 ): Decorator[] {
   if (instanceProp.isVolatileReadOnly) {
     return [];
@@ -141,6 +142,7 @@ export function createInstancePropDecorators(
         ),
       ];
     } else if (decorator) {
+      assert(instanceProp instanceof EOCallExpressionProp);
       decorators = [
         ...decorators,
         ...createCallExpressionDecorators(j, decorator, instanceProp),

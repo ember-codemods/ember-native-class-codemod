@@ -1,47 +1,17 @@
-import type { CallExpression, Property } from 'jscodeshift';
-import type { RuntimeData } from './runtime-data';
+import type { Property } from 'jscodeshift';
+import type { DecoratorInfo } from '../../decorator-info';
+import type { RuntimeData } from '../../runtime-data';
 import {
   LAYOUT_DECORATOR_LOCAL_NAME,
   LAYOUT_DECORATOR_NAME,
-  get,
   getPropName,
   isClassDecoratorProp,
-} from './util';
-import { assert, isString, verified } from './util/types';
-import type { DecoratorInfo, ImportPropDecoratorMap } from './decorator-info';
-
-type CalleeObject = Extract<
-  CallExpression['callee'],
-  { callee: unknown; arguments: unknown }
->;
-
-export interface EOProps {
-  instanceProps: EOProp[];
-}
+} from '../../util/index';
+import { assert } from '../../util/types';
 
 interface EODecoratorArgs {
   unobserves?: Array<string | boolean | number | null> | undefined;
   off?: Array<string | boolean | number | null> | undefined;
-}
-
-interface EOModifier {
-  prop:
-    | Extract<CallExpression['callee'], { property: unknown }>['property']
-    | undefined;
-  args: CallExpression['arguments'];
-}
-
-/**
- * Get property modifier from the property callee object
- */
-function getModifier(calleeObject: CalleeObject): EOModifier {
-  return {
-    prop:
-      'callee' in calleeObject && 'property' in calleeObject.callee
-        ? calleeObject.callee.property
-        : undefined,
-    args: 'arguments' in calleeObject ? calleeObject.arguments : [],
-  };
 }
 
 /**
@@ -49,8 +19,11 @@ function getModifier(calleeObject: CalleeObject): EOModifier {
  *
  * A wrapper object for ember object properties
  */
-export default class EOProp {
-  readonly _prop: Property;
+export default class EOProp<V extends Property['value'] = Property['value']> {
+  readonly _prop: Property & { value: V };
+
+  protected readonly decorators: DecoratorInfo[] = [];
+  readonly decoratorArgs: EODecoratorArgs = {};
 
   /** Runtime Data */
   readonly isComputed: boolean | undefined;
@@ -58,16 +31,9 @@ export default class EOProp {
   readonly isOverridden: boolean | undefined;
   private readonly runtimeType: string | undefined;
 
-  /** CallExpression data */
-  private calleeObject: CalleeObject | undefined;
-  private readonly decorators: DecoratorInfo[] = [];
-  readonly decoratorArgs: EODecoratorArgs = {};
-  readonly modifiers: EOModifier[] = [];
-
   constructor(
-    eoProp: Property,
-    runtimeData: RuntimeData | undefined,
-    importedDecoratedProps: ImportPropDecoratorMap
+    eoProp: Property & { value: V },
+    runtimeData: RuntimeData | undefined
   ) {
     this._prop = eoProp;
 
@@ -101,33 +67,9 @@ export default class EOProp {
     }
 
     // FIXME: Extract `is` method?
-    // FIXME: Split out this type into a separate class?
-    if (this._prop.value.type === 'CallExpression') {
-      let calleeObject: CalleeObject = this._prop.value;
-      const modifiers = [getModifier(calleeObject)];
-      while (
-        'callee' in calleeObject &&
-        calleeObject.callee.type === 'MemberExpression'
-      ) {
-        assert(calleeObject.callee.object.type === 'CallExpression');
-        calleeObject = calleeObject.callee.object;
-        assert('callee' in calleeObject);
-        modifiers.push(getModifier(calleeObject));
-      }
-      this.calleeObject = calleeObject;
-      this.modifiers = modifiers.reverse();
-      this.modifiers.shift();
-
-      const decoratorInfo = importedDecoratedProps[this.calleeName];
-      if (decoratorInfo) {
-        this.decorators.push(decoratorInfo);
-      } else if (this.isComputed) {
-        this.decorators.push({ name: this.calleeName });
-      }
-    }
   }
 
-  get value(): Property['value'] {
+  get value(): V {
     return this._prop.value;
   }
 
@@ -162,12 +104,6 @@ export default class EOProp {
 
   get type(): Property['value']['type'] {
     return this._prop.value.type;
-  }
-
-  private get calleeName(): string {
-    assert(this.calleeObject !== undefined, 'Cannot find calleeObject');
-    assert('name' in this.calleeObject.callee);
-    return verified(this.calleeObject.callee.name, isString);
   }
 
   get comments(): Property['comments'] {
@@ -217,41 +153,12 @@ export default class EOProp {
     return this.classDecoratorName === LAYOUT_DECORATOR_LOCAL_NAME;
   }
 
-  get isCallExpression(): boolean {
-    return this.type === 'CallExpression';
-  }
-
   get hasDecorators(): boolean {
     return this.decorators.length > 0;
   }
 
-  get callExprArgs(): CallExpression['arguments'] {
-    assert(this.calleeObject !== undefined, 'Cannot find calleeObject');
-    return this.calleeObject.arguments;
-  }
-
   get shouldRemoveLastArg(): boolean {
     return this.kind === 'method' || this.kind === 'get';
-  }
-
-  get hasModifierWithArgs(): boolean {
-    return this.modifiers.some((modifier) => modifier.args.length);
-  }
-
-  get hasVolatile(): boolean {
-    return this.modifiers.some(
-      (modifier) => get(modifier, 'prop.name') === 'volatile'
-    );
-  }
-
-  private get hasReadOnly(): boolean {
-    return this.modifiers.some(
-      (modifier) => get(modifier, 'prop.name') === 'readOnly'
-    );
-  }
-
-  get isVolatileReadOnly(): boolean {
-    return this.modifiers.length === 2 && this.hasVolatile && this.hasReadOnly;
   }
 
   get isTagName(): boolean {

@@ -132,7 +132,6 @@ module.exports = {
         '@typescript-eslint/no-unnecessary-qualifier': 'error',
         '@typescript-eslint/no-unnecessary-type-arguments': 'error',
         '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-        '@typescript-eslint/no-use-before-define': ['error', { functions: false }],
         '@typescript-eslint/prefer-enum-initializers': 'error',
         '@typescript-eslint/prefer-nullish-coalescing': 'error',
         '@typescript-eslint/prefer-for-of': 'error',
