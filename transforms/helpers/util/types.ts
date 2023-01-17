@@ -52,18 +52,3 @@ export function defined<T>(
   assert(value !== undefined, message);
   return value;
 }
-
-export type JsonValue =
-  | string
-  | boolean
-  | number
-  | null
-  | JsonObject
-  | JsonArray;
-
-export type JsonArray = JsonValue[];
-
-// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
-export interface JsonObject {
-  [key: string]: JsonValue;
-}

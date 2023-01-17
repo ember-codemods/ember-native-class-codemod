@@ -45,8 +45,8 @@ import type { ImportPropDecoratorMap } from './decorator-info';
 export function getEmberObjectProps(
   _j: JSCodeshift, // FIXME: Remove?
   eoExpression: ObjectExpression | null,
-  importedDecoratedProps: ImportPropDecoratorMap = {},
-  runtimeData: RuntimeData = {}
+  importedDecoratedProps: ImportPropDecoratorMap,
+  runtimeData: RuntimeData | undefined
 ): EOProps {
   const objProps = eoExpression?.properties ?? [];
 

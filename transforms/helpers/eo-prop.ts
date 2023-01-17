@@ -53,10 +53,6 @@ export default class EOProp {
   readonly _prop: Property;
 
   /** Runtime Data */
-  private readonly decorators: DecoratorInfo[] = [];
-  readonly modifiers: EOModifier[] = [];
-  readonly decoratorArgs: EODecoratorArgs = {};
-  // FIXME private readonly emberType: string | undefined;
   readonly isComputed: boolean | undefined;
   readonly overriddenActions: string[] = [];
   readonly isOverridden: boolean | undefined;
@@ -64,15 +60,18 @@ export default class EOProp {
 
   /** CallExpression data */
   private calleeObject: CalleeObject | undefined;
+  private readonly decorators: DecoratorInfo[] = [];
+  readonly decoratorArgs: EODecoratorArgs = {};
+  readonly modifiers: EOModifier[] = [];
 
   constructor(
     eoProp: Property,
-    runtimeData: RuntimeData,
+    runtimeData: RuntimeData | undefined,
     importedDecoratedProps: ImportPropDecoratorMap
   ) {
     this._prop = eoProp;
 
-    if (runtimeData.type) {
+    if (runtimeData?.type) {
       const {
         type,
         computedProperties = [],
@@ -82,14 +81,12 @@ export default class EOProp {
         unobservedProperties = {},
       } = runtimeData;
 
-      // FIXME: this.emberType = type;
-
       const name = this.name;
-      if (Object.keys(unobservedProperties).includes(name)) {
+      if (name in unobservedProperties) {
         this.decorators.push({ name: 'unobserves' });
         this.decoratorArgs.unobserves = unobservedProperties[name];
       }
-      if (Object.keys(offProperties).includes(name)) {
+      if (name in offProperties) {
         this.decorators.push({ name: 'off' });
         this.decoratorArgs.off = offProperties[name];
       }

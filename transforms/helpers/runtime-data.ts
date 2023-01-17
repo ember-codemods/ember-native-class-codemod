@@ -1,11 +1,9 @@
-import type { JsonArray } from './util/types';
-
 export interface RuntimeData {
   type?: string;
-  computedProperties?: JsonArray;
+  computedProperties?: string[];
   offProperties?: Record<string, Array<string | boolean | number | null>>;
   overriddenActions?: string[];
-  overriddenProperties?: JsonArray;
+  overriddenProperties?: string[];
   unobservedProperties?: Record<
     string,
     Array<string | boolean | number | null>
