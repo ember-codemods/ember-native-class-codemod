@@ -166,7 +166,6 @@ function createMethodProp(
     decorators = [],
   }: { isAction?: boolean; decorators?: Decorator[] } = {}
 ): MethodDefinition {
-  assert(isFunctionProp(functionProp));
   const propKind =
     functionProp.kind === 'init' ? 'method' : defined(functionProp.kind);
 
@@ -309,11 +308,9 @@ function createCallExpressionProp(
   j: JSCodeshift,
   callExprProp: EOCallExpressionProp
 ): MethodDefinition[] | ClassProperty[] {
-  const callExprArgs = [...callExprProp.callExprArgs];
-  let callExprLastArg: (typeof callExprArgs)[number] | undefined;
+  const callExprArgs = [...callExprProp.arguments];
   if (callExprProp.shouldRemoveLastArg) {
-    callExprLastArg = defined(callExprArgs.pop());
-
+    const callExprLastArg = defined(callExprArgs.pop());
     const lastArgType = callExprLastArg.type;
 
     if (lastArgType === 'FunctionExpression') {
@@ -372,7 +369,9 @@ function createCallExpressionProp(
       );
       return callExprMethods;
     } else {
-      throw new Error('FIXME');
+      throw new Error(
+        'Expected last argument in call expression to be a FunctionExpression or ObjectExpression'
+      );
     }
   } else {
     return [createClassProp(j, callExprProp)];
@@ -414,7 +413,7 @@ export function createClass(
     if (prop instanceof EOClassDecoratorProp) {
       classDecorators.push(createClassDecorator(j, prop));
     } else if (prop instanceof EOFunctionExpressionProp) {
-      classBody.push(createMethodProp(j, verified(prop, isFunctionProp)));
+      classBody.push(createMethodProp(j, prop));
     } else if (prop instanceof EOCallExpressionProp) {
       classBody = [...classBody, ...createCallExpressionProp(j, prop)];
     } else if (prop instanceof EOActionsObjectProp) {

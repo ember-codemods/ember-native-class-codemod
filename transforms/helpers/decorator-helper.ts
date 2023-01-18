@@ -13,7 +13,6 @@ export function withDecorators<T>(to: T, decorators: Decorator[] = []): T {
 }
 
 type CallExpressionArg = Parameters<JSCodeshift['callExpression']>[1][number];
-// type CallExpressionArgType = CallExpressionArg['type'];
 
 /** FIXME: Document */
 export function createClassDecorator(
@@ -23,8 +22,6 @@ export function createClassDecorator(
   const { value } = classDecoratorProp;
   const decoratorArgs =
     value.type === 'ArrayExpression' ? value.elements : [value];
-
-  // FIXME: Assert that the cast below is correct
 
   return j.decorator(
     j.callExpression(j.identifier(classDecoratorProp.classDecoratorName), [
@@ -47,9 +44,9 @@ export function createCallExpressionDecorators(
   }
 
   const decoratorArgs = instanceProp.shouldRemoveLastArg
-    ? instanceProp.callExprArgs.slice(0, -1)
+    ? instanceProp.arguments.slice(0, -1)
     : // eslint-disable-next-line unicorn/prefer-spread
-      instanceProp.callExprArgs.slice(0);
+      instanceProp.arguments.slice(0);
 
   let decoratorExpression =
     ['computed', 'service', 'controller'].includes(decoratorName) &&
@@ -58,8 +55,8 @@ export function createCallExpressionDecorators(
       : j.callExpression(j.identifier(decoratorName), decoratorArgs);
 
   for (const modifier of instanceProp.modifiers) {
+    assert(modifier.prop);
     decoratorExpression = j.callExpression(
-      // @ts-expect-error
       j.memberExpression(decoratorExpression, modifier.prop),
       modifier.args
     );

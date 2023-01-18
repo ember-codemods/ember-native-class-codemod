@@ -8,7 +8,7 @@ import type {
 } from 'jscodeshift';
 import AbstractEOProp from './abstract';
 
-export type EOBaseProperty = Property & {
+type EOBaseProperty = Property & {
   value:
     | Literal
     | ObjectExpression

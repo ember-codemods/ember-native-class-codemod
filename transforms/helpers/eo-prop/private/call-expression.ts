@@ -4,7 +4,7 @@ import type { RuntimeData } from '../../runtime-data';
 import { assert, isString, verified } from '../../util/types';
 import AbstractEOProp from './abstract';
 
-export type CallExpressionProperty = Property & { value: CallExpression };
+type CallExpressionProperty = Property & { value: CallExpression };
 
 /** Type predicate */
 export function isCallExpressionProperty(
@@ -55,7 +55,6 @@ export default class EOCallExpressionProp extends AbstractEOProp<
     ) {
       assert(calleeObject.callee.object.type === 'CallExpression');
       calleeObject = calleeObject.callee.object;
-      assert('callee' in calleeObject);
       modifiers.push(getModifier(calleeObject));
     }
     this.calleeObject = calleeObject;
@@ -75,7 +74,7 @@ export default class EOCallExpressionProp extends AbstractEOProp<
     return verified(this.calleeObject.callee.name, isString);
   }
 
-  get callExprArgs(): CallExpression['arguments'] {
+  get arguments(): CallExpression['arguments'] {
     return this.calleeObject.arguments;
   }
 
