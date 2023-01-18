@@ -23,7 +23,7 @@ import {
   withDecorators,
 } from './decorator-helper';
 import type { EOProp, EOProps } from './eo-prop';
-import { EOFunctionExpressionProp } from './eo-prop';
+import { EOClassDecoratorProp, EOFunctionExpressionProp } from './eo-prop';
 import EOCallExpressionProp from './eo-prop/private/call-expression';
 import { DEFAULT_OPTIONS } from './options';
 import type { EOCallExpressionMixin } from './parse-helper';
@@ -413,7 +413,7 @@ export function createClass(
   }
 
   for (const prop of instanceProps) {
-    if (prop.isClassDecorator) {
+    if (prop instanceof EOClassDecoratorProp) {
       classDecorators.push(createClassDecorator(j, prop));
     } else if (prop instanceof EOFunctionExpressionProp) {
       classBody.push(createMethodProp(j, verified(prop, isFunctionProp)));

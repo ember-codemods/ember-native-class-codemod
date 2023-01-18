@@ -1,16 +1,20 @@
 import type { Property } from 'jscodeshift';
 import type { ImportPropDecoratorMap } from '../decorator-info';
 import type { RuntimeData } from '../runtime-data';
+import EOProp from './private/base';
 import EOCallExpressionProp, {
   isCallExpressionProperty,
 } from './private/call-expression';
-import EOProp from './private/base';
+import EOClassDecoratorProp, {
+  isClassDecoratorProperty,
+} from './private/class-decorator';
 import EOFunctionExpressionProp, {
   isFunctionExpressionProperty,
 } from './private/function-expression';
 
 export { default as EOProp } from './private/base';
 export { default as EOCallExpressionProp } from './private/call-expression';
+export { default as EOClassDecoratorProp } from './private/class-decorator';
 export { default as EOFunctionExpressionProp } from './private/function-expression';
 
 export interface EOProps {
@@ -31,6 +35,8 @@ export default function makeEOProp(
     );
   } else if (isFunctionExpressionProperty(eoProp)) {
     return new EOFunctionExpressionProp(eoProp, runtimeData);
+  } else if (isClassDecoratorProperty(eoProp)) {
+    return new EOClassDecoratorProp(eoProp, runtimeData);
   } else {
     return new EOProp(eoProp, runtimeData);
   }

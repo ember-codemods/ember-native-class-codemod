@@ -223,17 +223,3 @@ export function capitalizeFirstLetter(name: string): string {
 export function startsWithUpperCaseLetter(word = ''): boolean {
   return !!word && !word.startsWith(word.charAt(0).toLowerCase());
 }
-
-// FIXME: Switch more of the `includes` checks to this style.
-const ClassDecoratorPropNames = new Set([
-  'layout',
-  'tagName',
-  'classNames',
-  'classNameBindings',
-  'attributeBindings',
-]);
-
-/** Return true if prop is of name `tagName` or `classNames` */
-export function isClassDecoratorProp(propName: string): boolean {
-  return ClassDecoratorPropNames.has(propName);
-}

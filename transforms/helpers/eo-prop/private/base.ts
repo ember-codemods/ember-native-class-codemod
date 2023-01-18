@@ -5,7 +5,6 @@ import {
   LAYOUT_DECORATOR_LOCAL_NAME,
   LAYOUT_DECORATOR_NAME,
   getPropName,
-  isClassDecoratorProp,
 } from '../../util/index';
 import { assert } from '../../util/types';
 
@@ -124,10 +123,6 @@ export default class EOProp<V extends Property['value'] = Property['value']> {
 
   get computed(): boolean {
     return 'computed' in this._prop && this._prop.computed;
-  }
-
-  get isClassDecorator(): boolean {
-    return isClassDecoratorProp(this.name);
   }
 
   get decoratorNames(): string[] {

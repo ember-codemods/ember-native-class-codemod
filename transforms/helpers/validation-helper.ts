@@ -1,6 +1,7 @@
 import type { JSCodeshift } from 'jscodeshift';
 import minimatch from 'minimatch';
 import type { EOProp, EOProps } from './eo-prop';
+import { EOClassDecoratorProp } from './eo-prop';
 import EOCallExpressionProp from './eo-prop/private/call-expression';
 import type { Options } from './options';
 import { DEFAULT_OPTIONS } from './options';
@@ -74,7 +75,8 @@ export function hasValidProps(
 
     if (
       (!decorators &&
-        (instanceProp.hasDecorators || instanceProp.isClassDecorator)) ||
+        (instanceProp.hasDecorators ||
+          instanceProp instanceof EOClassDecoratorProp)) ||
       unsupportedPropNames.includes(instanceProp.name) ||
       (instanceProp instanceof EOCallExpressionProp &&
         !instanceProp.hasDecorators)
