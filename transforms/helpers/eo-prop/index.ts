@@ -17,6 +17,7 @@ import EOFunctionExpressionProp, {
 } from './private/function-expression';
 
 export { default as EOActionsObjectProp } from './private/actions-object';
+export type { Action } from './private/actions-object';
 export { default as EOBaseProp } from './private/base';
 export { default as EOCallExpressionProp } from './private/call-expression';
 export { default as EOClassDecoratorProp } from './private/class-decorator';

@@ -2,9 +2,17 @@ import type { Identifier, ObjectExpression, Property } from 'jscodeshift';
 import type { RuntimeData } from '../../runtime-data';
 import AbstractEOProp from './abstract';
 
-export type ActionsObjectProperty = Property & {
-  value: ObjectExpression;
+export type Action = Property & {
   key: Identifier;
+};
+
+type ActionsObjectExpression = ObjectExpression & {
+  properties: Action[];
+};
+
+export type ActionsObjectProperty = Property & {
+  value: ActionsObjectExpression;
+  key: Identifier & { name: 'actions' };
 };
 
 /** Type predicate */
@@ -14,12 +22,15 @@ export function isEOActionsPropProperty(
   return (
     property.value.type === 'ObjectExpression' &&
     'name' in property.key &&
-    property.key.name === 'actions'
+    property.key.name === 'actions' &&
+    property.value.properties.every(
+      (p) => p.type === 'Property' && p.key.type === 'Identifier'
+    )
   );
 }
 
 export default class EOActionsObjectProp extends AbstractEOProp<
-  ObjectExpression,
+  ActionsObjectExpression,
   ActionsObjectProperty
 > {
   readonly overriddenActions: string[] = [];
@@ -34,7 +45,7 @@ export default class EOActionsObjectProp extends AbstractEOProp<
     }
   }
 
-  get properties(): ObjectExpression['properties'] {
+  get properties(): Action[] {
     return this._prop.value.properties;
   }
 }

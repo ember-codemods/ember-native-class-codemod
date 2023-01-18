@@ -13,7 +13,6 @@ import type {
   MemberExpression,
   MethodDefinition,
   Node,
-  ObjectProperty,
   Property,
 } from 'jscodeshift';
 import {
@@ -22,7 +21,7 @@ import {
   createInstancePropDecorators,
   withDecorators,
 } from './decorator-helper';
-import type { EOBaseProp, EOProps } from './eo-prop';
+import type { Action, EOBaseProp, EOProps } from './eo-prop';
 import { EOClassDecoratorProp, EOFunctionExpressionProp } from './eo-prop';
 import EOActionsObjectProp from './eo-prop/private/actions-object';
 import EOCallExpressionProp from './eo-prop/private/call-expression';
@@ -239,13 +238,12 @@ function createClassProp(
  */
 function convertIdentifierActionToMethod(
   j: JSCodeshift,
-  idAction: Property | ObjectProperty,
+  idAction: Action & { value: Identifier },
   decorators: Decorator[] = []
 ): MethodDefinition {
   const returnBlock = j.blockStatement([
     j.returnStatement(
       j.callExpression(
-        // @ts-expect-error
         j.memberExpression(idAction.value, j.identifier('call')),
         [j.thisExpression(), j.spreadElement(j.identifier('arguments'))]
       )
@@ -285,12 +283,12 @@ function createActionDecoratedProps(
   const overriddenActions = actionsProp.overriddenActions;
   const actionDecorators = createIdentifierDecorators(j);
   return actionProps.map((actionProp) => {
-    if (
-      (actionProp.type === 'Property' ||
-        actionProp.type === 'ObjectProperty') &&
-      actionProp.value.type === 'Identifier'
-    ) {
-      return convertIdentifierActionToMethod(j, actionProp, actionDecorators);
+    if (actionProp.value.type === 'Identifier') {
+      return convertIdentifierActionToMethod(
+        j,
+        actionProp as Action & { value: Identifier },
+        actionDecorators
+      );
     } else {
       assert(
         isFunctionProp(actionProp),

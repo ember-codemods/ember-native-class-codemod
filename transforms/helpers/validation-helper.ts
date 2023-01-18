@@ -5,8 +5,7 @@ import { EOActionsObjectProp, EOClassDecoratorProp } from './eo-prop';
 import EOCallExpressionProp from './eo-prop/private/call-expression';
 import type { Options } from './options';
 import { DEFAULT_OPTIONS } from './options';
-import { LIFECYCLE_HOOKS, getPropName } from './util';
-import { assert, isPropertyNode, verified } from './util/types';
+import { LIFECYCLE_HOOKS } from './util';
 
 const UNSUPPORTED_PROP_NAMES = ['actions', 'layout'] as const;
 
@@ -112,9 +111,8 @@ function getLifecycleHookErrors(actionsProp: EOActionsObjectProp): string[] {
   const actionProps = actionsProp.properties;
   const errors: string[] = [];
   for (const actionProp of actionProps) {
-    const actionName = getPropName(verified(actionProp, isPropertyNode));
-    // not sure if actionName is ever falsy here? aside from ''...
-    if (actionName && LIFECYCLE_HOOKS.includes(actionName)) {
+    const actionName = actionProp.key.name;
+    if (LIFECYCLE_HOOKS.includes(actionName)) {
       errors.push(
         `[${actionName}]: Transform not supported - action name matches one of the lifecycle hooks. Rename and try again. See https://github.com/scalvert/ember-native-class-codemod/issues/34 for more details`
       );
@@ -133,35 +131,32 @@ function getInfiniteLoopErrors(
   const actionProps = actionsProp.properties;
   const errors: string[] = [];
   for (const actionProp of actionProps) {
-    const actionName = getPropName(verified(actionProp, isPropertyNode));
-    if (actionName) {
-      // FIXME: If this never gets hit we can narrow prop type
-      assert('value' in actionProp, 'expected value in actionProp');
-      const functExpr = j(actionProp.value);
+    const actionName = actionProp.key.name;
+    const functExpr = j(actionProp.value);
 
-      // Occurrences of this.actionName()
-      const actionCalls = functExpr.find(j.CallExpression, {
-        callee: {
-          type: 'MemberExpression',
-          object: {
-            type: 'ThisExpression',
-          },
-          property: {
-            type: 'Identifier',
-            name: actionName,
-          },
+    // Occurrences of this.actionName()
+    const actionCalls = functExpr.find(j.CallExpression, {
+      callee: {
+        type: 'MemberExpression',
+        object: {
+          type: 'ThisExpression',
         },
-      });
+        property: {
+          type: 'Identifier',
+          name: actionName,
+        },
+      },
+    });
 
-      // Occurrences of this.get('actionName')() or get(this, 'actionName')()
-      const actionLiterals = functExpr.find(j.Literal, { value: actionName });
+    // Occurrences of this.get('actionName')() or get(this, 'actionName')()
+    const actionLiterals = functExpr.find(j.Literal, { value: actionName });
 
-      if (actionLiterals.length > 0 || actionCalls.length > 0) {
-        errors.push(
-          `[${actionName}]: Transform not supported - calling the passed action would cause an infinite loop. See https://github.com/scalvert/eslint-plugin-ember-es6-class/pull/2 for more details`
-        );
-      }
+    if (actionLiterals.length > 0 || actionCalls.length > 0) {
+      errors.push(
+        `[${actionName}]: Transform not supported - calling the passed action would cause an infinite loop. See https://github.com/scalvert/eslint-plugin-ember-es6-class/pull/2 for more details`
+      );
     }
+
     return errors;
   }
   return errors;
