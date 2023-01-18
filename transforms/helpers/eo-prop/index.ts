@@ -5,9 +5,13 @@ import EOCallExpressionProp, {
   isCallExpressionProperty,
 } from './private/call-expression';
 import EOProp from './private/base';
+import EOFunctionExpressionProp, {
+  isFunctionExpressionProperty,
+} from './private/function-expression';
 
 export { default as EOProp } from './private/base';
 export { default as EOCallExpressionProp } from './private/call-expression';
+export { default as EOFunctionExpressionProp } from './private/function-expression';
 
 export interface EOProps {
   instanceProps: EOProp[];
@@ -25,6 +29,8 @@ export default function makeEOProp(
       runtimeData,
       importedDecoratedProps
     );
+  } else if (isFunctionExpressionProperty(eoProp)) {
+    return new EOFunctionExpressionProp(eoProp, runtimeData);
   } else {
     return new EOProp(eoProp, runtimeData);
   }

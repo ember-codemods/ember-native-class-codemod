@@ -23,6 +23,8 @@ import {
   withDecorators,
 } from './decorator-helper';
 import type { EOProp, EOProps } from './eo-prop';
+import { EOFunctionExpressionProp } from './eo-prop';
+import EOCallExpressionProp from './eo-prop/private/call-expression';
 import { DEFAULT_OPTIONS } from './options';
 import type { EOCallExpressionMixin } from './parse-helper';
 import {
@@ -31,7 +33,6 @@ import {
   LAYOUT_DECORATOR_NAME,
 } from './util';
 import { assert, defined, isRecord, verified } from './util/types';
-import EOCallExpressionProp from './eo-prop/private/call-expression';
 
 /** Returns true if class property should have value */
 function shouldSetValue(prop: EOProp): boolean {
@@ -75,7 +76,8 @@ function createLineComments(
 function replaceSuperExpressions(
   j: JSCodeshift,
   methodDefinition: MethodDefinition,
-  functionProp: FunctionProp
+  functionProp: FunctionProp,
+  { isAction = false }
 ): MethodDefinition {
   const replaceWithUndefined = functionProp.hasRuntimeData
     ? !functionProp.isOverridden
@@ -102,7 +104,7 @@ function replaceSuperExpressions(
       const superMethodArgs = superExpr.value.arguments;
       if (functionProp.isComputed) {
         superMethodCall = j.memberExpression(j.super(), functionProp.key);
-      } else if (functionProp.isAction) {
+      } else if (isAction) {
         superMethodCall = j.callExpression(
           j.memberExpression(
             j.memberExpression(
@@ -130,14 +132,15 @@ function replaceSuperExpressions(
   return methodDefinition;
 }
 
-type FunctionProp = (EOProp | Property) & {
-  value: FunctionExpression;
-  key: Identifier;
-  hasRuntimeData?: boolean; // FIXME: Move these into options/args?
-  isOverridden?: boolean;
-  isComputed?: boolean;
-  isAction?: boolean;
-};
+type FunctionProp =
+  | EOFunctionExpressionProp
+  | (Property & {
+      value: FunctionExpression;
+      key: Identifier;
+      hasRuntimeData?: boolean;
+      isOverridden?: boolean;
+      isComputed?: boolean;
+    });
 
 function isFunctionProp(prop: unknown): prop is FunctionProp {
   return (
@@ -158,7 +161,10 @@ function isFunctionProp(prop: unknown): prop is FunctionProp {
 function createMethodProp(
   j: JSCodeshift,
   functionProp: FunctionProp,
-  decorators: Decorator[] = []
+  {
+    isAction = false,
+    decorators = [],
+  }: { isAction?: boolean; decorators?: Decorator[] } = {}
 ): MethodDefinition {
   assert(isFunctionProp(functionProp));
   const propKind =
@@ -169,7 +175,8 @@ function createMethodProp(
       replaceSuperExpressions(
         j,
         j.methodDefinition(propKind, functionProp.key, functionProp.value),
-        functionProp
+        functionProp,
+        { isAction }
       ),
       functionProp
     ),
@@ -289,10 +296,12 @@ function createActionDecoratedProps(
         isFunctionProp(actionProp),
         'action prop expected to be FunctionProp'
       );
-      actionProp.isAction = true;
       actionProp.hasRuntimeData = actionsProp.hasRuntimeData;
       actionProp.isOverridden = overriddenActions.includes(actionProp.key.name);
-      return createMethodProp(j, actionProp, actionDecorators);
+      return createMethodProp(j, actionProp, {
+        decorators: actionDecorators,
+        isAction: true,
+      });
     }
   });
 }
@@ -320,11 +329,9 @@ function createCallExpressionProp(
         type: 'FunctionExpression', // FIXME: Make an actual Property
       };
       return [
-        createMethodProp(
-          j,
-          verified(functionExpr, isFunctionProp),
-          createInstancePropDecorators(j, callExprProp)
-        ),
+        createMethodProp(j, verified(functionExpr, isFunctionProp), {
+          decorators: createInstancePropDecorators(j, callExprProp),
+        }),
       ];
     } else if (lastArgType === 'ObjectExpression') {
       const callExprMethods = callExprLastArg.properties.map(
@@ -408,7 +415,7 @@ export function createClass(
   for (const prop of instanceProps) {
     if (prop.isClassDecorator) {
       classDecorators.push(createClassDecorator(j, prop));
-    } else if (prop.type === 'FunctionExpression') {
+    } else if (prop instanceof EOFunctionExpressionProp) {
       classBody.push(createMethodProp(j, verified(prop, isFunctionProp)));
     } else if (prop instanceof EOCallExpressionProp) {
       classBody = [...classBody, ...createCallExpressionProp(j, prop)];
