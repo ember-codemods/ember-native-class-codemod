@@ -22,8 +22,9 @@ import {
   createInstancePropDecorators,
   withDecorators,
 } from './decorator-helper';
-import type { EOProp, EOProps } from './eo-prop';
+import type { EOBaseProp, EOProps } from './eo-prop';
 import { EOClassDecoratorProp, EOFunctionExpressionProp } from './eo-prop';
+import EOActionsObjectProp from './eo-prop/private/actions-object';
 import EOCallExpressionProp from './eo-prop/private/call-expression';
 import { DEFAULT_OPTIONS } from './options';
 import type { EOCallExpressionMixin } from './parse-helper';
@@ -33,10 +34,9 @@ import {
   LAYOUT_DECORATOR_NAME,
 } from './util';
 import { assert, defined, isRecord, verified } from './util/types';
-import EOActionsObjectProp from './eo-prop/private/actions-object';
 
 /** Returns true if class property should have value */
-function shouldSetValue(prop: EOProp): boolean {
+function shouldSetValue(prop: EOBaseProp | EOCallExpressionProp): boolean {
   if (!prop.hasDecorators) {
     return true;
   }
@@ -188,7 +188,7 @@ function createMethodProp(
 /** Create the class property from passed instance property */
 function createClassProp(
   j: JSCodeshift,
-  instanceProp: EOProp,
+  instanceProp: EOCallExpressionProp | EOBaseProp,
   decorators: Decorator[] = []
 ): ClassProperty {
   if (decorators.length === 0) {
@@ -199,7 +199,6 @@ function createClassProp(
     withComments(
       j.classProperty(
         instanceProp.key,
-        // @ts-expect-error
         shouldSetValue(instanceProp) ? instanceProp.value : null,
         null
       ),

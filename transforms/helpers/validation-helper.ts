@@ -1,6 +1,6 @@
 import type { JSCodeshift } from 'jscodeshift';
 import minimatch from 'minimatch';
-import type { EOProp, EOProps } from './eo-prop';
+import type { EOProps } from './eo-prop';
 import { EOActionsObjectProp, EOClassDecoratorProp } from './eo-prop';
 import EOCallExpressionProp from './eo-prop/private/call-expression';
 import type { Options } from './options';
@@ -108,7 +108,7 @@ export function hasValidProps(
  * The transformation is not supported if an action has the same name as lifecycle hook
  * Reference: https://github.com/scalvert/ember-native-class-codemod/issues/34
  */
-function getLifecycleHookErrors(actionsProp: EOProp): string[] {
+function getLifecycleHookErrors(actionsProp: EOActionsObjectProp): string[] {
   const actionProps = actionsProp.properties;
   const errors: string[] = [];
   for (const actionProp of actionProps) {
@@ -126,7 +126,10 @@ function getLifecycleHookErrors(actionsProp: EOProp): string[] {
 /**
  * Validation against pattern mentioned https://github.com/scalvert/eslint-plugin-ember-es6-class/pull/2
  */
-function getInfiniteLoopErrors(j: JSCodeshift, actionsProp: EOProp): string[] {
+function getInfiniteLoopErrors(
+  j: JSCodeshift,
+  actionsProp: EOActionsObjectProp
+): string[] {
   const actionProps = actionsProp.properties;
   const errors: string[] = [];
   for (const actionProp of actionProps) {

@@ -1,7 +1,7 @@
 import type { Decorator, JSCodeshift } from 'jscodeshift';
-import type { EOClassDecoratorProp, EOProp } from './eo-prop';
-import { assert, defined } from './util/types';
+import type { EOBaseProp, EOClassDecoratorProp } from './eo-prop';
 import EOCallExpressionProp from './eo-prop/private/call-expression';
+import { assert, defined } from './util/types';
 
 /** Copy decorators `from` => `to` */
 export function withDecorators<T>(to: T, decorators: Decorator[] = []): T {
@@ -105,33 +105,20 @@ export function createIdentifierDecorators(
  */
 function createBindingDecorators(
   j: JSCodeshift,
-  decoratorName: string,
-  _instanceProp: EOProp
+  decoratorName: string
 ): [Decorator] {
-  // FIXME: Investigate
-  // const propList = instanceProp.propList;
-  // if (propList && propList.length > 0) {
-  //   // @ts-expect-error
-  //   const propArgs = propList.map((prop) => j.literal(prop));
-  //   return [
-  //     j.decorator(j.callExpression(j.identifier(decoratorName), propArgs)),
-  //   ];
-  // }
   return [j.decorator(j.identifier(decoratorName))];
 }
 
 /** Handles decorators for instance properties */
 export function createInstancePropDecorators(
   j: JSCodeshift,
-  instanceProp: EOProp
+  instanceProp: EOCallExpressionProp | EOBaseProp
 ): Decorator[] {
   let decorators: Decorator[] = [];
   for (const decorator of instanceProp.decoratorNames) {
     if (decorator === 'className' || decorator === 'attribute') {
-      decorators = [
-        ...decorators,
-        ...createBindingDecorators(j, decorator, instanceProp),
-      ];
+      decorators = [...decorators, ...createBindingDecorators(j, decorator)];
     } else if (decorator === 'off' || decorator === 'unobserves') {
       decorators = [
         ...decorators,

@@ -44,9 +44,7 @@ import { hasValidProps, isFileOfType, isTestFile } from './validation-helper';
  *   instanceProps: [ Property({key: value}) ]
  *  }
  */
-// FIXME: Why export?
-export function getEmberObjectProps(
-  _j: JSCodeshift, // FIXME: Remove?
+function getEmberObjectProps(
   eoExpression: ObjectExpression | null,
   importedDecoratedProps: ImportPropDecoratorMap,
   runtimeData: RuntimeData | undefined
@@ -311,7 +309,6 @@ export function replaceEmberObjectExpressions(
       parseEmberObjectCallExpression(eoCallExpression);
 
     const eoProps = getEmberObjectProps(
-      j,
       eoExpression,
       importedDecoratedProps,
       options.runtimeData
