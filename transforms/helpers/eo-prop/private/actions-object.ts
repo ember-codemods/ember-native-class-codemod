@@ -1,6 +1,6 @@
 import type { ObjectExpression, Property } from 'jscodeshift';
 import type { RuntimeData } from '../../runtime-data';
-import EOProp from './base';
+import AbstractEOProp from './abstract';
 
 export type ActionsObjectProperty = Property & { value: ObjectExpression };
 
@@ -15,7 +15,7 @@ export function isEOActionsPropProperty(
   );
 }
 
-export default class EOActionsObjectProp extends EOProp<ObjectExpression> {
+export default class EOActionsObjectProp extends AbstractEOProp<ObjectExpression> {
   readonly overriddenActions: string[] = [];
 
   constructor(

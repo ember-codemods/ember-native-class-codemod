@@ -2,7 +2,7 @@ import type { CallExpression, Property } from 'jscodeshift';
 import type { ImportPropDecoratorMap } from '../../decorator-info';
 import type { RuntimeData } from '../../runtime-data';
 import { assert, isString, verified } from '../../util/types';
-import EOProp from './base';
+import AbstractEOProp from './abstract';
 
 export type CallExpressionProperty = Property & { value: CallExpression };
 
@@ -33,12 +33,15 @@ function getModifier(calleeObject: CallExpression): CallExpressionModifier {
   };
 }
 
-export default class EOCallExpressionProp extends EOProp<CallExpression> {
+export default class EOCallExpressionProp extends AbstractEOProp<
+  CallExpression,
+  CallExpressionProperty
+> {
   private calleeObject: CallExpression;
   readonly modifiers: CallExpressionModifier[];
 
   constructor(
-    eoProp: Property & { value: CallExpression },
+    eoProp: CallExpressionProperty,
     runtimeData: RuntimeData | undefined,
     importedDecoratedProps: ImportPropDecoratorMap
   ) {

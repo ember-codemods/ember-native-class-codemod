@@ -1,5 +1,5 @@
 import type { FunctionExpression, Property } from 'jscodeshift';
-import EOProp from './base';
+import AbstractEOProp from './abstract';
 
 export type FunctionExpressionProperty = Property & {
   value: FunctionExpression;
@@ -12,4 +12,4 @@ export function isFunctionExpressionProperty(
   return property.value.type === 'FunctionExpression';
 }
 
-export default class EOFunctionExpressionProp extends EOProp<FunctionExpression> {}
+export default class EOFunctionExpressionProp extends AbstractEOProp<FunctionExpression> {}

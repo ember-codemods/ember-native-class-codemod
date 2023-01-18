@@ -8,7 +8,7 @@ import {
   LAYOUT_DECORATOR_LOCAL_NAME,
   LAYOUT_DECORATOR_NAME,
 } from '../../util/index';
-import EOProp from './base';
+import AbstractEOProp from './abstract';
 
 type ClassDecoratorPropertyValue = (Literal | ArrayExpression | Identifier) & {
   name: string;
@@ -41,7 +41,7 @@ export function isClassDecoratorProperty(
   );
 }
 
-export default class EOClassDecoratorProp extends EOProp<ClassDecoratorPropertyValue> {
+export default class EOClassDecoratorProp extends AbstractEOProp<ClassDecoratorPropertyValue> {
   get classDecoratorName(): string {
     if (
       this.name === LAYOUT_DECORATOR_NAME &&

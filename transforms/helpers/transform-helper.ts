@@ -423,7 +423,6 @@ export function createClass(
     } else if (prop instanceof EOActionsObjectProp) {
       classBody = [...classBody, ...createActionDecoratedProps(j, prop)];
     } else {
-      // FIXME: What do these have in common?
       classBody.push(createClassProp(j, prop));
     }
   }
