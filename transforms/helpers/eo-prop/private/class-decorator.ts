@@ -5,10 +5,13 @@ import type {
   Property,
 } from 'jscodeshift';
 import EOProp from './base';
-import { getPropName } from '../../util/index';
+
+type ClassDecoratorPropertyValue = (Literal | ArrayExpression | Identifier) & {
+  name: string;
+};
 
 export type ClassDecoratorProperty = Property & {
-  value: Literal | ArrayExpression | Identifier;
+  value: ClassDecoratorPropertyValue;
 };
 
 // FIXME: Switch more of the `includes` checks to this style.
@@ -24,10 +27,14 @@ const ClassDecoratorPropNames = new Set([
 export function isClassDecoratorProperty(
   property: Property
 ): property is ClassDecoratorProperty {
-  const name = getPropName(property);
-  return ClassDecoratorPropNames.has(name);
+  return (
+    (property.value.type === 'Literal' ||
+      property.value.type === 'ArrayExpression' ||
+      property.value.type === 'Identifier') &&
+    'name' in property.key &&
+    typeof property.key.name === 'string' &&
+    ClassDecoratorPropNames.has(property.key.name)
+  );
 }
 
-export default class EOClassDecoratorProp extends EOProp<
-  Literal | ArrayExpression | Identifier
-> {}
+export default class EOClassDecoratorProp extends EOProp<ClassDecoratorPropertyValue> {}

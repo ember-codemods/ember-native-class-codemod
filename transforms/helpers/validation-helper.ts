@@ -1,7 +1,7 @@
 import type { JSCodeshift } from 'jscodeshift';
 import minimatch from 'minimatch';
 import type { EOProp, EOProps } from './eo-prop';
-import { EOClassDecoratorProp } from './eo-prop';
+import { EOActionsObjectProp, EOClassDecoratorProp } from './eo-prop';
 import EOCallExpressionProp from './eo-prop/private/call-expression';
 import type { Options } from './options';
 import { DEFAULT_OPTIONS } from './options';
@@ -68,7 +68,7 @@ export function hasValidProps(
       );
     }
 
-    if (instanceProp.isActions) {
+    if (instanceProp instanceof EOActionsObjectProp) {
       errors = [...errors, ...getLifecycleHookErrors(instanceProp)];
       errors = [...errors, ...getInfiniteLoopErrors(j, instanceProp)];
     }

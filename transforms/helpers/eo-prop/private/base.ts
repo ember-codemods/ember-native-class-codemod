@@ -26,7 +26,6 @@ export default class EOProp<V extends Property['value'] = Property['value']> {
 
   /** Runtime Data */
   readonly isComputed: boolean | undefined;
-  readonly overriddenActions: string[] = [];
   readonly isOverridden: boolean | undefined;
   private readonly runtimeType: string | undefined;
 
@@ -41,7 +40,6 @@ export default class EOProp<V extends Property['value'] = Property['value']> {
         type,
         computedProperties = [],
         offProperties = {},
-        overriddenActions = [],
         overriddenProperties = [],
         unobservedProperties = {},
       } = runtimeData;
@@ -57,9 +55,6 @@ export default class EOProp<V extends Property['value'] = Property['value']> {
       }
       if (computedProperties.includes(name)) {
         this.isComputed = true;
-      }
-      if (this.isActions) {
-        this.overriddenActions = overriddenActions;
       }
       this.isOverridden = overriddenProperties.includes(name);
       this.runtimeType = type;
@@ -156,6 +151,8 @@ export default class EOProp<V extends Property['value'] = Property['value']> {
     return this.kind === 'method' || this.kind === 'get';
   }
 
+  // FIXME: Move to EOClassDecoratorProp
+
   get isTagName(): boolean {
     return this.name === 'tagName';
   }
@@ -170,10 +167,6 @@ export default class EOProp<V extends Property['value'] = Property['value']> {
 
   get isAttributeBindings(): boolean {
     return this.name === 'attributeBindings';
-  }
-
-  get isActions(): boolean {
-    return this.name === 'actions';
   }
 
   get hasUnobservesDecorator(): boolean {

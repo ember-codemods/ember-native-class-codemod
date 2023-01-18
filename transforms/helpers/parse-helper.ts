@@ -11,7 +11,7 @@ import type {
 import path from 'path';
 import type { ImportPropDecoratorMap } from './decorator-info';
 import type { EOProp, EOProps } from './eo-prop';
-import makeEOProp from './eo-prop';
+import makeEOProp, { EOActionsObjectProp } from './eo-prop';
 import {
   createDecoratorImportDeclarations,
   getImportedDecoratedProps,
@@ -95,7 +95,7 @@ function getDecoratorsToImportMap(
   };
   for (const prop of instanceProps) {
     specs = {
-      action: specs.action || prop.isActions,
+      action: specs.action || prop instanceof EOActionsObjectProp,
       classNames: specs.classNames || prop.isClassNames,
       classNameBindings: specs.classNameBindings || prop.isClassNameBindings,
       attributeBindings: specs.attributeBindings || prop.isAttributeBindings,

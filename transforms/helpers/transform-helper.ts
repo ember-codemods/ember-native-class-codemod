@@ -33,6 +33,7 @@ import {
   LAYOUT_DECORATOR_NAME,
 } from './util';
 import { assert, defined, isRecord, verified } from './util/types';
+import EOActionsObjectProp from './eo-prop/private/actions-object';
 
 /** Returns true if class property should have value */
 function shouldSetValue(prop: EOProp): boolean {
@@ -279,7 +280,7 @@ function convertIdentifierActionToMethod(
  */
 function createActionDecoratedProps(
   j: JSCodeshift,
-  actionsProp: EOProp
+  actionsProp: EOActionsObjectProp
 ): MethodDefinition[] {
   const actionProps = actionsProp.properties;
   const overriddenActions = actionsProp.overriddenActions;
@@ -419,9 +420,10 @@ export function createClass(
       classBody.push(createMethodProp(j, verified(prop, isFunctionProp)));
     } else if (prop instanceof EOCallExpressionProp) {
       classBody = [...classBody, ...createCallExpressionProp(j, prop)];
-    } else if (prop.name === 'actions') {
+    } else if (prop instanceof EOActionsObjectProp) {
       classBody = [...classBody, ...createActionDecoratedProps(j, prop)];
     } else {
+      // FIXME: What do these have in common?
       classBody.push(createClassProp(j, prop));
     }
   }
