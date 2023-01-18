@@ -1,9 +1,9 @@
 import type {
-  Literal,
-  ObjectExpression,
-  Identifier,
   ArrayExpression,
+  Identifier,
+  Literal,
   MemberExpression,
+  ObjectExpression,
   Property,
 } from 'jscodeshift';
 import AbstractEOProp from './abstract';
@@ -29,5 +29,6 @@ export function isEOProperty(property: Property): property is EOBaseProperty {
 }
 
 export default class EOBaseProp extends AbstractEOProp<
-  Literal | ObjectExpression | Identifier | ArrayExpression | MemberExpression
+  Literal | ObjectExpression | Identifier | ArrayExpression | MemberExpression,
+  EOBaseProperty
 > {}

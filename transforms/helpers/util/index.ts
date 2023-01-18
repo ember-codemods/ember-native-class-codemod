@@ -205,7 +205,6 @@ export function getFirstDeclaration(
   return j(path) as Collection<Declaration>;
 }
 
-// FIXME: Remove and add name getter to each of the prop types
 /** Return name of the property */
 export function getPropName(prop: Property): string {
   const key = prop.key;

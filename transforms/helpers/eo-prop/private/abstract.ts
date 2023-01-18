@@ -2,7 +2,6 @@ import type { Property } from 'jscodeshift';
 import type { DecoratorInfo } from '../../decorator-info';
 import type { RuntimeData } from '../../runtime-data';
 import { getPropName } from '../../util/index';
-import { assert } from '../../util/types';
 
 interface EODecoratorArgs {
   unobserves?: Array<string | boolean | number | null> | undefined;
@@ -55,33 +54,10 @@ export default abstract class AbstractEOProp<
       this.isOverridden = overriddenProperties.includes(name);
       this.runtimeType = type;
     }
-
-    // FIXME: Extract `is` method?
   }
 
   get value(): V {
     return this._prop.value;
-  }
-
-  get kind(): 'init' | 'get' | 'set' | 'method' | undefined {
-    // FIXME: Are these ever undefined?
-    let kind: 'init' | 'get' | 'set' | 'method' | undefined =
-      'kind' in this._prop ? this._prop.kind : undefined;
-    const method = 'method' in this._prop ? this._prop.method : undefined;
-
-    if (
-      kind === 'init' &&
-      this.hasDecorators &&
-      this.decorators.some((d) => d.importedName === 'computed')
-    ) {
-      kind = 'get';
-    }
-
-    if (method || this.hasMethodDecorator) {
-      kind = 'method';
-    }
-
-    return kind;
   }
 
   get key(): P['key'] {
@@ -100,17 +76,31 @@ export default abstract class AbstractEOProp<
     return this._prop.comments;
   }
 
-  get properties(): Extract<V, { properties: unknown }>['properties'] {
-    // FIXME: If this never gets hit we can narrow prop type
-    assert(
-      'properties' in this._prop.value,
-      'expected prop value to have properties'
-    );
-    return this._prop.value.properties;
+  get computed(): boolean {
+    return this._prop.computed ?? false;
   }
 
-  get computed(): boolean {
-    return 'computed' in this._prop && this._prop.computed;
+  get kind(): 'init' | 'get' | 'set' | 'method' | undefined {
+    let kind: 'init' | 'get' | 'set' | 'method' = this._prop.kind;
+    const method = this._prop.method ?? false;
+
+    if (
+      kind === 'init' &&
+      this.hasDecorators &&
+      this.decorators.some((d) => d.importedName === 'computed')
+    ) {
+      kind = 'get';
+    }
+
+    if (method || this.hasMethodDecorator) {
+      kind = 'method';
+    }
+
+    return kind;
+  }
+
+  get hasRuntimeData(): boolean {
+    return !!this.runtimeType;
   }
 
   get decoratorNames(): string[] {
@@ -121,20 +111,12 @@ export default abstract class AbstractEOProp<
     return this.decorators.length > 0;
   }
 
-  get shouldRemoveLastArg(): boolean {
-    return this.kind === 'method' || this.kind === 'get';
-  }
-
   get hasUnobservesDecorator(): boolean {
     return this.decoratorNames.includes('unobserves');
   }
 
   get hasOffDecorator(): boolean {
     return this.decoratorNames.includes('off');
-  }
-
-  get hasRuntimeData(): boolean {
-    return !!this.runtimeType;
   }
 
   private get hasMethodDecorator(): boolean {

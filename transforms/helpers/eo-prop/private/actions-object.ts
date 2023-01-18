@@ -1,8 +1,11 @@
-import type { ObjectExpression, Property } from 'jscodeshift';
+import type { Identifier, ObjectExpression, Property } from 'jscodeshift';
 import type { RuntimeData } from '../../runtime-data';
 import AbstractEOProp from './abstract';
 
-export type ActionsObjectProperty = Property & { value: ObjectExpression };
+export type ActionsObjectProperty = Property & {
+  value: ObjectExpression;
+  key: Identifier;
+};
 
 /** Type predicate */
 export function isEOActionsPropProperty(
@@ -15,7 +18,10 @@ export function isEOActionsPropProperty(
   );
 }
 
-export default class EOActionsObjectProp extends AbstractEOProp<ObjectExpression> {
+export default class EOActionsObjectProp extends AbstractEOProp<
+  ObjectExpression,
+  ActionsObjectProperty
+> {
   readonly overriddenActions: string[] = [];
 
   constructor(
@@ -26,5 +32,9 @@ export default class EOActionsObjectProp extends AbstractEOProp<ObjectExpression
     if (runtimeData?.overriddenActions) {
       this.overriddenActions = runtimeData.overriddenActions;
     }
+  }
+
+  get properties(): ObjectExpression['properties'] {
+    return this._prop.value.properties;
   }
 }

@@ -104,4 +104,8 @@ export default class EOCallExpressionProp extends AbstractEOProp<
   get isVolatileReadOnly(): boolean {
     return this.modifiers.length === 2 && this.hasVolatile && this.hasReadOnly;
   }
+
+  get shouldRemoveLastArg(): boolean {
+    return this.kind === 'method' || this.kind === 'get';
+  }
 }
