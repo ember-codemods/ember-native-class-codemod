@@ -1,5 +1,5 @@
 import type { Decorator, JSCodeshift } from 'jscodeshift';
-import type { EOProp } from './eo-prop';
+import type { EOClassDecoratorProp, EOProp } from './eo-prop';
 import { assert, defined } from './util/types';
 import EOCallExpressionProp from './eo-prop/private/call-expression';
 
@@ -18,7 +18,7 @@ type CallExpressionArg = Parameters<JSCodeshift['callExpression']>[1][number];
 /** FIXME: Document */
 export function createClassDecorator(
   j: JSCodeshift,
-  classDecoratorProp: EOProp
+  classDecoratorProp: EOClassDecoratorProp
 ): Decorator {
   const { value } = classDecoratorProp;
   const decoratorArgs =

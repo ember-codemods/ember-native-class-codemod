@@ -4,6 +4,10 @@ import type {
   Literal,
   Property,
 } from 'jscodeshift';
+import {
+  LAYOUT_DECORATOR_LOCAL_NAME,
+  LAYOUT_DECORATOR_NAME,
+} from '../../util/index';
 import EOProp from './base';
 
 type ClassDecoratorPropertyValue = (Literal | ArrayExpression | Identifier) & {
@@ -37,4 +41,39 @@ export function isClassDecoratorProperty(
   );
 }
 
-export default class EOClassDecoratorProp extends EOProp<ClassDecoratorPropertyValue> {}
+export default class EOClassDecoratorProp extends EOProp<ClassDecoratorPropertyValue> {
+  get classDecoratorName(): string {
+    if (
+      this.name === LAYOUT_DECORATOR_NAME &&
+      'name' in this.value && // e.g. CallExpression doesn't have `name`
+      this.value.name === LAYOUT_DECORATOR_NAME
+    ) {
+      return LAYOUT_DECORATOR_LOCAL_NAME;
+    }
+    return this.name;
+  }
+
+  get isLayoutDecorator(): boolean {
+    return this.classDecoratorName === LAYOUT_DECORATOR_NAME;
+  }
+
+  get isTemplateLayoutDecorator(): boolean {
+    return this.classDecoratorName === LAYOUT_DECORATOR_LOCAL_NAME;
+  }
+
+  get isTagName(): boolean {
+    return this.name === 'tagName';
+  }
+
+  get isClassNames(): boolean {
+    return this.name === 'classNames';
+  }
+
+  get isClassNameBindings(): boolean {
+    return this.name === 'classNameBindings';
+  }
+
+  get isAttributeBindings(): boolean {
+    return this.name === 'attributeBindings';
+  }
+}

@@ -1,11 +1,7 @@
 import type { Property } from 'jscodeshift';
 import type { DecoratorInfo } from '../../decorator-info';
 import type { RuntimeData } from '../../runtime-data';
-import {
-  LAYOUT_DECORATOR_LOCAL_NAME,
-  LAYOUT_DECORATOR_NAME,
-  getPropName,
-} from '../../util/index';
+import { getPropName } from '../../util/index';
 import { assert } from '../../util/types';
 
 interface EODecoratorArgs {
@@ -124,49 +120,12 @@ export default class EOProp<V extends Property['value'] = Property['value']> {
     return this.decorators.map((d) => d.name);
   }
 
-  get classDecoratorName(): string {
-    if (
-      this.name === LAYOUT_DECORATOR_NAME &&
-      'name' in this.value && // e.g. CallExpression doesn't have `name`
-      this.value.name === LAYOUT_DECORATOR_NAME
-    ) {
-      return LAYOUT_DECORATOR_LOCAL_NAME;
-    }
-    return this.name;
-  }
-
-  get isLayoutDecorator(): boolean {
-    return this.classDecoratorName === LAYOUT_DECORATOR_NAME;
-  }
-
-  get isTemplateLayoutDecorator(): boolean {
-    return this.classDecoratorName === LAYOUT_DECORATOR_LOCAL_NAME;
-  }
-
   get hasDecorators(): boolean {
     return this.decorators.length > 0;
   }
 
   get shouldRemoveLastArg(): boolean {
     return this.kind === 'method' || this.kind === 'get';
-  }
-
-  // FIXME: Move to EOClassDecoratorProp
-
-  get isTagName(): boolean {
-    return this.name === 'tagName';
-  }
-
-  get isClassNames(): boolean {
-    return this.name === 'classNames';
-  }
-
-  get isClassNameBindings(): boolean {
-    return this.name === 'classNameBindings';
-  }
-
-  get isAttributeBindings(): boolean {
-    return this.name === 'attributeBindings';
   }
 
   get hasUnobservesDecorator(): boolean {

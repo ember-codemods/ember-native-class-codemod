@@ -11,7 +11,10 @@ import type {
 import path from 'path';
 import type { ImportPropDecoratorMap } from './decorator-info';
 import type { EOProp, EOProps } from './eo-prop';
-import makeEOProp, { EOActionsObjectProp } from './eo-prop';
+import makeEOProp, {
+  EOActionsObjectProp,
+  EOClassDecoratorProp,
+} from './eo-prop';
 import {
   createDecoratorImportDeclarations,
   getImportedDecoratedProps,
@@ -96,13 +99,26 @@ function getDecoratorsToImportMap(
   for (const prop of instanceProps) {
     specs = {
       action: specs.action || prop instanceof EOActionsObjectProp,
-      classNames: specs.classNames || prop.isClassNames,
-      classNameBindings: specs.classNameBindings || prop.isClassNameBindings,
-      attributeBindings: specs.attributeBindings || prop.isAttributeBindings,
-      layout: specs.layout || prop.isLayoutDecorator,
-      templateLayout: specs.templateLayout || prop.isTemplateLayoutDecorator,
+      classNames:
+        specs.classNames ||
+        (prop instanceof EOClassDecoratorProp && prop.isClassNames),
+      classNameBindings:
+        specs.classNameBindings ||
+        (prop instanceof EOClassDecoratorProp && prop.isClassNameBindings),
+      attributeBindings:
+        specs.attributeBindings ||
+        (prop instanceof EOClassDecoratorProp && prop.isAttributeBindings),
+      layout:
+        specs.layout ||
+        (prop instanceof EOClassDecoratorProp && prop.isLayoutDecorator),
+      templateLayout:
+        specs.templateLayout ||
+        (prop instanceof EOClassDecoratorProp &&
+          prop.isTemplateLayoutDecorator),
       off: specs.off || prop.hasOffDecorator,
-      tagName: specs.tagName || prop.isTagName,
+      tagName:
+        specs.tagName ||
+        (prop instanceof EOClassDecoratorProp && prop.isTagName),
       unobserves: specs.unobserves || prop.hasUnobservesDecorator,
     };
   }
