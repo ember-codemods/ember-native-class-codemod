@@ -301,20 +301,13 @@ export function replaceEmberObjectExpressions(
     );
     return;
   }
-  // Parse the import statements
-  const importedDecoratedProps = getImportedDecoratedProps(j, root);
-  let transformed = false;
-  let decoratorsToImportMap: Partial<DecoratorsToImportMap> = {};
 
-  ({ transformed, decoratorsToImportMap } = transform(
+  const { transformed, decoratorsToImportMap } = _replaceEmberObjectExpressions(
     j,
     root,
-    importedDecoratedProps,
-    options,
     filePath,
-    transformed,
-    decoratorsToImportMap
-  ));
+    options
+  );
 
   // Need to find another way, as there might be a case where
   // one object from a file is transformed and other is not
@@ -328,18 +321,20 @@ export function replaceEmberObjectExpressions(
   return transformed;
 }
 
-function transform(
+function _replaceEmberObjectExpressions(
   j: JSCodeshift,
   root: Collection<unknown>,
-  importedDecoratedProps: ImportPropDecoratorMap,
-  options: Options,
   filePath: string,
-  transformed: boolean,
-  decoratorsToImportMap: Partial<DecoratorsToImportMap>
+  options: Options
 ): {
   transformed: boolean;
   decoratorsToImportMap: Partial<DecoratorsToImportMap>;
 } {
+  // Parse the import statements
+  const importedDecoratedProps = getImportedDecoratedProps(j, root);
+  let transformed = false;
+  let decoratorsToImportMap: Partial<DecoratorsToImportMap> = {};
+
   // eslint-disable-next-line unicorn/no-array-for-each
   getEmberObjectCallExpressions(j, root).forEach((eoCallExpression) => {
     const { eoExpression, mixins } =
