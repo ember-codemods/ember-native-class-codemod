@@ -32,7 +32,7 @@ import {
   LAYOUT_DECORATOR_LOCAL_NAME,
   LAYOUT_DECORATOR_NAME,
 } from './util';
-import { assert, defined, isRecord, verified } from './util/types';
+import { assert, defined, isRecord } from './util/types';
 
 /** Returns true if class property should have value */
 function shouldSetValue(prop: EOBaseProp | EOCallExpressionProp): boolean {
@@ -132,20 +132,19 @@ function replaceSuperExpressions(
   return methodDefinition;
 }
 
-type FunctionProp =
-  | EOFunctionExpressionProp
-  | (Property & {
-      value: FunctionExpression;
-      key: Identifier;
-      hasRuntimeData?: boolean;
-      isOverridden?: boolean;
-      isComputed?: boolean;
-    });
+interface FunctionProp {
+  value: FunctionExpression;
+  key: Identifier;
+  hasRuntimeData?: boolean | undefined;
+  isOverridden?: boolean | undefined;
+  isComputed?: boolean | undefined;
+  kind?: 'init' | 'get' | 'set' | 'method' | undefined;
+  comments?: Property['comments'] | undefined;
+}
 
 function isFunctionProp(prop: unknown): prop is FunctionProp {
   return (
     isRecord(prop) &&
-    (prop['type'] === 'Property' || prop['type'] === 'FunctionExpression') &&
     isRecord(prop['value']) &&
     prop['value']['type'] === 'FunctionExpression' &&
     isRecord(prop['key']) &&
@@ -314,52 +313,36 @@ function createCallExpressionProp(
     const lastArgType = callExprLastArg.type;
 
     if (lastArgType === 'FunctionExpression') {
-      const functionExpr = {
-        __FAKE: true,
+      const functionExpr: FunctionProp = {
         isComputed: true,
         kind: callExprProp.kind,
         key: callExprProp.key,
         value: callExprLastArg,
         comments: callExprProp.comments,
-        type: 'FunctionExpression', // FIXME: Make an actual Property
       };
       return [
-        createMethodProp(j, verified(functionExpr, isFunctionProp), {
+        createMethodProp(j, functionExpr, {
           decorators: createInstancePropDecorators(j, callExprProp),
         }),
       ];
     } else if (lastArgType === 'ObjectExpression') {
       const callExprMethods = callExprLastArg.properties.map(
         (callExprFunction) => {
-          // FIXME: Clean up all these asserts. Generally check all asserts/verified/etc
-          // assert('isComputed' in callExprFunction); FIXME: This doesn't work
-          // @ts-expect-error
+          assert(isFunctionProp(callExprFunction));
           callExprFunction.isComputed = true;
-          assert('kind' in callExprFunction);
-          assert('key' in callExprFunction);
-          assert('name' in callExprFunction.key);
-          assert(typeof callExprFunction.key.name === 'string');
           assert(
-            (['init', 'method', 'get', 'set'] as const).includes(
-              callExprFunction.key.name as 'init' | 'method' | 'get' | 'set'
+            (['init', 'get', 'set', 'method'] as const).includes(
+              callExprFunction.key.name as 'init' | 'get' | 'set' | 'method'
             )
           );
           callExprFunction.kind = callExprFunction.key.name as
             | 'init'
-            | 'method'
             | 'get'
-            | 'set';
+            | 'set'
+            | 'method';
           callExprFunction.key = callExprProp.key;
-          if (
-            'value' in callExprFunction &&
-            'params' in callExprFunction.value
-          ) {
-            callExprFunction.value.params.shift();
-          }
-          return createMethodProp(
-            j,
-            verified(callExprFunction, isFunctionProp)
-          );
+          callExprFunction.value.params.shift();
+          return createMethodProp(j, callExprFunction);
         }
       );
 
