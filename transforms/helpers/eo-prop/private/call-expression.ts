@@ -1,10 +1,13 @@
-import type { CallExpression, Property } from 'jscodeshift';
+import type { CallExpression, Identifier, Property } from 'jscodeshift';
 import type { ImportPropDecoratorMap } from '../../decorator-info';
 import type { RuntimeData } from '../../runtime-data';
 import { assert, isString, verified } from '../../util/types';
 import AbstractEOProp from './abstract';
 
-type CallExpressionProperty = Property & { value: CallExpression };
+type CallExpressionProperty = Property & {
+  value: CallExpression;
+  key: Identifier;
+};
 
 /** Type predicate */
 export function isCallExpressionProperty(

@@ -6,6 +6,7 @@ import { assert, defined } from './util/types';
 /** Copy decorators `from` => `to` */
 export function withDecorators<T>(to: T, decorators: Decorator[] = []): T {
   if (decorators.length > 0) {
+    // UNSAFE
     // @ts-expect-error
     to.decorators = decorators;
   }

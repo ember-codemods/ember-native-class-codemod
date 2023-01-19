@@ -403,7 +403,7 @@ export function createClass(
   options = DEFAULT_OPTIONS
 ): ClassDeclaration {
   let classBody: Parameters<typeof j.classBody>[0] = [];
-  const classDecorators = [];
+  const classDecorators: Decorator[] = [];
 
   if (options.classicDecorator) {
     classDecorators.push(j.decorator(j.identifier('classic')));
