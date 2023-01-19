@@ -34,7 +34,10 @@ export interface EOProps {
   instanceProps: EOProp[];
 }
 
-/** FIXME */
+/**
+ * Makes an object representing an Ember Object property for the given
+ * Property, RuntimeData, and ImportPropDecoratorMap.
+ */
 export default function makeEOProp(
   eoProp: Property,
   runtimeData: RuntimeData | undefined,

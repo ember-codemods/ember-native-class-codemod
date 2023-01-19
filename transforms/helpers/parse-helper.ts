@@ -20,8 +20,10 @@ import {
   getImportedDecoratedProps,
 } from './import-helper';
 import logger from './log-helper';
+import type { Options } from './options';
 import { DEFAULT_OPTIONS } from './options';
 import type { RuntimeData } from './runtime-data';
+import { isRuntimeData } from './runtime-data';
 import { createClass, withComments } from './transform-helper';
 import { capitalizeFirstLetter, dig, startsWithUpperCaseLetter } from './util';
 import {
@@ -274,10 +276,7 @@ export function replaceEmberObjectExpressions(
 ): boolean | undefined {
   options.runtimeData = verified(
     getTelemetryFor(path.resolve(filePath)),
-    // FIXME: move to runtime-data.ts
-    function isRuntimeData(v: unknown): v is RuntimeData | undefined {
-      return v === undefined || isRecord(v);
-    }
+    isRuntimeData
   );
 
   if (!options.runtimeData) {
@@ -303,6 +302,40 @@ export function replaceEmberObjectExpressions(
   let transformed = false;
   let decoratorsToImportMap: Partial<DecoratorsToImportMap> = {};
 
+  ({ transformed, decoratorsToImportMap } = transform(
+    j,
+    root,
+    importedDecoratedProps,
+    options,
+    filePath,
+    transformed,
+    decoratorsToImportMap
+  ));
+
+  // Need to find another way, as there might be a case where
+  // one object from a file is transformed and other is not
+  if (transformed) {
+    const decoratorsToImport = Object.keys(decoratorsToImportMap).filter(
+      (key) => decoratorsToImportMap[key as keyof DecoratorsToImportMap]
+    );
+    createDecoratorImportDeclarations(j, root, decoratorsToImport, options);
+    logger.info(`[${filePath}]: SUCCESS`);
+  }
+  return transformed;
+}
+
+function transform(
+  j: JSCodeshift,
+  root: Collection<unknown>,
+  importedDecoratedProps: ImportPropDecoratorMap,
+  options: Options,
+  filePath: string,
+  transformed: boolean,
+  decoratorsToImportMap: Partial<DecoratorsToImportMap>
+): {
+  transformed: boolean;
+  decoratorsToImportMap: Partial<DecoratorsToImportMap>;
+} {
   // eslint-disable-next-line unicorn/no-array-for-each
   getEmberObjectCallExpressions(j, root).forEach((eoCallExpression) => {
     const { eoExpression, mixins } =
@@ -373,16 +406,5 @@ export function replaceEmberObjectExpressions(
     );
   });
 
-  // Need to find another way, as there might be a case where
-  // one object from a file is transformed and other is not
-  // FIXME: Is this always falsy?
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (transformed) {
-    const decoratorsToImport = Object.keys(decoratorsToImportMap).filter(
-      (key) => decoratorsToImportMap[key as keyof DecoratorsToImportMap]
-    );
-    createDecoratorImportDeclarations(j, root, decoratorsToImport, options);
-    logger.info(`[${filePath}]: SUCCESS`);
-  }
-  return transformed;
+  return { transformed, decoratorsToImportMap };
 }

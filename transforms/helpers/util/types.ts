@@ -25,9 +25,6 @@ export function assert(
   message = 'Assertion Error'
 ): asserts condition {
   if (!condition) {
-    // FIXME
-    // eslint-disable-next-line no-debugger
-    debugger;
     throw new Error(message);
   }
 }

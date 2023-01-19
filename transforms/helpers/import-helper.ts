@@ -324,7 +324,7 @@ export function getImportedDecoratedProps(
     for (const specifier of specifiers) {
       if (isSpecifierDecorator(specifier, importPropDecoratorMap)) {
         const localName = specifier.local?.name;
-        assert(localName, 'expected localName'); // FIXME: Do we hit this?
+        assert(localName, 'expected localName');
         importedDecorators[localName] = getDecoratorInfo(
           specifier,
           importPropDecoratorMap

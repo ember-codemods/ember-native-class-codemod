@@ -9,7 +9,7 @@ export interface Options {
   classicDecorator: boolean;
   /** Whether to use double or single quotes by default for new statements that are added during the codemod. */
   quote: 'single' | 'double';
-  quotes?: 'single' | 'double'; // FIXME: Why both singular and plural?
+  quotes?: 'single' | 'double';
   /** Apply transformation to only passed type. */
   type?: 'services' | 'routes' | 'components' | 'controllers';
   /** @private */

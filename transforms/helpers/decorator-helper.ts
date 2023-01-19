@@ -14,7 +14,7 @@ export function withDecorators<T>(to: T, decorators: Decorator[] = []): T {
 
 type CallExpressionArg = Parameters<JSCodeshift['callExpression']>[1][number];
 
-/** FIXME: Document */
+/** Creates a decorator for a class. */
 export function createClassDecorator(
   j: JSCodeshift,
   classDecoratorProp: EOClassDecoratorProp

@@ -33,7 +33,7 @@ export function isTestFile(file: string): boolean {
  */
 export function isFileOfType(file: string, type: Options['type']): boolean {
   return (
-    // FIXME: False positive?
+    // False positive
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     !!type && !!TYPE_PATTERNS[type] && minimatch(file, TYPE_PATTERNS[type])
   );
