@@ -1,34 +1,34 @@
 import { getOptions } from 'codemod-cli';
 import type { Transform } from 'jscodeshift';
 import path from 'path';
-import type { Options } from '../helpers/options';
+import type { UserOptions } from '../helpers/options';
 import { DEFAULT_OPTIONS } from '../helpers/options';
-import { replaceEmberObjectExpressions } from '../helpers/parse-helper';
+import maybeTransformEmberObjects from '../helpers/transform';
 import { isRecord, verified } from '../helpers/util/types';
 
-const transformer: Transform = function (file, api) {
-  const extension = path.extname(file.path);
-
+const transformer: Transform = function (
+  { source, path: filePath },
+  { jscodeshift: j }
+) {
+  const extension = path.extname(filePath);
   if (!['.js', '.ts'].includes(extension.toLowerCase())) {
     // do nothing on non-js/ts files
     return;
   }
 
-  const j = api.jscodeshift;
-  const options = {
+  const userOptions: UserOptions = {
     ...DEFAULT_OPTIONS,
-    ...verified<Partial<Options>>(getOptions(), isRecord),
+    ...verified<Partial<UserOptions>>(getOptions(), isRecord),
   };
-  let { source } = file;
-
   const root = j(source);
+  const replaced = maybeTransformEmberObjects(j, root, filePath, userOptions);
 
-  const replaced = replaceEmberObjectExpressions(j, root, file.path, options);
   if (replaced) {
     source = root.toSource({
-      quote: options.quotes ?? options.quote,
+      quote: userOptions.quotes ?? userOptions.quote,
     });
   }
+
   return source;
 };
 

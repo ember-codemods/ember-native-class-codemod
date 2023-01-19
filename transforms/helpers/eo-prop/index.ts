@@ -1,5 +1,5 @@
 import type { Property } from 'jscodeshift';
-import type { ImportPropDecoratorMap } from '../decorator-info';
+import type { DecoratorImportInfoMap } from '../decorator-info';
 import type { RuntimeData } from '../runtime-data';
 import { assert } from '../util/types';
 import EOActionsObjectProp, {
@@ -41,13 +41,13 @@ export interface EOProps {
 export default function makeEOProp(
   eoProp: Property,
   runtimeData: RuntimeData | undefined,
-  importedDecoratedProps: ImportPropDecoratorMap
+  existingDecoratorImportInfos: DecoratorImportInfoMap
 ): EOProp {
   if (isCallExpressionProperty(eoProp)) {
     return new EOCallExpressionProp(
       eoProp,
       runtimeData,
-      importedDecoratedProps
+      existingDecoratorImportInfos
     );
   } else if (isFunctionExpressionProperty(eoProp)) {
     return new EOFunctionExpressionProp(eoProp, runtimeData);

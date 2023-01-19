@@ -1,5 +1,5 @@
 import type { Property } from 'jscodeshift';
-import type { DecoratorInfo } from '../../decorator-info';
+import type { DecoratorImportInfo } from '../../decorator-info';
 import type { RuntimeData } from '../../runtime-data';
 import { getPropName } from '../../util/index';
 
@@ -19,7 +19,7 @@ export default abstract class AbstractEOProp<
 > {
   readonly _prop: P;
 
-  protected readonly decorators: DecoratorInfo[] = [];
+  protected readonly decorators: DecoratorImportInfo[] = [];
   readonly decoratorArgs: EODecoratorArgs = {};
 
   /** Runtime Data */

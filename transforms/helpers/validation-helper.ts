@@ -7,7 +7,6 @@ import {
   EOClassDecoratorProp,
 } from './eo-prop/index';
 import type { Options } from './options';
-import { DEFAULT_OPTIONS } from './options';
 import { LIFECYCLE_HOOKS } from './util/index';
 
 const UNSUPPORTED_PROP_NAMES = ['actions', 'layout'] as const;
@@ -49,7 +48,7 @@ export function isFileOfType(file: string, type: Options['type']): boolean {
 export function hasValidProps(
   j: JSCodeshift,
   { instanceProps }: EOProps,
-  { decorators, classFields }: Options = DEFAULT_OPTIONS
+  { decorators, classFields }: Options
 ): string[] {
   const unsupportedPropNames: readonly string[] = decorators
     ? []

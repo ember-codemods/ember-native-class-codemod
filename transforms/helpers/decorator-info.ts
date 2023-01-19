@@ -2,7 +2,7 @@ import type { ImportSpecifier } from 'jscodeshift';
 import { assert } from './util/types';
 import { METHOD_DECORATORS } from './util/index';
 
-export interface DecoratorInfo {
+export interface DecoratorImportInfo {
   name: 'unobserves' | 'off' | 'className' | 'attribute' | string;
   importedName?: 'computed' | string;
   isImportedAs?: boolean;
@@ -10,17 +10,19 @@ export interface DecoratorInfo {
   isMethodDecorator?: boolean;
   localName?: string;
 }
-
-export type ImportPropDecoratorMap = Record<string, DecoratorInfo>;
+export type DecoratorImportInfoMap = Map<
+  /** local name */ string,
+  DecoratorImportInfo
+>;
 
 /**
  * Return the decorator name for the specifier if any, using the importPropDecoratorMap from
  * `DECORATOR_PATHS` config (defined util.js)
  */
-export function getDecoratorInfo(
+export function getDecoratorImportInfo(
   specifier: ImportSpecifier,
   importPropDecoratorMap: Record<string, string> | undefined
-): DecoratorInfo {
+): DecoratorImportInfo {
   const localName = specifier.local?.name;
   const importedName = specifier.imported.name;
   const isImportedAs = importedName !== localName;

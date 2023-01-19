@@ -1,6 +1,6 @@
 import type { RuntimeData } from './runtime-data';
 
-export interface Options {
+export interface UserOptions {
   /** Enable/disable transformation using decorators */
   decorators: boolean;
   /** Enable/disable transformation using class fields */
@@ -12,11 +12,16 @@ export interface Options {
   quotes?: 'single' | 'double';
   /** Apply transformation to only passed type. */
   type?: 'services' | 'routes' | 'components' | 'controllers';
-  /** @private */
-  runtimeData?: RuntimeData | undefined;
 }
 
-export const DEFAULT_OPTIONS: Options = {
+export interface PrivateOptions {
+  /** @private */
+  runtimeData: RuntimeData | undefined;
+}
+
+export type Options = UserOptions & PrivateOptions;
+
+export const DEFAULT_OPTIONS: UserOptions = {
   decorators: true,
   classFields: true,
   classicDecorator: true,

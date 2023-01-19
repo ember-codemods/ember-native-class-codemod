@@ -1,5 +1,5 @@
 import type { CallExpression, Identifier, Property } from 'jscodeshift';
-import type { ImportPropDecoratorMap } from '../../decorator-info';
+import type { DecoratorImportInfoMap } from '../../decorator-info';
 import type { RuntimeData } from '../../runtime-data';
 import { assert, isString, verified } from '../../util/types';
 import AbstractEOProp from './abstract';
@@ -46,7 +46,7 @@ export default class EOCallExpressionProp extends AbstractEOProp<
   constructor(
     eoProp: CallExpressionProperty,
     runtimeData: RuntimeData | undefined,
-    importedDecoratedProps: ImportPropDecoratorMap
+    existingDecoratorImportInfos: DecoratorImportInfoMap
   ) {
     super(eoProp, runtimeData);
 
@@ -64,9 +64,11 @@ export default class EOCallExpressionProp extends AbstractEOProp<
     this.modifiers = modifiers.reverse();
     this.modifiers.shift();
 
-    const decoratorInfo = importedDecoratedProps[this.calleeName];
-    if (decoratorInfo) {
-      this.decorators.push(decoratorInfo);
+    const decoratorImportInfo = existingDecoratorImportInfos.get(
+      this.calleeName
+    );
+    if (decoratorImportInfo) {
+      this.decorators.push(decoratorImportInfo);
     } else if (this.isComputed) {
       this.decorators.push({ name: this.calleeName });
     }

@@ -1,5 +1,4 @@
 import camelCase from 'camelcase';
-import { getTelemetryFor } from 'ember-codemods-telemetry-helpers';
 import type {
   ASTPath,
   CallExpression,
@@ -9,22 +8,13 @@ import type {
   VariableDeclaration,
 } from 'jscodeshift';
 import path from 'path';
-import type { ImportPropDecoratorMap } from './decorator-info';
+import type { DecoratorImportInfoMap } from './decorator-info';
 import type { EOProp, EOProps } from './eo-prop/index';
 import makeEOProp, {
   EOActionsObjectProp,
   EOClassDecoratorProp,
 } from './eo-prop/index';
-import {
-  createDecoratorImportDeclarations,
-  getImportedDecoratedProps,
-} from './import-helper';
-import logger from './log-helper';
-import type { Options } from './options';
-import { DEFAULT_OPTIONS } from './options';
 import type { RuntimeData } from './runtime-data';
-import { isRuntimeData } from './runtime-data';
-import { createClass, withComments } from './transform-helper';
 import {
   capitalizeFirstLetter,
   dig,
@@ -38,7 +28,6 @@ import {
   isString,
   verified,
 } from './util/types';
-import { hasValidProps, isFileOfType, isTestFile } from './validation-helper';
 
 /**
  * Return the map of instance props and functions from Ember Object
@@ -50,9 +39,9 @@ import { hasValidProps, isFileOfType, isTestFile } from './validation-helper';
  *   instanceProps: [ Property({key: value}) ]
  *  }
  */
-function getEmberObjectProps(
+export function getEmberObjectProps(
   eoExpression: ObjectExpression | null,
-  importedDecoratedProps: ImportPropDecoratorMap,
+  existingDecoratorImportInfos: DecoratorImportInfoMap,
   runtimeData: RuntimeData | undefined
 ): EOProps {
   const objProps = eoExpression?.properties ?? [];
@@ -62,13 +51,13 @@ function getEmberObjectProps(
       makeEOProp(
         verified(objProp, isPropertyNode),
         runtimeData,
-        importedDecoratedProps
+        existingDecoratorImportInfos
       )
     ),
   };
 }
 
-interface DecoratorsToImportMap {
+export interface DecoratorImportSpecs {
   action: boolean;
   classNames: boolean;
   classNameBindings: boolean;
@@ -84,22 +73,11 @@ interface DecoratorsToImportMap {
  * Get the map of decorators to import other than the computed props, services etc
  * which already have imports in the code
  */
-function getDecoratorsToImportMap(
+export function getDecoratorsToImportSpecs(
   instanceProps: EOProp[],
-  decoratorsMap: Partial<DecoratorsToImportMap> = {}
-): DecoratorsToImportMap {
-  let specs = {
-    action: false,
-    classNames: false,
-    classNameBindings: false,
-    attributeBindings: false,
-    layout: false,
-    templateLayout: false,
-    off: false,
-    tagName: false,
-    unobserves: false,
-    ...decoratorsMap,
-  };
+  existingSpecs: DecoratorImportSpecs
+): DecoratorImportSpecs {
+  let specs = existingSpecs;
   for (const prop of instanceProps) {
     specs = {
       action: specs.action || prop instanceof EOActionsObjectProp,
@@ -130,7 +108,7 @@ function getDecoratorsToImportMap(
 }
 
 /** Find the `EmberObject.extend` statements */
-function getEmberObjectCallExpressions(
+export function getEmberObjectCallExpressions(
   j: JSCodeshift,
   root: Collection<unknown>
 ): Collection<CallExpression> {
@@ -253,7 +231,7 @@ interface EOCallExpressionProps {
 /**
  * Parse ember object call expression, returns EmberObjectExpression and list of mixins
  */
-function parseEmberObjectCallExpression(
+export function parseEmberObjectCallExpression(
   eoCallExpression: ASTPath<CallExpression>
 ): EOCallExpressionProps {
   const callExpressionArgs = eoCallExpression.value.arguments;
@@ -269,141 +247,4 @@ function parseEmberObjectCallExpression(
     }
   }
   return props;
-}
-
-/** Main entry point for parsing and replacing ember objects */
-export function replaceEmberObjectExpressions(
-  j: JSCodeshift,
-  root: Collection<unknown>,
-  filePath: string,
-  options = DEFAULT_OPTIONS
-): boolean | undefined {
-  options.runtimeData = verified(
-    getTelemetryFor(path.resolve(filePath)),
-    isRuntimeData
-  );
-
-  if (!options.runtimeData) {
-    logger.warn(
-      `[${filePath}]: SKIPPED Could not find runtime data NO_RUNTIME_DATA`
-    );
-    return;
-  }
-
-  if (isTestFile(filePath)) {
-    logger.warn(`[${filePath}]: Skipping test file`);
-    return;
-  }
-
-  if (options.type && !isFileOfType(filePath, options.type)) {
-    logger.warn(
-      `[${filePath}]: FAILURE Type mismatch, expected type '${options.type}' did not match type of file`
-    );
-    return;
-  }
-
-  const { transformed, decoratorsToImportMap } = _replaceEmberObjectExpressions(
-    j,
-    root,
-    filePath,
-    options
-  );
-
-  // Need to find another way, as there might be a case where
-  // one object from a file is transformed and other is not
-  if (transformed) {
-    const decoratorsToImport = Object.keys(decoratorsToImportMap).filter(
-      (key) => decoratorsToImportMap[key as keyof DecoratorsToImportMap]
-    );
-    createDecoratorImportDeclarations(j, root, decoratorsToImport, options);
-    logger.info(`[${filePath}]: SUCCESS`);
-  }
-  return transformed;
-}
-
-function _replaceEmberObjectExpressions(
-  j: JSCodeshift,
-  root: Collection<unknown>,
-  filePath: string,
-  options: Options
-): {
-  transformed: boolean;
-  decoratorsToImportMap: Partial<DecoratorsToImportMap>;
-} {
-  // Parse the import statements
-  const importedDecoratedProps = getImportedDecoratedProps(j, root);
-  let transformed = false;
-  let decoratorsToImportMap: Partial<DecoratorsToImportMap> = {};
-
-  // eslint-disable-next-line unicorn/no-array-for-each
-  getEmberObjectCallExpressions(j, root).forEach((eoCallExpression) => {
-    const { eoExpression, mixins } =
-      parseEmberObjectCallExpression(eoCallExpression);
-
-    const eoProps = getEmberObjectProps(
-      eoExpression,
-      importedDecoratedProps,
-      options.runtimeData
-    );
-
-    const errors = hasValidProps(j, eoProps, options);
-
-    if (
-      dig(eoCallExpression, 'parentPath.value.type', isString) ===
-      'MemberExpression'
-    ) {
-      errors.push(
-        'class has chained definition (e.g. EmberObject.extend().reopenClass();'
-      );
-    }
-
-    if (errors.length > 0) {
-      logger.warn(
-        `[${filePath}]: FAILURE \nValidation errors: \n\t${errors.join('\n\t')}`
-      );
-      return;
-    }
-
-    let className = getClassName(
-      j,
-      eoCallExpression,
-      filePath,
-      options.runtimeData?.type
-    );
-
-    const callee = eoCallExpression.value.callee;
-    assert('object' in callee, 'expected object in callee');
-    assert(
-      callee.object && 'name' in callee.object,
-      'expected object in callee.object'
-    );
-    const superClassName = verified(callee.object.name, isString);
-
-    if (className === superClassName) {
-      className = `_${className}`;
-    }
-
-    const es6ClassDeclaration = createClass(
-      j,
-      className,
-      eoProps,
-      superClassName,
-      mixins,
-      options
-    );
-
-    const expressionToReplace = getExpressionToReplace(j, eoCallExpression);
-    j(expressionToReplace).replaceWith(
-      withComments(es6ClassDeclaration, expressionToReplace.value)
-    );
-
-    transformed = true;
-
-    decoratorsToImportMap = getDecoratorsToImportMap(
-      eoProps.instanceProps,
-      decoratorsToImportMap
-    );
-  });
-
-  return { transformed, decoratorsToImportMap };
 }

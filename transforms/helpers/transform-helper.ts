@@ -28,7 +28,7 @@ import {
   EOClassDecoratorProp,
   EOFunctionExpressionProp,
 } from './eo-prop/index';
-import { DEFAULT_OPTIONS } from './options';
+import type { Options } from './options';
 import type { EOCallExpressionMixin } from './parse-helper';
 import {
   ACTION_SUPER_EXPRESSION_COMMENT,
@@ -384,9 +384,9 @@ export function createClass(
   j: JSCodeshift,
   className: string,
   { instanceProps }: EOProps,
-  superClassName = '',
-  mixins: EOCallExpressionMixin[] = [],
-  options = DEFAULT_OPTIONS
+  superClassName: string,
+  mixins: EOCallExpressionMixin[],
+  options: Options
 ): ClassDeclaration {
   let classBody: Parameters<typeof j.classBody>[0] = [];
   const classDecorators: Decorator[] = [];

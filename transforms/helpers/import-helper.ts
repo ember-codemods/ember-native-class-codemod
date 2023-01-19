@@ -5,9 +5,9 @@ import type {
   ImportSpecifier,
   JSCodeshift,
 } from 'jscodeshift';
-import type { ImportPropDecoratorMap } from './decorator-info';
-import { getDecoratorInfo } from './decorator-info';
-import { DEFAULT_OPTIONS } from './options';
+import type { DecoratorImportInfoMap } from './decorator-info';
+import { getDecoratorImportInfo } from './decorator-info';
+import type { Options } from './options';
 import {
   createEmberDecoratorSpecifiers,
   createImportDeclaration,
@@ -99,8 +99,8 @@ function createNewImportDeclarations(
   root: Collection<unknown>,
   decoratorsToImport: string[],
   /** Already imported paths */
-  decoratorPathsToIgnore: string[] = [],
-  options = DEFAULT_OPTIONS
+  decoratorPathsToIgnore: string[],
+  options: Options
 ): void {
   const firstDeclaration = getFirstDeclaration(j, root);
 
@@ -263,8 +263,8 @@ function getExistingImportForPath(
 export function createDecoratorImportDeclarations(
   j: JSCodeshift,
   root: Collection<unknown>,
-  decoratorsToImport: string[] = [],
-  options = DEFAULT_OPTIONS
+  decoratorsToImport: string[],
+  options: Options
 ): void {
   // Iterate through existing imports, extract the already imported specifiers
   const decoratorPathSpecifierMap = getDecoratorPathSpecifiers(
@@ -304,13 +304,40 @@ export function createDecoratorImportDeclarations(
   );
 }
 
-/** Get decorated props from `import` statements */
-export function getImportedDecoratedProps(
+/**
+ * Get decorator import info from `import` statements
+ *
+ * e.g. For these imports:
+ * `import { observer as watcher, computed } from '@ember/object';`
+ *
+ * The returned value will be:
+ * ```
+ * {
+ *   watcher: {
+ *     name: "watcher",
+ *     importedName: "observer",
+ *     isImportedAs: true,
+ *     isMetaDecorator: false,
+ *     isMethodDecorator: true,
+ *     localName: "watcher",
+ *   },
+ *   computed: {
+ *     name: "computed",
+ *     importedName: "computed",
+ *     isImportedAs: false,
+ *     isMetaDecorator: false,
+ *     isMethodDecorator: false,
+ *     localName: "computed",
+ *   }
+ * }
+ * ```
+ */
+export function getDecoratorImportInfos(
   j: JSCodeshift,
   root: Collection<unknown>
-): ImportPropDecoratorMap {
+): DecoratorImportInfoMap {
   const existingDecoratorImports = getExistingDecoratorImports(j, root);
-  const importedDecorators: ImportPropDecoratorMap = {};
+  const decoratorImportInfo: DecoratorImportInfoMap = new Map();
 
   for (const decoratorImport of existingDecoratorImports) {
     const { importPropDecoratorMap } = defined(
@@ -325,13 +352,13 @@ export function getImportedDecoratedProps(
       if (isSpecifierDecorator(specifier, importPropDecoratorMap)) {
         const localName = specifier.local?.name;
         assert(localName, 'expected localName');
-        importedDecorators[localName] = getDecoratorInfo(
-          specifier,
-          importPropDecoratorMap
+        decoratorImportInfo.set(
+          localName,
+          getDecoratorImportInfo(specifier, importPropDecoratorMap)
         );
       }
     }
   }
 
-  return importedDecorators;
+  return decoratorImportInfo;
 }
