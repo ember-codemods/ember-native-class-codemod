@@ -112,7 +112,7 @@ function getLifecycleHookErrors(actionsProp: EOActionsObjectProp): string[] {
   const errors: string[] = [];
   for (const actionProp of actionProps) {
     const actionName = actionProp.key.name;
-    if (LIFECYCLE_HOOKS.includes(actionName)) {
+    if (LIFECYCLE_HOOKS.has(actionName)) {
       errors.push(
         `[${actionName}]: Transform not supported - action name matches one of the lifecycle hooks. Rename and try again. See https://github.com/scalvert/ember-native-class-codemod/issues/34 for more details`
       );

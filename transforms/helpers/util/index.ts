@@ -15,55 +15,73 @@ export interface DecoratorPathInfo {
   readonly decoratorPath: string;
 }
 
-export const DECORATOR_PATHS: Record<string, DecoratorPathInfo> = {
-  '@ember/object': {
-    importPropDecoratorMap: {
-      observer: 'observes',
-      computed: 'computed',
+export const DECORATOR_PATHS: ReadonlyMap<string, DecoratorPathInfo> = new Map([
+  [
+    '@ember/object',
+    {
+      importPropDecoratorMap: {
+        observer: 'observes',
+        computed: 'computed',
+      },
+      decoratorPath: '@ember/object',
     },
-    decoratorPath: '@ember/object',
-  },
-  '@ember/object/evented': {
-    importPropDecoratorMap: {
-      on: 'on',
-    },
-    decoratorPath: '@ember-decorators/object',
-  },
-  '@ember/controller': {
-    importPropDecoratorMap: {
-      inject: 'inject',
-    },
-    decoratorPath: '@ember/controller',
-  },
-  '@ember/service': {
-    importPropDecoratorMap: {
-      inject: 'inject',
-    },
-    decoratorPath: '@ember/service',
-  },
-  '@ember/object/computed': {
-    decoratorPath: '@ember/object/computed',
-  },
-};
-
-export const DECORATOR_PATH_OVERRIDES: Record<string, string> = {
-  observes: '@ember-decorators/object',
-};
-
-export const EMBER_DECORATOR_SPECIFIERS: Record<string, string[]> = {
-  '@ember/object': ['action'],
-  '@ember-decorators/object': ['off', 'on', 'unobserves'],
-  '@ember-decorators/component': [
-    'classNames',
-    'attributeBindings',
-    'classNameBindings',
-    LAYOUT_DECORATOR_NAME,
-    'tagName',
-    LAYOUT_DECORATOR_LOCAL_NAME,
   ],
-};
+  [
+    '@ember/object/evented',
+    {
+      importPropDecoratorMap: {
+        on: 'on',
+      },
+      decoratorPath: '@ember-decorators/object',
+    },
+  ],
+  [
+    '@ember/controller',
+    {
+      importPropDecoratorMap: {
+        inject: 'inject',
+      },
+      decoratorPath: '@ember/controller',
+    },
+  ],
+  [
+    '@ember/service',
+    {
+      importPropDecoratorMap: {
+        inject: 'inject',
+      },
+      decoratorPath: '@ember/service',
+    },
+  ],
+  [
+    '@ember/object/computed',
+    {
+      decoratorPath: '@ember/object/computed',
+    },
+  ],
+]);
 
-export const METHOD_DECORATORS = ['action', 'on', 'observer'] as const;
+export const DECORATOR_PATH_OVERRIDES: ReadonlyMap<string, string> = new Map([
+  ['observes', '@ember-decorators/object'],
+]);
+
+export const EMBER_DECORATOR_SPECIFIERS: ReadonlyArray<[string, string[]]> = [
+  ['@ember/object', ['action']],
+  ['@ember-decorators/object', ['off', 'on', 'unobserves']],
+  [
+    '@ember-decorators/component',
+    [
+      'classNames',
+      'attributeBindings',
+      'classNameBindings',
+      LAYOUT_DECORATOR_NAME,
+      'tagName',
+      LAYOUT_DECORATOR_LOCAL_NAME,
+    ],
+  ],
+];
+
+export const METHOD_DECORATORS = new Set(['action', 'on', 'observer']);
 
 export const ACTION_SUPER_EXPRESSION_COMMENT = [
   ' TODO: This call to super is within an action, and has to refer to the parent',
@@ -72,9 +90,9 @@ export const ACTION_SUPER_EXPRESSION_COMMENT = [
   ' classes, it may need to be refactored as well. See',
   ' https: //github.com/scalvert/ember-native-class-codemod/blob/master/README.md',
   ' for more details.',
-] as const;
+];
 
-export const LIFECYCLE_HOOKS = [
+export const LIFECYCLE_HOOKS = new Set([
   // Methods
   '$',
   'addObserver',
@@ -158,26 +176,7 @@ export const LIFECYCLE_HOOKS = [
   'dragOver',
   'dragEnd',
   'drop',
-];
-
-/**
- * Get a property from and object, useful to get nested props without checking
- * for null values
- *
- * @deprecated
- */
-export function get(obj: object, path: string): unknown {
-  return (
-    path
-      .split('.')
-      // eslint-disable-next-line unicorn/no-array-reduce
-      .reduce<object | null | undefined>(function (currentObject, pathSegment) {
-        return currentObject === undefined || currentObject === null
-          ? currentObject
-          : currentObject[pathSegment as keyof typeof currentObject];
-      }, obj)
-  );
-}
+]);
 
 /**
  * Get a property from an object. Useful to get nested props on `any` types.

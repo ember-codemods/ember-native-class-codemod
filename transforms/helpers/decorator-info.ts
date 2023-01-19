@@ -35,9 +35,7 @@ export function getDecoratorInfo(
     name = newName;
   }
 
-  const isMethodDecorator = METHOD_DECORATORS.includes(
-    importedName as (typeof METHOD_DECORATORS)[number]
-  );
+  const isMethodDecorator = METHOD_DECORATORS.has(importedName);
   return {
     name,
     importedName,

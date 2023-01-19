@@ -18,7 +18,6 @@ export type ClassDecoratorProperty = Property & {
   value: ClassDecoratorPropertyValue;
 };
 
-// FIXME: Switch more of the `includes` checks to this style.
 const ClassDecoratorPropNames = new Set([
   'layout',
   'tagName',

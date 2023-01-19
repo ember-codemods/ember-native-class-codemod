@@ -73,7 +73,7 @@ function getExistingDecoratorImports(
 ): Array<ASTPath<ImportDeclaration>> {
   const imports: Array<ASTPath<ImportDeclaration>> = [];
 
-  for (const path in DECORATOR_PATHS) {
+  for (const path in Object.fromEntries(DECORATOR_PATHS)) {
     const decoratorImports = root.find(j.ImportDeclaration, {
       source: {
         value: path,
@@ -114,15 +114,17 @@ function createNewImportDeclarations(
     );
   }
 
+  const edPathNameMap = new Map(EMBER_DECORATOR_SPECIFIERS);
+
   // Create new import statements which do not have any matching existing imports
-  const paths = Object.keys(EMBER_DECORATOR_SPECIFIERS).filter(
+  const paths = [...edPathNameMap.keys()].filter(
     (path) => !decoratorPathsToIgnore.includes(path)
   );
 
   for (const path of paths) {
     const specifiers = createEmberDecoratorSpecifiers(
       j,
-      EMBER_DECORATOR_SPECIFIERS[path],
+      edPathNameMap.get(path),
       decoratorsToImport
     );
 
@@ -149,8 +151,7 @@ function getDecoratorPathSpecifiers(
   root: Collection<unknown>,
   decoratorsToImport: string[] = []
 ): Record<string, ImportSpecifier[]> {
-  // create a copy - we need to mutate the object later
-  const edPathNameMap = Object.assign({}, EMBER_DECORATOR_SPECIFIERS);
+  const edPathNameMap = new Map(EMBER_DECORATOR_SPECIFIERS);
 
   const decoratorPathSpecifierMap: Record<string, ImportSpecifier[]> = {};
 
@@ -161,16 +162,16 @@ function getDecoratorPathSpecifiers(
   // Construct the map with path as key and value as list of specifiers to import from the path
   for (const decoratorImport of existingDecoratorImports) {
     const { importPropDecoratorMap, decoratorPath } = defined(
-      DECORATOR_PATHS[verified(decoratorImport.value.source.value, isString)]
+      DECORATOR_PATHS.get(
+        verified(decoratorImport.value.source.value, isString)
+      )
     );
     // Decorators to be imported for the path
     // These are typically additional decorators which need to be imported for a path
     // For example - `@action` decorator
-    const decoratorsForPath = edPathNameMap[decoratorPath] ?? [];
+    const decoratorsForPath = edPathNameMap.get(decoratorPath) ?? [];
     // delete the visited path to avoid duplicate imports
-    // FIXME: Switch to actual Map
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-    delete edPathNameMap[decoratorPath];
+    edPathNameMap.delete(decoratorPath);
 
     // Create decorator specifiers for which no existing specifiers present in the current path
     // e.g. `actions` need not to be imported but `@action` need to be imported from `@ember-decorators/object`
@@ -193,8 +194,9 @@ function getDecoratorPathSpecifiers(
         setSpecifierNames(existingSpecifier, importPropDecoratorMap);
         // Check if the decorator import path is overridden
         // Needed in case of `observes` which need to be imported from `@ember-decorators/object`
-        const overriddenPath =
-          DECORATOR_PATH_OVERRIDES[existingSpecifier.imported.name];
+        const overriddenPath = DECORATOR_PATH_OVERRIDES.get(
+          existingSpecifier.imported.name
+        );
         if (overriddenPath) {
           decoratorPathSpecifierMap[overriddenPath] = [
             ...(decoratorPathSpecifierMap[overriddenPath] ?? []),
@@ -312,9 +314,9 @@ export function getImportedDecoratedProps(
 
   for (const decoratorImport of existingDecoratorImports) {
     const { importPropDecoratorMap } = defined(
-      DECORATOR_PATHS[
-        decoratorImport.value.source.value as keyof typeof DECORATOR_PATHS
-      ]
+      DECORATOR_PATHS.get(
+        verified(decoratorImport.value.source.value, isString)
+      )
     );
 
     const specifiers = decoratorImport.value.specifiers ?? [];
