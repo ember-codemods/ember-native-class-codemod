@@ -10,11 +10,11 @@ import type {
 } from 'jscodeshift';
 import path from 'path';
 import type { ImportPropDecoratorMap } from './decorator-info';
-import type { EOProp, EOProps } from './eo-prop';
+import type { EOProp, EOProps } from './eo-prop/index';
 import makeEOProp, {
   EOActionsObjectProp,
   EOClassDecoratorProp,
-} from './eo-prop';
+} from './eo-prop/index';
 import {
   createDecoratorImportDeclarations,
   getImportedDecoratedProps,
@@ -25,7 +25,11 @@ import { DEFAULT_OPTIONS } from './options';
 import type { RuntimeData } from './runtime-data';
 import { isRuntimeData } from './runtime-data';
 import { createClass, withComments } from './transform-helper';
-import { capitalizeFirstLetter, dig, startsWithUpperCaseLetter } from './util';
+import {
+  capitalizeFirstLetter,
+  dig,
+  startsWithUpperCaseLetter,
+} from './util/index';
 import {
   assert,
   defined,

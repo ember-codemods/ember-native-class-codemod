@@ -1,11 +1,14 @@
 import type { JSCodeshift } from 'jscodeshift';
 import minimatch from 'minimatch';
-import type { EOProps } from './eo-prop';
-import { EOActionsObjectProp, EOClassDecoratorProp } from './eo-prop';
-import EOCallExpressionProp from './eo-prop/private/call-expression';
+import type { EOProps } from './eo-prop/index';
+import {
+  EOActionsObjectProp,
+  EOCallExpressionProp,
+  EOClassDecoratorProp,
+} from './eo-prop/index';
 import type { Options } from './options';
 import { DEFAULT_OPTIONS } from './options';
-import { LIFECYCLE_HOOKS } from './util';
+import { LIFECYCLE_HOOKS } from './util/index';
 
 const UNSUPPORTED_PROP_NAMES = ['actions', 'layout'] as const;
 

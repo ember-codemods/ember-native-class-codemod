@@ -21,17 +21,20 @@ import {
   createInstancePropDecorators,
   withDecorators,
 } from './decorator-helper';
-import type { Action, EOBaseProp, EOProps } from './eo-prop';
-import { EOClassDecoratorProp, EOFunctionExpressionProp } from './eo-prop';
-import EOActionsObjectProp from './eo-prop/private/actions-object';
-import EOCallExpressionProp from './eo-prop/private/call-expression';
+import type { Action, EOBaseProp, EOProps } from './eo-prop/index';
+import {
+  EOActionsObjectProp,
+  EOCallExpressionProp,
+  EOClassDecoratorProp,
+  EOFunctionExpressionProp,
+} from './eo-prop/index';
 import { DEFAULT_OPTIONS } from './options';
 import type { EOCallExpressionMixin } from './parse-helper';
 import {
   ACTION_SUPER_EXPRESSION_COMMENT,
   LAYOUT_DECORATOR_LOCAL_NAME,
   LAYOUT_DECORATOR_NAME,
-} from './util';
+} from './util/index';
 import { assert, defined, isRecord } from './util/types';
 
 /** Returns true if class property should have value */

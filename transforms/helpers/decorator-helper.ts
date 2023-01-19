@@ -1,6 +1,6 @@
 import type { Decorator, JSCodeshift } from 'jscodeshift';
-import type { EOBaseProp, EOClassDecoratorProp } from './eo-prop';
-import EOCallExpressionProp from './eo-prop/private/call-expression';
+import { EOCallExpressionProp } from './eo-prop/index';
+import type { EOBaseProp, EOClassDecoratorProp } from './eo-prop/index';
 import { assert, defined } from './util/types';
 
 /** Copy decorators `from` => `to` */

@@ -17,7 +17,7 @@ import {
   DECORATOR_PATH_OVERRIDES,
   EMBER_DECORATOR_SPECIFIERS,
   getFirstDeclaration,
-} from './util';
+} from './util/index';
 import { assert, defined, isString, verified } from './util/types';
 
 /** Returns true of the specifier is a decorator */
