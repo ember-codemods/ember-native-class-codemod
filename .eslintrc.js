@@ -98,16 +98,14 @@ module.exports = {
       ],
       rules: {
         '@typescript-eslint/array-type': ['error', { default: 'array-simple' }],
-        // FIXME: Re-enable
-        '@typescript-eslint/ban-ts-comment': 'off',
-        // '@typescript-eslint/ban-ts-comment': [
-        //   'error',
-        //   {
-        //     'ts-expect-error': 'allow-with-description',
-        //     'ts-ignore': true,
-        //     'ts-nocheck': true,
-        //   },
-        // ],
+        '@typescript-eslint/ban-ts-comment': [
+          'error',
+          {
+            'ts-expect-error': 'allow-with-description',
+            'ts-ignore': true,
+            'ts-nocheck': true,
+          },
+        ],
         '@typescript-eslint/consistent-type-assertions': 'error',
         '@typescript-eslint/consistent-type-definitions': 'error',
         '@typescript-eslint/consistent-type-imports': 'error',
