@@ -1,6 +1,6 @@
-import type { ImportSpecifier } from 'jscodeshift';
 import { assert } from './util/types';
 import { METHOD_DECORATORS } from './util/index';
+import type { ImportSpecifier } from './ast';
 
 export interface DecoratorImportInfo {
   name: 'unobserves' | 'off' | 'className' | 'attribute' | string;

@@ -1,32 +1,24 @@
-import type { CallExpression, Identifier, Property } from 'jscodeshift';
+import type {
+  CallExpression,
+  EOCallExpression,
+  EOPropertyWithCallExpression,
+} from '../../ast';
 import type { DecoratorImportInfoMap } from '../../decorator-info';
 import type { RuntimeData } from '../../runtime-data';
 import { assert, isString, verified } from '../../util/types';
 import AbstractEOProp from './abstract';
 
-type CallExpressionProperty = Property & {
-  value: CallExpression;
-  key: Identifier;
-};
-
-/** Type predicate */
-export function isCallExpressionProperty(
-  property: Property
-): property is CallExpressionProperty {
-  return property.value.type === 'CallExpression';
-}
-
 interface CallExpressionModifier {
   prop:
-    | Extract<CallExpression['callee'], { property: unknown }>['property']
+    | Extract<EOCallExpression['callee'], { property: unknown }>['property']
     | undefined;
-  args: CallExpression['arguments'];
+  args: EOCallExpression['arguments'];
 }
 
 /**
  * Get property modifier from the property callee object
  */
-function getModifier(calleeObject: CallExpression): CallExpressionModifier {
+function getModifier(calleeObject: EOCallExpression): CallExpressionModifier {
   return {
     prop:
       'property' in calleeObject.callee
@@ -36,15 +28,12 @@ function getModifier(calleeObject: CallExpression): CallExpressionModifier {
   };
 }
 
-export default class EOCallExpressionProp extends AbstractEOProp<
-  CallExpression,
-  CallExpressionProperty
-> {
+export default class EOCallExpressionProp extends AbstractEOProp<EOPropertyWithCallExpression> {
   private calleeObject: CallExpression;
   readonly modifiers: CallExpressionModifier[];
 
   constructor(
-    eoProp: CallExpressionProperty,
+    eoProp: EOPropertyWithCallExpression,
     runtimeData: RuntimeData | undefined,
     existingDecoratorImportInfos: DecoratorImportInfoMap
   ) {

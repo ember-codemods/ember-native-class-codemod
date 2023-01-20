@@ -8,6 +8,11 @@ import {
 } from './eo-prop/index';
 import type { Options } from './options';
 import { LIFECYCLE_HOOKS } from './util/index';
+import {
+  findPaths,
+  makeEOActionInfiniteCallAssertion,
+  makeEOActionInfiniteLiteralAssertion,
+} from './ast';
 
 const UNSUPPORTED_PROP_NAMES = ['actions', 'layout'] as const;
 
@@ -134,24 +139,25 @@ function getInfiniteLoopErrors(
   const errors: string[] = [];
   for (const actionProp of actionProps) {
     const actionName = actionProp.key.name;
-    const functExpr = j(actionProp.value);
+    const collection = j(actionProp.value);
 
     // Occurrences of this.actionName()
-    const actionCalls = functExpr.find(j.CallExpression, {
-      callee: {
-        type: 'MemberExpression',
-        object: {
-          type: 'ThisExpression',
-        },
-        property: {
-          type: 'Identifier',
-          name: actionName,
-        },
-      },
-    });
+    const isEOActionInfiniteCall =
+      makeEOActionInfiniteCallAssertion(actionName);
+    const actionCalls = findPaths(
+      collection,
+      j.CallExpression,
+      isEOActionInfiniteCall
+    );
 
     // Occurrences of this.get('actionName')() or get(this, 'actionName')()
-    const actionLiterals = functExpr.find(j.Literal, { value: actionName });
+    const isEOActionInfiniteLiteral =
+      makeEOActionInfiniteLiteralAssertion(actionName);
+    const actionLiterals = findPaths(
+      collection,
+      j.Literal,
+      isEOActionInfiniteLiteral
+    );
 
     if (actionLiterals.length > 0 || actionCalls.length > 0) {
       errors.push(

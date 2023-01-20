@@ -1,46 +1,11 @@
-import type {
-  ArrayExpression,
-  Identifier,
-  Literal,
-  Property,
-} from 'jscodeshift';
+import type { EOPropertyForClassDecorator } from '../../ast';
 import {
   LAYOUT_DECORATOR_LOCAL_NAME,
   LAYOUT_DECORATOR_NAME,
 } from '../../util/index';
 import AbstractEOProp from './abstract';
 
-type ClassDecoratorPropertyValue = (Literal | ArrayExpression | Identifier) & {
-  name: string;
-};
-
-export type ClassDecoratorProperty = Property & {
-  value: ClassDecoratorPropertyValue;
-};
-
-const ClassDecoratorPropNames = new Set([
-  'layout',
-  'tagName',
-  'classNames',
-  'classNameBindings',
-  'attributeBindings',
-]);
-
-/** Type predicate */
-export function isClassDecoratorProperty(
-  property: Property
-): property is ClassDecoratorProperty {
-  return (
-    (property.value.type === 'Literal' ||
-      property.value.type === 'ArrayExpression' ||
-      property.value.type === 'Identifier') &&
-    'name' in property.key &&
-    typeof property.key.name === 'string' &&
-    ClassDecoratorPropNames.has(property.key.name)
-  );
-}
-
-export default class EOClassDecoratorProp extends AbstractEOProp<ClassDecoratorPropertyValue> {
+export default class EOClassDecoratorProp extends AbstractEOProp<EOPropertyForClassDecorator> {
   get classDecoratorName(): string {
     if (
       this.name === LAYOUT_DECORATOR_NAME &&

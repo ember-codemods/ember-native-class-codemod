@@ -1,6 +1,7 @@
-import type { Decorator, JSCodeshift } from 'jscodeshift';
+import type { JSCodeshift } from 'jscodeshift';
+import type { Decorator } from './ast';
+import type { EOClassDecoratorProp, EOSimpleProp } from './eo-prop/index';
 import { EOCallExpressionProp } from './eo-prop/index';
-import type { EOBaseProp, EOClassDecoratorProp } from './eo-prop/index';
 import { assert, defined } from './util/types';
 
 /** Copy decorators `from` => `to` */
@@ -110,7 +111,7 @@ function createBindingDecorators(
 /** Handles decorators for instance properties */
 export function createInstancePropDecorators(
   j: JSCodeshift,
-  instanceProp: EOCallExpressionProp | EOBaseProp
+  instanceProp: EOCallExpressionProp | EOSimpleProp
 ): Decorator[] {
   let decorators: Decorator[] = [];
   for (const decorator of instanceProp.decoratorNames) {

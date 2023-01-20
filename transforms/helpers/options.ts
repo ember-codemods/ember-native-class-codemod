@@ -16,7 +16,7 @@ export interface UserOptions {
 
 export interface PrivateOptions {
   /** @private */
-  runtimeData: RuntimeData | undefined;
+  runtimeData: RuntimeData;
 }
 
 export type Options = UserOptions & PrivateOptions;

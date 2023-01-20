@@ -1,5 +1,5 @@
 import { getTelemetryFor } from 'ember-codemods-telemetry-helpers';
-import type { Collection, JSCodeshift } from 'jscodeshift';
+import type { JSCodeshift } from 'jscodeshift';
 import path from 'path';
 import {
   createDecoratorImportDeclarations,
@@ -11,21 +11,22 @@ import type { DecoratorImportSpecs } from './parse-helper';
 import {
   getClassName,
   getDecoratorsToImportSpecs,
-  getEmberObjectCallExpressions,
-  getEmberObjectProps,
+  getEmberObjectExtendExpressionCollection as getEOExtendExpressionCollection,
+  getEOProps,
   getExpressionToReplace,
-  parseEmberObjectCallExpression,
+  parseEmberObjectExtendExpression as parseEOExtendExpression,
 } from './parse-helper';
 import { isRuntimeData } from './runtime-data';
 import { createClass, withComments } from './transform-helper';
 import { dig } from './util/index';
-import { assert, isString, verified } from './util/types';
+import { isString } from './util/types';
 import { hasValidProps, isFileOfType, isTestFile } from './validation-helper';
+import type { Collection } from './ast';
 
 /** Main entry point for parsing and replacing ember objects */
 export default function maybeTransformEmberObjects(
   j: JSCodeshift,
-  root: Collection<unknown>,
+  root: Collection,
   filePath: string,
   userOptions: UserOptions
 ): boolean | undefined {
@@ -75,7 +76,7 @@ export default function maybeTransformEmberObjects(
 
 function _maybeTransformEmberObjects(
   j: JSCodeshift,
-  root: Collection<unknown>,
+  root: Collection,
   filePath: string,
   options: Options
 ): {
@@ -98,11 +99,12 @@ function _maybeTransformEmberObjects(
   };
 
   // eslint-disable-next-line unicorn/no-array-for-each
-  getEmberObjectCallExpressions(j, root).forEach((eoCallExpression) => {
-    const { eoExpression, mixins } =
-      parseEmberObjectCallExpression(eoCallExpression);
+  getEOExtendExpressionCollection(j, root).forEach((eoExtendExpressionPath) => {
+    const { eoExpression, mixins } = parseEOExtendExpression(
+      eoExtendExpressionPath.value
+    );
 
-    const eoProps = getEmberObjectProps(
+    const eoProps = getEOProps(
       eoExpression,
       existingDecoratorImportInfos,
       options.runtimeData
@@ -111,7 +113,7 @@ function _maybeTransformEmberObjects(
     const errors = hasValidProps(j, eoProps, options);
 
     if (
-      dig(eoCallExpression, 'parentPath.value.type', isString) ===
+      dig(eoExtendExpressionPath, 'parentPath.value.type', isString) ===
       'MemberExpression'
     ) {
       errors.push(
@@ -128,18 +130,13 @@ function _maybeTransformEmberObjects(
 
     let className = getClassName(
       j,
-      eoCallExpression,
+      eoExtendExpressionPath,
       filePath,
-      options.runtimeData?.type
+      options.runtimeData.type
     );
 
-    const callee = eoCallExpression.value.callee;
-    assert('object' in callee, 'expected object in callee');
-    assert(
-      callee.object && 'name' in callee.object,
-      'expected object in callee.object'
-    );
-    const superClassName = verified(callee.object.name, isString);
+    const callee = eoExtendExpressionPath.value.callee;
+    const superClassName = callee.object.name;
 
     if (className === superClassName) {
       className = `_${className}`;
@@ -154,7 +151,10 @@ function _maybeTransformEmberObjects(
       options
     );
 
-    const expressionToReplace = getExpressionToReplace(j, eoCallExpression);
+    const expressionToReplace = getExpressionToReplace(
+      j,
+      eoExtendExpressionPath
+    );
     j(expressionToReplace).replaceWith(
       withComments(es6ClassDeclaration, expressionToReplace.value)
     );

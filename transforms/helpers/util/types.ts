@@ -1,5 +1,3 @@
-import type { Property } from 'jscodeshift';
-
 export type AnyObject<T = unknown> = Record<PropertyKey, T>;
 
 /** Type predicate. Checks if the given value is a `Record<string, unknown>`. */
@@ -14,17 +12,13 @@ export function isString(value: unknown): value is string {
   return typeof value === 'string';
 }
 
-/** Type predicate. */
-export function isPropertyNode(value: unknown): value is Property {
-  return isRecord(value) && value['type'] === 'Property';
-}
-
 /** Assertion function. Throws if the given condition is falsy */
 export function assert(
   condition: unknown,
   message = 'Assertion Error'
 ): asserts condition {
   if (!condition) {
+    debugger;
     throw new Error(message);
   }
 }

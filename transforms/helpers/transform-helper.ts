@@ -1,27 +1,29 @@
+import type { JSCodeshift } from 'jscodeshift';
 import type {
+  ASTNode,
   CallExpression,
   ClassDeclaration,
   ClassProperty,
   CommentLine,
   Decorator,
-  FunctionExpression,
+  EOIdentifierAction,
+  EOMixin,
+  EOPropertyWithFunctionExpression,
   Identifier,
   ImportDeclaration,
   ImportDefaultSpecifier,
   ImportSpecifier,
-  JSCodeshift,
   MemberExpression,
   MethodDefinition,
-  Node,
-  Property,
-} from 'jscodeshift';
+} from './ast';
+import { findPaths, isEOIdentifierAction, isEOSuperExpression } from './ast';
 import {
   createClassDecorator,
   createIdentifierDecorators,
   createInstancePropDecorators,
   withDecorators,
 } from './decorator-helper';
-import type { Action, EOBaseProp, EOProps } from './eo-prop/index';
+import type { EOProps, EOSimpleProp } from './eo-prop/index';
 import {
   EOActionsObjectProp,
   EOCallExpressionProp,
@@ -29,7 +31,6 @@ import {
   EOFunctionExpressionProp,
 } from './eo-prop/index';
 import type { Options } from './options';
-import type { EOCallExpressionMixin } from './parse-helper';
 import {
   ACTION_SUPER_EXPRESSION_COMMENT,
   LAYOUT_DECORATOR_LOCAL_NAME,
@@ -38,7 +39,7 @@ import {
 import { assert, defined, isRecord } from './util/types';
 
 /** Returns true if class property should have value */
-function shouldSetValue(prop: EOBaseProp | EOCallExpressionProp): boolean {
+function shouldSetValue(prop: EOSimpleProp | EOCallExpressionProp): boolean {
   if (!prop.hasDecorators) {
     return true;
   }
@@ -49,10 +50,9 @@ function shouldSetValue(prop: EOBaseProp | EOCallExpressionProp): boolean {
 }
 
 /** Copy comments `from` => `to` */
-export function withComments<T extends Node>(
-  to: T,
-  from: { comments?: Node['comments'] | undefined }
-): T {
+export function withComments<
+  T extends Extract<ASTNode, { comments?: unknown }>
+>(to: T, from: { comments?: T['comments'] | undefined }): T {
   if (from.comments) {
     to.comments = from.comments;
   } else {
@@ -85,26 +85,23 @@ function replaceSuperExpressions(
   const replaceWithUndefined = functionProp.hasRuntimeData
     ? !functionProp.isOverridden
     : false;
-  const superExprs = j(methodDefinition).find(j.CallExpression, {
-    callee: {
-      type: 'MemberExpression',
-      property: {
-        type: 'Identifier',
-        name: '_super',
-      },
-    },
-  });
 
-  if (superExprs.length === 0) {
+  const superExpressionCollection = findPaths(
+    j(methodDefinition),
+    j.CallExpression,
+    isEOSuperExpression
+  );
+
+  if (superExpressionCollection.length === 0) {
     return methodDefinition;
   }
   // eslint-disable-next-line unicorn/no-array-for-each
-  superExprs.forEach((superExpr) => {
+  superExpressionCollection.forEach((superExpressionPath) => {
     if (replaceWithUndefined) {
-      j(superExpr).replaceWith(j.identifier('undefined'));
+      j(superExpressionPath).replaceWith(j.identifier('undefined'));
     } else {
       let superMethodCall: MemberExpression | CallExpression;
-      const superMethodArgs = superExpr.value.arguments;
+      const superMethodArgs = superExpressionPath.value.arguments;
       if (functionProp.isComputed) {
         superMethodCall = j.memberExpression(j.super(), functionProp.key);
       } else if (isAction) {
@@ -128,21 +125,20 @@ function replaceSuperExpressions(
           superMethodArgs
         );
       }
-      j(superExpr).replaceWith(superMethodCall);
+      j(superExpressionPath).replaceWith(superMethodCall);
     }
   });
 
   return methodDefinition;
 }
 
-interface FunctionProp {
-  value: FunctionExpression;
-  key: Identifier;
+interface FunctionProp
+  extends Pick<EOPropertyWithFunctionExpression, 'value' | 'key'> {
   hasRuntimeData?: boolean | undefined;
   isOverridden?: boolean | undefined;
   isComputed?: boolean | undefined;
   kind?: 'init' | 'get' | 'set' | 'method' | undefined;
-  comments?: Property['comments'] | undefined;
+  comments?: EOPropertyWithFunctionExpression['comments'] | undefined;
 }
 
 function isFunctionProp(prop: unknown): prop is FunctionProp {
@@ -188,7 +184,7 @@ function createMethodProp(
 /** Create the class property from passed instance property */
 function createClassProp(
   j: JSCodeshift,
-  instanceProp: EOCallExpressionProp | EOBaseProp,
+  instanceProp: EOCallExpressionProp | EOSimpleProp,
   decorators: Decorator[] = []
 ): ClassProperty {
   if (decorators.length === 0) {
@@ -239,7 +235,7 @@ function createClassProp(
  */
 function convertIdentifierActionToMethod(
   j: JSCodeshift,
-  idAction: Action & { value: Identifier },
+  idAction: EOIdentifierAction,
   decorators: Decorator[] = []
 ): MethodDefinition {
   const returnBlock = j.blockStatement([
@@ -284,12 +280,8 @@ function createActionDecoratedProps(
   const overriddenActions = actionsProp.overriddenActions;
   const actionDecorators = createIdentifierDecorators(j);
   return actionProps.map((actionProp) => {
-    if (actionProp.value.type === 'Identifier') {
-      return convertIdentifierActionToMethod(
-        j,
-        actionProp as Action & { value: Identifier },
-        actionDecorators
-      );
+    if (isEOIdentifierAction(actionProp)) {
+      return convertIdentifierActionToMethod(j, actionProp, actionDecorators);
     } else {
       assert(
         isFunctionProp(actionProp),
@@ -368,7 +360,7 @@ function createCallExpressionProp(
 function createSuperClassExpression(
   j: JSCodeshift,
   superClassName = '',
-  mixins: EOCallExpressionMixin[] = []
+  mixins: EOMixin[] = []
 ): CallExpression | Identifier {
   if (mixins.length > 0) {
     return j.callExpression(
@@ -385,7 +377,7 @@ export function createClass(
   className: string,
   { instanceProps }: EOProps,
   superClassName: string,
-  mixins: EOCallExpressionMixin[],
+  mixins: EOMixin[],
   options: Options
 ): ClassDeclaration {
   let classBody: Parameters<typeof j.classBody>[0] = [];

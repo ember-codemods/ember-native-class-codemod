@@ -1,11 +1,6 @@
-import type {
-  ASTPath,
-  Collection,
-  Declaration,
-  JSCodeshift,
-  Property,
-} from 'jscodeshift';
-import { assert, isRecord, verified } from './types';
+import type { JSCodeshift } from 'jscodeshift';
+import type { Collection, Declaration } from '../ast';
+import { isRecord, verified } from './types';
 
 export const LAYOUT_DECORATOR_NAME = 'layout' as const;
 export const LAYOUT_DECORATOR_LOCAL_NAME = 'templateLayout' as const;
@@ -198,19 +193,9 @@ export function dig<T>(
 /** Get the first declaration in the program */
 export function getFirstDeclaration(
   j: JSCodeshift,
-  root: Collection<unknown>
+  root: Collection
 ): Collection<Declaration> {
-  const path = root.find(j.Declaration).at(0).get() as ASTPath;
-  return j(path) as Collection<Declaration>;
-}
-
-/** Return name of the property */
-export function getPropName(prop: Property): string {
-  const key = prop.key;
-  assert('name' in key, 'expected name in prop.key');
-  const name = key.name;
-  assert(typeof name === 'string', 'expected name to be a string');
-  return name;
+  return root.find(j.Declaration).at(0) as Collection<Declaration>;
 }
 
 /** Convert the first letter to uppercase */

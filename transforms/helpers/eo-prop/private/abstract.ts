@@ -1,7 +1,6 @@
-import type { Property } from 'jscodeshift';
+import type { EOProperty } from '../../ast';
 import type { DecoratorImportInfo } from '../../decorator-info';
 import type { RuntimeData } from '../../runtime-data';
-import { getPropName } from '../../util/index';
 
 interface EODecoratorArgs {
   unobserves?: Array<string | boolean | number | null> | undefined;
@@ -14,8 +13,7 @@ interface EODecoratorArgs {
  * A wrapper object for ember object properties
  */
 export default abstract class AbstractEOProp<
-  V extends Property['value'] = Property['value'],
-  P extends Property & { value: V } = Property & { value: V }
+  P extends EOProperty = EOProperty
 > {
   readonly _prop: P;
 
@@ -56,7 +54,7 @@ export default abstract class AbstractEOProp<
     }
   }
 
-  get value(): V {
+  get value(): P['value'] {
     return this._prop.value;
   }
 
@@ -65,10 +63,10 @@ export default abstract class AbstractEOProp<
   }
 
   get name(): string {
-    return getPropName(this._prop);
+    return this._prop.key.name;
   }
 
-  get type(): V['type'] {
+  get type(): P['value']['type'] {
     return this._prop.value.type;
   }
 

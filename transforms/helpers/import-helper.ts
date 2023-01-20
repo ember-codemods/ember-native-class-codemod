@@ -1,10 +1,16 @@
+import type { JSCodeshift } from 'jscodeshift';
 import type {
   ASTPath,
   Collection,
+  DecoratorImportDeclaration,
   ImportDeclaration,
   ImportSpecifier,
-  JSCodeshift,
-} from 'jscodeshift';
+} from './ast';
+import {
+  findPaths,
+  getFirstPath,
+  makeDecoratorImportDeclarationAssertion,
+} from './ast';
 import type { DecoratorImportInfoMap } from './decorator-info';
 import { getDecoratorImportInfo } from './decorator-info';
 import type { Options } from './options';
@@ -69,19 +75,14 @@ function setSpecifierNames(
 /** Get decorated props from `import` statements */
 function getExistingDecoratorImports(
   j: JSCodeshift,
-  root: Collection<unknown>
-): Array<ASTPath<ImportDeclaration>> {
-  const imports: Array<ASTPath<ImportDeclaration>> = [];
+  root: Collection
+): Array<ASTPath<DecoratorImportDeclaration>> {
+  const imports: Array<ASTPath<DecoratorImportDeclaration>> = [];
 
   for (const path in Object.fromEntries(DECORATOR_PATHS)) {
-    const decoratorImports = root.find(j.ImportDeclaration, {
-      source: {
-        value: path,
-      },
-    });
-
-    if (decoratorImports.length > 0) {
-      imports.push(decoratorImports.get() as ASTPath<ImportDeclaration>);
+    const decoratorImport = getExistingImportForPath(j, root, path);
+    if (decoratorImport) {
+      imports.push(decoratorImport);
     }
   }
 
@@ -96,7 +97,7 @@ function getExistingDecoratorImports(
  */
 function createNewImportDeclarations(
   j: JSCodeshift,
-  root: Collection<unknown>,
+  root: Collection,
   decoratorsToImport: string[],
   /** Already imported paths */
   decoratorPathsToIgnore: string[],
@@ -148,7 +149,7 @@ function createNewImportDeclarations(
  */
 function getDecoratorPathSpecifiers(
   j: JSCodeshift,
-  root: Collection<unknown>,
+  root: Collection,
   decoratorsToImport: string[] = []
 ): Record<string, ImportSpecifier[]> {
   const edPathNameMap = new Map(EMBER_DECORATOR_SPECIFIERS);
@@ -237,19 +238,12 @@ function getDecoratorPathSpecifiers(
 /** Get existing import statement matching the import path */
 function getExistingImportForPath(
   j: JSCodeshift,
-  root: Collection<unknown>,
+  root: Collection,
   importPath: string
-): ASTPath<ImportDeclaration> | undefined {
-  const decoratorImports = root.find(j.ImportDeclaration, {
-    source: {
-      value: importPath,
-    },
-  });
-
-  if (decoratorImports.length > 0) {
-    return decoratorImports.get() as ASTPath<ImportDeclaration>;
-  }
-  return;
+): ASTPath<DecoratorImportDeclaration> | undefined {
+  const assertion = makeDecoratorImportDeclarationAssertion(importPath);
+  const decoratorImports = findPaths(root, j.ImportDeclaration, assertion);
+  return getFirstPath(decoratorImports);
 }
 
 /**
@@ -262,7 +256,7 @@ function getExistingImportForPath(
  */
 export function createDecoratorImportDeclarations(
   j: JSCodeshift,
-  root: Collection<unknown>,
+  root: Collection,
   decoratorsToImport: string[],
   options: Options
 ): void {
@@ -334,7 +328,7 @@ export function createDecoratorImportDeclarations(
  */
 export function getDecoratorImportInfos(
   j: JSCodeshift,
-  root: Collection<unknown>
+  root: Collection
 ): DecoratorImportInfoMap {
   const existingDecoratorImports = getExistingDecoratorImports(j, root);
   const decoratorImportInfo: DecoratorImportInfoMap = new Map();
