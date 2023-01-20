@@ -1526,10 +1526,10 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
 
-"@tsconfig/node-lts-strictest@^18.12.1":
-  version "18.12.1"
-  resolved "https://registry.yarnpkg.com/@tsconfig/node-lts-strictest/-/node-lts-strictest-18.12.1.tgz#9d574cc30c5d90e4b4517b4b3833ba9ca2897c51"
-  integrity sha512-pn6cefRFlBVSEo5lO82bJnGmaptr90Wu8zCROkMUYXEz0f4AgCD65Guhq4u3PIuIlsYImaOmdoiHajx1gVTiQw==
+"@tsconfig/node12@^1.0.11":
+  version "1.0.11"
+  resolved "https://registry.yarnpkg.com/@tsconfig/node12/-/node12-1.0.11.tgz#ee3def1f27d9ed66dac6e46a295cffb0152e058d"
+  integrity sha512-cqefuRsh12pWyGsIoBKJA9luFu3mRxCA+ORZvA4ktLSzIuCUtWVxGIuXigEwO5/ywWFMZ2QEGKWvkZG1zDMTag==
 
 "@types/babel__core@^7.0.0", "@types/babel__core@^7.1.14":
   version "7.1.14"

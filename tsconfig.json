@@ -1,12 +1,26 @@
 {
-  "extends": "@tsconfig/node-lts-strictest/tsconfig.json",
+  "extends": "@tsconfig/node12/tsconfig.json",
   "compilerOptions": {
     "paths": {
       "*": ["./types/*"]
     },
     "checkJs": false,
     "noEmitOnError": false,
-    "skipLibCheck": true
+    "skipLibCheck": false,
+
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "importsNotUsedAsValues": "error"
   },
   "include": ["transforms/**/*"],
   "exclude": ["transforms/ember-object/__testfixtures__/**/*"]

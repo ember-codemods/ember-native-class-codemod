@@ -31,6 +31,8 @@
   ],
   "scripts": {
     "release": "release-it",
+    "prepare": "yarn build",
+    "postpublish": "yarn clean",
     "build": "tsc",
     "clean": "tsc --build --clean",
     "fixme": "yarn build; codemod-cli test && node ./test/run-test.js && git checkout test/fixtures; yarn clean",
@@ -60,7 +62,7 @@
     "@babel/core": "^7.20.12",
     "@babel/eslint-parser": "^7.19.1",
     "@babel/preset-env": "^7.20.2",
-    "@tsconfig/node-lts-strictest": "^18.12.1",
+    "@tsconfig/node12": "^1.0.11",
     "@types/jscodeshift": "^0.11.6",
     "@typescript-eslint/eslint-plugin": "^5.48.1",
     "@typescript-eslint/parser": "^5.48.1",
@@ -79,7 +81,7 @@
     "typescript": "^4.9.4"
   },
   "engines": {
-    "node": "10.* || 12.* || >= 14"
+    "node": "12.* || >= 14"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org"

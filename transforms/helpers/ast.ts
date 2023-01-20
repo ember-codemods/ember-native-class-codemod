@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-interface, jsdoc/require-jsdoc */
 
 import type { Type } from 'ast-types/lib/types';
+import type { ExpressionKind } from 'ast-types/gen/kinds';
 import type {
   ASTNode,
   ArrayExpression,
@@ -283,12 +284,7 @@ export function isEOIdentifierAction(u: unknown): u is EOIdentifierAction {
 }
 
 export interface EOPropertySimple extends EOProperty {
-  value:
-    | ArrayExpression
-    | Identifier
-    | Literal
-    | MemberExpression
-    | ObjectExpression;
+  value: ExpressionKind; // UNSAFE: We don't check this anywhere
 }
 
 interface EOActionInfiniteCall extends CallExpression {

@@ -43,9 +43,9 @@ export default class EOCallExpressionProp extends AbstractEOProp<EOPropertyWithC
     const modifiers = [getModifier(calleeObject)];
     while (
       'callee' in calleeObject &&
-      calleeObject.callee.type === 'MemberExpression'
+      calleeObject.callee.type === 'MemberExpression' &&
+      calleeObject.callee.object.type === 'CallExpression'
     ) {
-      assert(calleeObject.callee.object.type === 'CallExpression');
       calleeObject = calleeObject.callee.object;
       modifiers.push(getModifier(calleeObject));
     }
