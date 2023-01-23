@@ -1,11 +1,16 @@
 import type {
   CallExpression,
   EOCallExpression,
+  EOCallExpressionInnerCallee,
   EOPropertyWithCallExpression,
+} from '../../ast';
+import {
+  isEOCallExpressionInnerCallee,
+  isEOMemberExpressionForModifier,
 } from '../../ast';
 import type { DecoratorImportInfoMap } from '../../decorator-info';
 import type { RuntimeData } from '../../runtime-data';
-import { assert, isString, verified } from '../../util/types';
+import { verified } from '../../util/types';
 import AbstractEOProp from './abstract';
 
 interface CallExpressionModifier {
@@ -29,7 +34,7 @@ function getModifier(calleeObject: EOCallExpression): CallExpressionModifier {
 }
 
 export default class EOCallExpressionProp extends AbstractEOProp<EOPropertyWithCallExpression> {
-  private calleeObject: CallExpression;
+  private calleeObject: EOCallExpressionInnerCallee;
   readonly modifiers: CallExpressionModifier[];
 
   constructor(
@@ -41,15 +46,11 @@ export default class EOCallExpressionProp extends AbstractEOProp<EOPropertyWithC
 
     let calleeObject = this._prop.value;
     const modifiers = [getModifier(calleeObject)];
-    while (
-      'callee' in calleeObject &&
-      calleeObject.callee.type === 'MemberExpression' &&
-      calleeObject.callee.object.type === 'CallExpression'
-    ) {
+    while (isEOMemberExpressionForModifier(calleeObject.callee)) {
       calleeObject = calleeObject.callee.object;
       modifiers.push(getModifier(calleeObject));
     }
-    this.calleeObject = calleeObject;
+    this.calleeObject = verified(calleeObject, isEOCallExpressionInnerCallee);
     this.modifiers = modifiers.reverse();
     this.modifiers.shift();
 
@@ -64,8 +65,7 @@ export default class EOCallExpressionProp extends AbstractEOProp<EOPropertyWithC
   }
 
   private get calleeName(): string {
-    assert('name' in this.calleeObject.callee);
-    return verified(this.calleeObject.callee.name, isString);
+    return this.calleeObject.callee.name;
   }
 
   get arguments(): CallExpression['arguments'] {

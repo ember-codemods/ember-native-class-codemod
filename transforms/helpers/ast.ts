@@ -156,11 +156,41 @@ export interface EOPropertyWithCallExpression extends EOProperty {
 export function isEOPropertyWithCallExpression(
   u: unknown
 ): u is EOPropertyWithCallExpression {
-  return isEOProperty(u) && isNode(u.value, 'CallExpression');
+  return isEOProperty(u) && isEOCallExpression(u.value);
 }
 
 /** A CallExpression value for an EOProperty */
-export interface EOCallExpression extends CallExpression {}
+export interface EOCallExpression extends CallExpression {
+  callee: Identifier | EOMemberExpressionForModifier;
+}
+
+export function isEOCallExpression(u: unknown): u is EOCallExpression {
+  return (
+    isNode(u, 'CallExpression') &&
+    (isNode(u.callee, 'Identifier') ||
+      isEOMemberExpressionForModifier(u.callee))
+  );
+}
+
+export interface EOMemberExpressionForModifier extends MemberExpression {
+  object: EOCallExpression;
+}
+
+export function isEOMemberExpressionForModifier(
+  u: unknown
+): u is EOMemberExpressionForModifier {
+  return isNode(u, 'MemberExpression') && isEOCallExpression(u.object);
+}
+
+export interface EOCallExpressionInnerCallee extends CallExpression {
+  callee: Identifier;
+}
+
+export function isEOCallExpressionInnerCallee(
+  u: unknown
+): u is EOCallExpressionInnerCallee {
+  return isNode(u, 'CallExpression') && isNode(u.callee, 'Identifier');
+}
 
 export interface EOPropertyWithFunctionExpression extends EOProperty {
   value: EOFunctionExpression;
