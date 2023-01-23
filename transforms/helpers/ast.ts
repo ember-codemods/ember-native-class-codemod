@@ -4,6 +4,8 @@ import type { Type } from 'ast-types/lib/types';
 import type {
   ASTNode,
   ArrayExpression,
+  ArrayPattern,
+  AssignmentPattern,
   CallExpression,
   FunctionExpression,
   Identifier,
@@ -12,7 +14,13 @@ import type {
   MemberExpression,
   Node,
   ObjectExpression,
+  ObjectPattern,
   Property,
+  PropertyPattern,
+  RestElement,
+  SpreadElementPattern,
+  SpreadPropertyPattern,
+  TSParameterProperty,
   ThisExpression,
   ASTPath as _ASTPath,
   Collection as _Collection,
@@ -313,24 +321,25 @@ export function isEOIdentifierAction(u: unknown): u is EOIdentifierAction {
 }
 
 export interface EOPropertySimple extends EOProperty {
-  value:
-    | ArrayExpression
-    | Identifier
-    | Literal
-    | MemberExpression
-    | ObjectExpression
-    | CallExpression;
+  value: Exclude<
+    EOProperty['value'],
+    | ArrayPattern
+    | AssignmentPattern
+    | ObjectPattern
+    | PropertyPattern
+    | RestElement
+    | SpreadElementPattern
+    | SpreadPropertyPattern
+    | TSParameterProperty
+  >;
 }
 
 export function isEOPropertySimple(u: unknown): u is EOPropertySimple {
   return (
     isEOProperty(u) &&
-    (isNode(u.value, 'ArrayExpression') ||
-      isNode(u.value, 'Identifier') ||
-      isNode(u.value, 'Literal') ||
-      isNode(u.value, 'MemberExpression') ||
-      isNode(u.value, 'ObjectExpression') ||
-      isNode(u.value, 'CallExpression'))
+    !u.value.type.includes('Pattern') &&
+    u.value.type !== 'RestElement' &&
+    u.value.type !== 'TSParameterProperty'
   );
 }
 
