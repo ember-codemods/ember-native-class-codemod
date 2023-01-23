@@ -1,6 +1,5 @@
 import type { JSCodeshift } from 'jscodeshift';
 import type { Collection, Declaration } from '../ast';
-import { isRecord, verified } from './types';
 
 export const LAYOUT_DECORATOR_NAME = 'layout' as const;
 export const LAYOUT_DECORATOR_LOCAL_NAME = 'templateLayout' as const;
@@ -172,23 +171,6 @@ export const LIFECYCLE_HOOKS = new Set([
   'dragEnd',
   'drop',
 ]);
-
-/**
- * Get a property from an object. Useful to get nested props on `any` types.
- */
-export function dig<T>(
-  obj: unknown,
-  path: string,
-  condition: (value: unknown) => value is T,
-  message?: string
-): T {
-  const segments = path.split('.');
-  let current: unknown = obj;
-  for (const segment of segments) {
-    current = verified(current, isRecord)[segment];
-  }
-  return verified(current, condition, message);
-}
 
 /** Get the first declaration in the program */
 export function getFirstDeclaration(

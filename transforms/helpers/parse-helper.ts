@@ -23,7 +23,7 @@ import makeEOProp, {
   EOClassDecoratorProp,
 } from './eo-prop/index';
 import type { RuntimeData } from './runtime-data';
-import { capitalizeFirstLetter, dig } from './util/index';
+import { capitalizeFirstLetter } from './util/index';
 import { assert, defined, isRecord, verified } from './util/types';
 
 /**
@@ -134,10 +134,11 @@ export function getExpressionToReplace(
     j,
     eoExtendExpressionPath
   );
-  const parentValue = dig(eoExtendExpressionPath, 'parentPath.value', isRecord);
+  const parentValue = eoExtendExpressionPath.parentPath?.value;
   const isFollowedByCreate =
-    isRecord(parentValue['property']) &&
-    parentValue['property']['name'] === 'create';
+    isRecord(parentValue) &&
+    isRecord(parentValue.property) &&
+    parentValue.property['name'] === 'create';
 
   let expressionToReplace:
     | ASTPath<EOExtendExpression>

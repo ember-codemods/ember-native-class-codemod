@@ -5,7 +5,7 @@ const { gatherTelemetryForUrl, analyzeEmberObject } = require('ember-codemods-te
 
 (async () => {
   // FIXME: Remove
-  if (!process.env.DOGFOOD) {
+  if (!process.env['DOGFOOD']) {
     await gatherTelemetryForUrl(process.argv[2], analyzeEmberObject);
   }
 

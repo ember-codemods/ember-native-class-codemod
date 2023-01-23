@@ -1,6 +1,8 @@
 import { getTelemetryFor } from 'ember-codemods-telemetry-helpers';
 import type { JSCodeshift } from 'jscodeshift';
 import path from 'path';
+import type { ASTPath, Collection, EOExtendExpression } from './ast';
+import { isNode } from './ast';
 import {
   createDecoratorImportDeclarations,
   getDecoratorImportInfos as getExistingDecoratorImportInfos,
@@ -18,10 +20,7 @@ import {
 } from './parse-helper';
 import { isRuntimeData } from './runtime-data';
 import { createClass, withComments } from './transform-helper';
-import { dig } from './util/index';
-import { isString } from './util/types';
 import { hasValidProps, isFileOfType, isTestFile } from './validation-helper';
-import type { Collection } from './ast';
 
 /** Main entry point for parsing and replacing ember objects */
 export default function maybeTransformEmberObjects(
@@ -42,13 +41,14 @@ export default function maybeTransformEmberObjects(
     return;
   }
 
-  // FIXME: Revert
-  const runtimeData = getTelemetryFor(path.resolve(filePath)) ?? {};
-  if (!isRuntimeData(runtimeData)) {
-    // logger.warn(
-    //   `[${filePath}]: SKIPPED Could not find runtime data NO_RUNTIME_DATA`
-    // );
-    // return;
+  const runtimeData = process.env['DOGFOOD']
+    ? {}
+    : getTelemetryFor(path.resolve(filePath));
+  if (!runtimeData || !isRuntimeData(runtimeData)) {
+    logger.warn(
+      `[${filePath}]: SKIPPED Could not find runtime data NO_RUNTIME_DATA`
+    );
+    return;
   }
 
   const options: Options = {
@@ -100,73 +100,76 @@ function _maybeTransformEmberObjects(
   };
 
   // eslint-disable-next-line unicorn/no-array-for-each
-  getEOExtendExpressionCollection(j, root).forEach((eoExtendExpressionPath) => {
-    const { eoExpression, mixins } = parseEOExtendExpression(
-      eoExtendExpressionPath.value
-    );
+  getEOExtendExpressionCollection(j, root).forEach(
+    (eoExtendExpressionPath: ASTPath<EOExtendExpression>) => {
+      const { eoExpression, mixins } = parseEOExtendExpression(
+        eoExtendExpressionPath.value
+      );
 
-    const eoProps = getEOProps(
-      eoExpression,
-      existingDecoratorImportInfos,
-      options.runtimeData
-    );
+      const eoProps = getEOProps(
+        eoExpression,
+        existingDecoratorImportInfos,
+        options.runtimeData
+      );
 
-    const errors = hasValidProps(j, eoProps, options);
+      const errors = hasValidProps(j, eoProps, options);
 
-    if (
-      dig(eoExtendExpressionPath, 'parentPath.value.type', isString) ===
-      'MemberExpression'
-    ) {
-      errors.push(
-        'class has chained definition (e.g. EmberObject.extend().reopenClass();'
+      if (
+        isNode(eoExtendExpressionPath.parentPath?.value, 'MemberExpression')
+      ) {
+        errors.push(
+          'class has chained definition (e.g. EmberObject.extend().reopenClass();'
+        );
+      }
+
+      if (errors.length > 0) {
+        logger.warn(
+          `[${filePath}]: FAILURE \nValidation errors: \n\t${errors.join(
+            '\n\t'
+          )}`
+        );
+        return;
+      }
+
+      let className = getClassName(
+        j,
+        eoExtendExpressionPath,
+        filePath,
+        options.runtimeData.type
+      );
+
+      const callee = eoExtendExpressionPath.value.callee;
+      const superClassName = callee.object.name;
+
+      if (className === superClassName) {
+        className = `_${className}`;
+      }
+
+      const es6ClassDeclaration = createClass(
+        j,
+        className,
+        eoProps,
+        superClassName,
+        mixins,
+        options
+      );
+
+      const expressionToReplace = getExpressionToReplace(
+        j,
+        eoExtendExpressionPath
+      );
+      j(expressionToReplace).replaceWith(
+        withComments(es6ClassDeclaration, expressionToReplace.value)
+      );
+
+      transformed = true;
+
+      decoratorImportSpecs = getDecoratorsToImportSpecs(
+        eoProps.instanceProps,
+        decoratorImportSpecs
       );
     }
-
-    if (errors.length > 0) {
-      logger.warn(
-        `[${filePath}]: FAILURE \nValidation errors: \n\t${errors.join('\n\t')}`
-      );
-      return;
-    }
-
-    let className = getClassName(
-      j,
-      eoExtendExpressionPath,
-      filePath,
-      options.runtimeData.type
-    );
-
-    const callee = eoExtendExpressionPath.value.callee;
-    const superClassName = callee.object.name;
-
-    if (className === superClassName) {
-      className = `_${className}`;
-    }
-
-    const es6ClassDeclaration = createClass(
-      j,
-      className,
-      eoProps,
-      superClassName,
-      mixins,
-      options
-    );
-
-    const expressionToReplace = getExpressionToReplace(
-      j,
-      eoExtendExpressionPath
-    );
-    j(expressionToReplace).replaceWith(
-      withComments(es6ClassDeclaration, expressionToReplace.value)
-    );
-
-    transformed = true;
-
-    decoratorImportSpecs = getDecoratorsToImportSpecs(
-      eoProps.instanceProps,
-      decoratorImportSpecs
-    );
-  });
+  );
 
   return { transformed, decoratorImportSpecs };
 }
