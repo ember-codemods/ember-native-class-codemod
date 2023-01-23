@@ -30,13 +30,13 @@ export default function maybeTransformEmberObjects(
   userOptions: UserOptions
 ): boolean | undefined {
   if (isTestFile(filePath)) {
-    logger.warn(`[${filePath}]: Skipping test file`);
+    logger.warn(`[${filePath}]: SKIPPED: test file`);
     return;
   }
 
   if (userOptions.type && !isFileOfType(filePath, userOptions.type)) {
     logger.warn(
-      `[${filePath}]: FAILURE Type mismatch, expected type '${userOptions.type}' did not match type of file`
+      `[${filePath}]: SKIPPED: Type mismatch, expected type '${userOptions.type}' did not match type of file`
     );
     return;
   }
@@ -46,7 +46,7 @@ export default function maybeTransformEmberObjects(
     : getTelemetryFor(path.resolve(filePath));
   if (!runtimeData || !isRuntimeData(runtimeData)) {
     logger.warn(
-      `[${filePath}]: SKIPPED Could not find runtime data NO_RUNTIME_DATA`
+      `[${filePath}]: SKIPPED: Could not find runtime data NO_RUNTIME_DATA`
     );
     return;
   }
@@ -123,7 +123,7 @@ function _maybeTransformEmberObjects(
       }
 
       if (errors.length > 0) {
-        logger.warn(
+        logger.error(
           `[${filePath}]: FAILURE \nValidation errors: \n\t${errors.join(
             '\n\t'
           )}`

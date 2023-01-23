@@ -80,19 +80,29 @@ export function hasValidProps(
     }
 
     if (
-      (!decorators &&
-        (instanceProp.hasDecorators ||
-          instanceProp instanceof EOClassDecoratorProp)) ||
-      unsupportedPropNames.includes(instanceProp.name) ||
-      (instanceProp instanceof EOCallExpressionProp &&
-        !instanceProp.hasDecorators)
+      !decorators &&
+      (instanceProp.hasDecorators ||
+        instanceProp instanceof EOClassDecoratorProp ||
+        instanceProp instanceof EOCallExpressionProp)
     ) {
       errors.push(
-        `[${instanceProp.name}]: Transform not supported - need option '--decorators=true' or the property type ${instanceProp.type} can not be transformed`
+        `[${instanceProp.name}]: Transform not supported - need option '--decorators=true'`
+      );
+    }
+
+    if (unsupportedPropNames.includes(instanceProp.name)) {
+      errors.push(
+        `[${instanceProp.name}]: Transform not supported - property with name '${instanceProp.name}' and type ${instanceProp.type} can not be transformed`
       );
     }
 
     if (instanceProp instanceof EOCallExpressionProp) {
+      if (!instanceProp.hasDecorators) {
+        errors.push(
+          `[${instanceProp.name}]: Transform not supported - call to '${instanceProp.calleeName}' can not be transformed`
+        );
+      }
+
       if (instanceProp.hasModifierWithArgs) {
         errors.push(
           `[${instanceProp.name}]: Transform not supported - value has modifiers like 'property' or 'meta'`

@@ -64,7 +64,7 @@ export default class EOCallExpressionProp extends AbstractEOProp<EOPropertyWithC
     }
   }
 
-  private get calleeName(): string {
+  get calleeName(): string {
     return this.calleeObject.callee.name;
   }
 
