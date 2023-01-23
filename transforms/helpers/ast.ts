@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-interface, jsdoc/require-jsdoc */
 
 import type { Type } from 'ast-types/lib/types';
-import type { ExpressionKind } from 'ast-types/gen/kinds';
 import type {
   ASTNode,
   ArrayExpression,
@@ -314,7 +313,25 @@ export function isEOIdentifierAction(u: unknown): u is EOIdentifierAction {
 }
 
 export interface EOPropertySimple extends EOProperty {
-  value: ExpressionKind; // UNSAFE: We don't check this anywhere
+  value:
+    | ArrayExpression
+    | Identifier
+    | Literal
+    | MemberExpression
+    | ObjectExpression
+    | CallExpression;
+}
+
+export function isEOPropertySimple(u: unknown): u is EOPropertySimple {
+  return (
+    isEOProperty(u) &&
+    (isNode(u.value, 'ArrayExpression') ||
+      isNode(u.value, 'Identifier') ||
+      isNode(u.value, 'Literal') ||
+      isNode(u.value, 'MemberExpression') ||
+      isNode(u.value, 'ObjectExpression') ||
+      isNode(u.value, 'CallExpression'))
+  );
 }
 
 interface EOActionInfiniteCall extends CallExpression {
@@ -376,17 +393,6 @@ function isEOActionInfiniteLiteral(
   name?: string
 ): u is EOActionInfiniteCall {
   return isNode(u, 'Literal') && (!name || u.value === name);
-}
-
-export function isEOPropertySimple(u: unknown): u is EOPropertySimple {
-  return (
-    isEOProperty(u) &&
-    (isNode(u.value, 'ArrayExpression') ||
-      isNode(u.value, 'Identifier') ||
-      isNode(u.value, 'Literal') ||
-      isNode(u.value, 'MemberExpression') ||
-      isNode(u.value, 'ObjectExpression'))
-  );
 }
 
 export interface EOSuperExpression extends CallExpression {
