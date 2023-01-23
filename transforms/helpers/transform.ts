@@ -42,12 +42,13 @@ export default function maybeTransformEmberObjects(
     return;
   }
 
-  const runtimeData = getTelemetryFor(path.resolve(filePath));
-  if (!runtimeData || !isRuntimeData(runtimeData)) {
-    logger.warn(
-      `[${filePath}]: SKIPPED Could not find runtime data NO_RUNTIME_DATA`
-    );
-    return;
+  // FIXME: Revert
+  const runtimeData = getTelemetryFor(path.resolve(filePath)) ?? {};
+  if (!isRuntimeData(runtimeData)) {
+    // logger.warn(
+    //   `[${filePath}]: SKIPPED Could not find runtime data NO_RUNTIME_DATA`
+    // );
+    // return;
   }
 
   const options: Options = {
