@@ -35,4 +35,4 @@ const transformer: Transform = function (
 export default transformer;
 
 // Set the parser, needed for supporting decorators
-export const parser = 'flow';
+export { default as parser } from '../helpers/parse';

@@ -47,6 +47,7 @@
     "update-docs": "codemod-cli update-docs"
   },
   "dependencies": {
+    "@babel/parser": "^7.20.13",
     "camelcase": "^6.3.0",
     "codemod-cli": "^3.2.0",
     "ember-codemods-telemetry-helpers": "^3.0.0",
