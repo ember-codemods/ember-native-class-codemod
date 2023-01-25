@@ -17,7 +17,7 @@ import layout from 'components/templates/foo';
 import { someActionUtil } from 'some/action/util';
 import NUMERIC_CONSTANT from 'constants/numbers';
 
-const Foo = EmberObject.extend({
+const Foo1 = EmberObject.extend({
   tagName: 'div',
   classNames: ['test-class', 'custom-class'],
   a: '',
@@ -61,7 +61,7 @@ var comp = EmberObject.extend({
   customHref: 'http://emberjs.com',
 });
 
-const Foo = EmberObject.extend({
+const Foo2 = EmberObject.extend({
   firstName: null,
   lastName: null,
 
@@ -151,6 +151,6 @@ const Foo = EmberObject.extend({
   isGreaterThanLimit: gt('limit', NUMERIC_CONSTANT).readOnly(),
 });
 
-const Foo = EmberObject.extend({
+const Foo3 = EmberObject.extend({
   layout,
 });

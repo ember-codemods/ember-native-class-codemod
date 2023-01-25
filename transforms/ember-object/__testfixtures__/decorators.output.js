@@ -32,7 +32,7 @@ import NUMERIC_CONSTANT from 'constants/numbers';
 @classic
 @tagName('div')
 @classNames('test-class', 'custom-class')
-class Foo extends EmberObject {
+class Foo1 extends EmberObject {
   a = '';
 
   @service('store')
@@ -102,7 +102,7 @@ class comp extends EmberObject {
 }
 
 @classic
-class Foo extends EmberObject {
+class Foo2 extends EmberObject {
   firstName = null;
   lastName = null;
 
@@ -205,4 +205,4 @@ class Foo extends EmberObject {
 
 @classic
 @templateLayout(layout)
-class Foo extends EmberObject {}
+class Foo3 extends EmberObject {}
