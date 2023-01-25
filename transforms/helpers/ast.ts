@@ -14,8 +14,9 @@ import type {
   MemberExpression,
   Node,
   ObjectExpression,
+  ObjectMethod,
   ObjectPattern,
-  Property,
+  ObjectProperty,
   PropertyPattern,
   RestElement,
   SpreadElementPattern,
@@ -25,7 +26,7 @@ import type {
   ASTPath as _ASTPath,
   Collection as _Collection,
 } from 'jscodeshift';
-import { LAYOUT_DECORATOR_NAME, startsWithUpperCaseLetter } from './util/index';
+import { LAYOUT_DECORATOR_NAME } from './util/index';
 import { isRecord } from './util/types';
 
 export type {
@@ -69,97 +70,84 @@ export function isNode<T extends ASTNode['type'] = ASTNode['type']>(
 
 export interface EOExtendExpression extends CallExpression {
   callee: EOExtendExpressionCallee;
+  arguments: Array<EOExpression | EOMixin>;
 }
 
 export function isEOExtendExpression(u: unknown): u is EOExtendExpression {
-  return isNode(u, 'CallExpression') && isEOExtendExpressionCallee(u.callee);
+  return (
+    isNode(u, 'CallExpression') &&
+    isEOExtendExpressionCallee(u.callee) &&
+    u.arguments.every(
+      (argument) => isEOExpression(argument) || isEOMixin(argument)
+    )
+  );
 }
 
-type EOExtendExpressionCallee = CalleeWithObjectAndProperty & {
-  object: EOExtendExpressionCalleeObject;
+interface EOExtendExpressionCallee extends MemberExpression {
+  object: Identifier;
   property: EOExtendExpressionCalleeProperty;
-};
+}
 
 function isEOExtendExpressionCallee(u: unknown): u is EOExtendExpressionCallee {
   return (
-    isNode(u) &&
-    'object' in u &&
-    isEOExtendExpressionCalleeObject(u.object) &&
-    'property' in u &&
+    (isNode(u, 'MemberExpression') || isNode(u, 'OptionalMemberExpression')) &&
+    isNode(u.object, 'Identifier') &&
     isEOExtendExpressionCalleeProperty(u.property)
   );
 }
 
-type CalleeWithObjectAndProperty = Extract<
-  CallExpression['callee'],
-  { object: unknown; property: unknown }
->;
-
-type NonNullCalleeObject = Exclude<CalleeWithObjectAndProperty['object'], null>;
-
-type EOExtendExpressionCalleeObject = Extract<
-  NonNullCalleeObject,
-  { name: string }
->;
-
-function isEOExtendExpressionCalleeObject(
-  u: unknown
-): u is EOExtendExpressionCalleeObject {
-  return (
-    isNode(u) &&
-    'name' in u &&
-    typeof u.name === 'string' &&
-    startsWithUpperCaseLetter(u.name)
-  );
-}
-
-type CalleePropertyWithStringName = Extract<
-  CalleeWithObjectAndProperty['property'],
-  { name?: string }
->;
-
-type EOExtendExpressionCalleeProperty = CalleePropertyWithStringName & {
+interface EOExtendExpressionCalleeProperty extends Identifier {
   name: 'extend';
-};
+}
 
 function isEOExtendExpressionCalleeProperty(
   u: unknown
 ): u is EOExtendExpressionCalleeProperty {
-  return isNode(u) && 'name' in u && u.name === 'extend';
+  return isNode(u, 'Identifier') && u.name === 'extend';
 }
 
-type EOExtendExpressionArgs = EOExtendExpression['arguments'];
-
-type EOExtendExpressionArg = EOExtendExpressionArgs[number];
-
 export interface EOExpression extends ObjectExpression {
-  properties: EOProperty[];
+  properties: Array<EOProperty | EOMethod>;
 }
 
 export function isEOExpression(u: unknown): u is EOExpression {
-  return isNode(u, 'ObjectExpression') && u.properties.every(isEOProperty);
+  return (
+    isNode(u, 'ObjectExpression') &&
+    u.properties.every(
+      (property) => isEOProperty(property) || isEOMethod(property)
+    )
+  );
 }
 
-// NOTE: This can probably be narrowed further if necessary.
-export type EOMixin = Exclude<EOExtendExpressionArg, ObjectExpression>;
+export interface EOMixin extends Identifier {}
 
-export function isEOMixin(u: unknown): u is EOMixin {
-  return isNode(u) && u.type !== 'ObjectExpression';
+function isEOMixin(u: unknown): u is EOMixin {
+  return isNode(u, 'Identifier');
 }
 
 /** A top-level instance property in an Ember Object's ObjectExpression */
-export interface EOProperty extends Property {
+export interface EOProperty extends ObjectProperty {
   key: Identifier;
 }
 
 function isEOProperty(u: unknown): u is EOProperty {
-  return isNode(u, 'Property') && isNode(u.key, 'Identifier');
+  return isNode(u, 'ObjectProperty') && isNode(u.key, 'Identifier');
+}
+
+/** A top-level instance property in an Ember Object's ObjectExpression */
+export interface EOMethod extends ObjectMethod {
+  key: Identifier;
+}
+
+function isEOMethod(u: unknown): u is EOMethod {
+  return isNode(u, 'ObjectMethod') && isNode(u.key, 'Identifier');
 }
 
 export interface EOPropertyWithCallExpression extends EOProperty {
   value: EOCallExpression;
 }
 
+// FIXME: Probably incorrect
 export function isEOPropertyWithCallExpression(
   u: unknown
 ): u is EOPropertyWithCallExpression {
@@ -291,14 +279,14 @@ function isEOActionsObjectExpression(
   return isNode(u, 'ObjectExpression') && u.properties.every(isEOAction);
 }
 
-export interface EOAction extends Property {
+export interface EOAction extends ObjectProperty {
   key: Identifier;
   value: FunctionExpression | Identifier;
 }
 
 function isEOAction(u: unknown): u is EOAction {
   return (
-    isNode(u, 'Property') &&
+    isNode(u, 'ObjectProperty') &&
     isNode(u.key, 'Identifier') &&
     (isNode(u.value, 'FunctionExpression') || isNode(u.value, 'Identifier'))
   );

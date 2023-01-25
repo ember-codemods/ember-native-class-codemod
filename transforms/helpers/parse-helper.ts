@@ -14,7 +14,6 @@ import {
   getFirstPath,
   isEOExpression,
   isEOExtendExpression,
-  isEOMixin,
 } from './ast';
 import type { DecoratorImportInfoMap } from './decorator-info';
 import type { EOProp, EOProps } from './eo-prop/index';
@@ -24,7 +23,7 @@ import makeEOProp, {
 } from './eo-prop/index';
 import type { RuntimeData } from './runtime-data';
 import { capitalizeFirstLetter } from './util/index';
-import { assert, defined, isRecord, verified } from './util/types';
+import { assert, defined, isRecord } from './util/types';
 
 /**
  * Return the map of instance props and functions from Ember Object
@@ -101,7 +100,7 @@ export function getDecoratorsToImportSpecs(
 }
 
 /** Find the `EmberObject.extend` statements */
-export function getEmberObjectExtendExpressionCollection(
+export function getEOExtendExpressionCollection(
   j: JSCodeshift,
   root: Collection
 ): Collection<EOExtendExpression> {
@@ -202,7 +201,7 @@ interface EOCallExpressionProps {
 /**
  * Parse ember object call expression, returns EmberObjectExpression and list of mixins
  */
-export function parseEmberObjectExtendExpression(
+export function parseEOExtendExpression(
   eoExtendExpression: EOExtendExpression
 ): EOCallExpressionProps {
   const props: EOCallExpressionProps = {
@@ -213,7 +212,7 @@ export function parseEmberObjectExtendExpression(
     if (isEOExpression(arg)) {
       props.eoExpression = arg;
     } else {
-      props.mixins.push(verified(arg, isEOMixin));
+      props.mixins.push(arg);
     }
   }
   return props;

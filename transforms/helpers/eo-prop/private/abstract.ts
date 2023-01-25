@@ -1,4 +1,4 @@
-import type { EOProperty } from '../../ast';
+import type { EOMethod, EOProperty } from '../../ast';
 import type { DecoratorImportInfo } from '../../decorator-info';
 import type { RuntimeData } from '../../runtime-data';
 
@@ -13,7 +13,7 @@ interface EODecoratorArgs {
  * A wrapper object for ember object properties
  */
 export default abstract class AbstractEOProp<
-  P extends EOProperty = EOProperty
+  P extends EOProperty | EOMethod = EOProperty | EOMethod
 > {
   readonly _prop: P;
 

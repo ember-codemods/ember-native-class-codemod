@@ -13,10 +13,10 @@ import type { DecoratorImportSpecs } from './parse-helper';
 import {
   getClassName,
   getDecoratorsToImportSpecs,
-  getEmberObjectExtendExpressionCollection as getEOExtendExpressionCollection,
+  getEOExtendExpressionCollection,
   getEOProps,
   getExpressionToReplace,
-  parseEmberObjectExtendExpression as parseEOExtendExpression,
+  parseEOExtendExpression,
 } from './parse-helper';
 import { isRuntimeData } from './runtime-data';
 import { createClass, withComments } from './transform-helper';
@@ -99,8 +99,16 @@ function _maybeTransformEmberObjects(
     unobserves: false,
   };
 
+  const eoExtendExpressionPaths = getEOExtendExpressionCollection(j, root);
+
+  if (eoExtendExpressionPaths.length === 0) {
+    logger.warn(
+      `[${filePath}]: SKIPPED: Did not find any 'EmberObject.extend()' expressions`
+    );
+  }
+
   // eslint-disable-next-line unicorn/no-array-for-each
-  getEOExtendExpressionCollection(j, root).forEach(
+  eoExtendExpressionPaths.forEach(
     (eoExtendExpressionPath: ASTPath<EOExtendExpression>) => {
       const { eoExpression, mixins } = parseEOExtendExpression(
         eoExtendExpressionPath.value

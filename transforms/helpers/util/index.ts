@@ -184,8 +184,3 @@ export function getFirstDeclaration(
 export function capitalizeFirstLetter(name: string): string {
   return name ? name.charAt(0).toUpperCase() + name.slice(1) : '';
 }
-
-/** Returns true if the first character in the word is uppercase */
-export function startsWithUpperCaseLetter(word = ''): boolean {
-  return !!word && !word.startsWith(word.charAt(0).toLowerCase());
-}
