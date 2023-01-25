@@ -54,8 +54,10 @@ export default abstract class AbstractEOProp<
     }
   }
 
-  get value(): P['value'] {
-    return this._prop.value;
+  abstract value: EOProperty['value'] | EOMethod;
+
+  get type(): EOProperty['value']['type'] | EOMethod['type'] {
+    return this.value.type;
   }
 
   get key(): P['key'] {
@@ -66,35 +68,12 @@ export default abstract class AbstractEOProp<
     return this._prop.key.name;
   }
 
-  get type(): P['value']['type'] {
-    return this._prop.value.type;
-  }
-
   get comments(): P['comments'] {
     return this._prop.comments;
   }
 
   get computed(): boolean {
     return this._prop.computed ?? false;
-  }
-
-  get kind(): 'init' | 'get' | 'set' | 'method' | undefined {
-    let kind: 'init' | 'get' | 'set' | 'method' = this._prop.kind;
-    const method = this._prop.method ?? false;
-
-    if (
-      kind === 'init' &&
-      this.hasDecorators &&
-      this.decorators.some((d) => d.importedName === 'computed')
-    ) {
-      kind = 'get';
-    }
-
-    if (method || this.hasMethodDecorator) {
-      kind = 'method';
-    }
-
-    return kind;
   }
 
   get hasRuntimeData(): boolean {
@@ -115,10 +94,6 @@ export default abstract class AbstractEOProp<
 
   get hasOffDecorator(): boolean {
     return this.decoratorNames.includes('off');
-  }
-
-  private get hasMethodDecorator(): boolean {
-    return this.decorators.some((d) => d.isMethodDecorator);
   }
 
   get hasMetaDecorator(): boolean {

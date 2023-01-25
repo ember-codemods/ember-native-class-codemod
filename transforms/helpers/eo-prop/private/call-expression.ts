@@ -64,12 +64,38 @@ export default class EOCallExpressionProp extends AbstractEOProp<EOPropertyWithC
     }
   }
 
+  get value(): EOPropertyWithCallExpression['value'] {
+    return this._prop.value;
+  }
+
+  get kind(): 'get' | 'method' | undefined {
+    let kind: 'get' | 'method' | undefined;
+    // ast-types missing `method` boolean property
+    const method: boolean =
+      ('method' in this._prop && (this._prop.method as boolean | undefined)) ??
+      false;
+
+    if (this.decorators.some((d) => d.importedName === 'computed')) {
+      kind = 'get';
+    }
+
+    if (method || this.hasMethodDecorator) {
+      kind = 'method';
+    }
+
+    return kind;
+  }
+
   get calleeName(): string {
     return this.calleeObject.callee.name;
   }
 
   get arguments(): CallExpression['arguments'] {
     return this.calleeObject.arguments;
+  }
+
+  private get hasMethodDecorator(): boolean {
+    return this.decorators.some((d) => d.isMethodDecorator);
   }
 
   get hasModifierWithArgs(): boolean {

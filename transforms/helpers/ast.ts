@@ -7,10 +7,8 @@ import type {
   ArrayPattern,
   AssignmentPattern,
   CallExpression,
-  FunctionExpression,
   Identifier,
   ImportDeclaration,
-  Literal,
   MemberExpression,
   Node,
   ObjectExpression,
@@ -21,6 +19,7 @@ import type {
   RestElement,
   SpreadElementPattern,
   SpreadPropertyPattern,
+  StringLiteral,
   TSParameterProperty,
   ThisExpression,
   ASTPath as _ASTPath,
@@ -29,6 +28,7 @@ import type {
 import { LAYOUT_DECORATOR_NAME } from './util/index';
 import { isRecord } from './util/types';
 
+// FIXME: Are all of these still used?
 export type {
   ASTNode,
   CallExpression,
@@ -139,7 +139,7 @@ export interface EOMethod extends ObjectMethod {
   key: Identifier;
 }
 
-function isEOMethod(u: unknown): u is EOMethod {
+export function isEOMethod(u: unknown): u is EOMethod {
   return isNode(u, 'ObjectMethod') && isNode(u.key, 'Identifier');
 }
 
@@ -147,7 +147,6 @@ export interface EOPropertyWithCallExpression extends EOProperty {
   value: EOCallExpression;
 }
 
-// FIXME: Probably incorrect
 export function isEOPropertyWithCallExpression(
   u: unknown
 ): u is EOPropertyWithCallExpression {
@@ -187,19 +186,6 @@ export function isEOCallExpressionInnerCallee(
   return isNode(u, 'CallExpression') && isNode(u.callee, 'Identifier');
 }
 
-export interface EOPropertyWithFunctionExpression extends EOProperty {
-  value: EOFunctionExpression;
-}
-
-export function isEOPropertyWithFunctionExpression(
-  u: unknown
-): u is EOPropertyWithFunctionExpression {
-  return isEOProperty(u) && isNode(u.value, 'FunctionExpression');
-}
-
-/** A FunctionExpression value for an EOProperty */
-export interface EOFunctionExpression extends FunctionExpression {}
-
 /** An EOProperty that should be transformed into a class decorator */
 export interface EOPropertyForClassDecorator extends EOProperty {
   value: EOClassDecoratorValue;
@@ -216,26 +202,27 @@ export function isEOPropertyForClassDecorator(
   );
 }
 
-export type EOClassDecoratorValue = Literal | ArrayExpression | Identifier;
+export type EOClassDecoratorValue =
+  | StringLiteral
+  | ArrayExpression
+  | Identifier;
 
-export function isEOClassDecoratorValue(
-  u: unknown
-): u is EOClassDecoratorValue {
+function isEOClassDecoratorValue(u: unknown): u is EOClassDecoratorValue {
   return (
-    isNode(u, 'Literal') ||
+    isNode(u, 'StringLiteral') ||
     isNode(u, 'ArrayExpression') ||
     isNode(u, 'Identifier')
   );
 }
 
-type EOClassDecoratorKey = Identifier & {
+interface EOClassDecoratorKey extends Identifier {
   name:
     | 'layout'
     | 'tagName'
     | 'classNames'
     | 'classNameBindings'
     | 'attributeBindings';
-};
+}
 
 const ClassDecoratorPropNames = new Set([
   LAYOUT_DECORATOR_NAME,
@@ -246,12 +233,7 @@ const ClassDecoratorPropNames = new Set([
 ]);
 
 export function isEOClassDecoratorKey(u: unknown): u is EOClassDecoratorKey {
-  return (
-    isNode(u) &&
-    'name' in u &&
-    typeof u.name === 'string' &&
-    ClassDecoratorPropNames.has(u.name)
-  );
+  return isNode(u, 'Identifier') && ClassDecoratorPropNames.has(u.name);
 }
 
 export interface EOPropertyWithActionsObject extends EOProperty {
@@ -270,25 +252,38 @@ export function isEOPropertyForActionsObject(
 }
 
 interface EOActionsObjectExpression extends ObjectExpression {
-  properties: EOAction[];
+  properties: Array<EOActionMethod | EOActionProperty>;
 }
 
 function isEOActionsObjectExpression(
   u: unknown
 ): u is EOActionsObjectExpression {
-  return isNode(u, 'ObjectExpression') && u.properties.every(isEOAction);
+  return (
+    isNode(u, 'ObjectExpression') &&
+    u.properties.every(
+      (property) => isEOActionMethod(property) || isEOActionProperty(property)
+    )
+  );
 }
 
-export interface EOAction extends ObjectProperty {
+export interface EOActionMethod extends ObjectMethod {
   key: Identifier;
-  value: FunctionExpression | Identifier;
 }
 
-function isEOAction(u: unknown): u is EOAction {
+export function isEOActionMethod(u: unknown): u is EOActionMethod {
+  return isNode(u, 'ObjectMethod') && isNode(u.key, 'Identifier');
+}
+
+export interface EOActionProperty extends ObjectProperty {
+  key: Identifier;
+  value: Identifier;
+}
+
+export function isEOActionProperty(u: unknown): u is EOActionProperty {
   return (
     isNode(u, 'ObjectProperty') &&
     isNode(u.key, 'Identifier') &&
-    (isNode(u.value, 'FunctionExpression') || isNode(u.value, 'Identifier'))
+    isNode(u.value, 'Identifier')
   );
 }
 
@@ -298,14 +293,6 @@ interface EOActionsObjectKey extends Identifier {
 
 function isEOActionsObjectKey(u: unknown): u is EOActionsObjectKey {
   return isNode(u, 'Identifier') && u.name === 'actions';
-}
-
-export interface EOIdentifierAction extends EOAction {
-  value: Identifier;
-}
-
-export function isEOIdentifierAction(u: unknown): u is EOIdentifierAction {
-  return isEOAction(u) && isNode(u.value, 'Identifier');
 }
 
 export interface EOPropertySimple extends EOProperty {
@@ -371,7 +358,7 @@ function isEOActionInfiniteCallCallee(
   );
 }
 
-interface EOActionInfiniteLiteral extends Literal {
+interface EOActionInfiniteLiteral extends StringLiteral {
   value: string;
 }
 
@@ -388,8 +375,8 @@ export function makeEOActionInfiniteLiteralAssertion(
 function isEOActionInfiniteLiteral(
   u: unknown,
   name?: string
-): u is EOActionInfiniteCall {
-  return isNode(u, 'Literal') && (!name || u.value === name);
+): u is EOActionInfiniteLiteral {
+  return isNode(u, 'StringLiteral') && (!name || u.value === name);
 }
 
 export interface EOSuperExpression extends CallExpression {
@@ -413,7 +400,7 @@ function isEOSuperExpressionCallee(u: unknown): u is EOSuperExpressionCallee {
 }
 
 export interface DecoratorImportDeclaration extends ImportDeclaration {
-  source: Literal & { value: string };
+  source: StringLiteral;
 }
 
 export function makeDecoratorImportDeclarationAssertion(
@@ -436,19 +423,13 @@ export function isDecoratorImportDeclaration(
   );
 }
 
-interface DecoratorImportDeclarationSource extends Literal {
-  value: string;
-}
+interface DecoratorImportDeclarationSource extends StringLiteral {}
 
 function isDecoratorImportDeclarationSource(
   u: unknown,
   value?: string | undefined
 ): u is DecoratorImportDeclarationSource {
-  return (
-    isNode(u, 'Literal') &&
-    typeof u.value === 'string' &&
-    (!value || u.value === value)
-  );
+  return isNode(u, 'StringLiteral') && (!value || u.value === value);
 }
 
 /** Find nodes of a specific type within the nodes of this collection. */

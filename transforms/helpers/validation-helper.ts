@@ -1,18 +1,20 @@
 import type { JSCodeshift } from 'jscodeshift';
 import minimatch from 'minimatch';
-import type { EOProps } from './eo-prop/index';
-import {
-  EOActionsObjectProp,
-  EOCallExpressionProp,
-  EOClassDecoratorProp,
-} from './eo-prop/index';
-import type { Options } from './options';
-import { LIFECYCLE_HOOKS } from './util/index';
 import {
   findPaths,
+  isEOActionMethod,
   makeEOActionInfiniteCallAssertion,
   makeEOActionInfiniteLiteralAssertion,
 } from './ast';
+import type { EOProps } from './eo-prop/index';
+import {
+  EOActionsProp,
+  EOCallExpressionProp,
+  EOClassDecoratorProp,
+  EOSimpleProp,
+} from './eo-prop/index';
+import type { Options } from './options';
+import { LIFECYCLE_HOOKS } from './util/index';
 
 const UNSUPPORTED_PROP_NAMES = ['actions', 'layout'] as const;
 
@@ -61,20 +63,24 @@ export function hasValidProps(
 
   let errors: string[] = [];
   for (const instanceProp of instanceProps) {
-    if (!classFields && instanceProp.type === 'Literal') {
-      errors.push(`[${instanceProp.name}]: Need option '--class-fields=true'`);
+    if (instanceProp instanceof EOSimpleProp) {
+      if (!classFields) {
+        errors.push(
+          `[${instanceProp.name}]: Need option '--class-fields=true'`
+        );
+      }
+
+      if (
+        instanceProp.type === 'ObjectExpression' &&
+        instanceProp.name !== 'queryParams'
+      ) {
+        errors.push(
+          `[${instanceProp.name}]: Transform not supported - value is of type object. For more details: eslint-plugin-ember/avoid-leaking-state-in-ember-objects`
+        );
+      }
     }
 
-    if (
-      instanceProp.type === 'ObjectExpression' &&
-      !['actions', 'queryParams'].includes(instanceProp.name)
-    ) {
-      errors.push(
-        `[${instanceProp.name}]: Transform not supported - value is of type object. For more details: eslint-plugin-ember/avoid-leaking-state-in-ember-objects`
-      );
-    }
-
-    if (instanceProp instanceof EOActionsObjectProp) {
+    if (instanceProp instanceof EOActionsProp) {
       errors = [...errors, ...getLifecycleHookErrors(instanceProp)];
       errors = [...errors, ...getInfiniteLoopErrors(j, instanceProp)];
     }
@@ -124,7 +130,7 @@ export function hasValidProps(
  * The transformation is not supported if an action has the same name as lifecycle hook
  * Reference: https://github.com/scalvert/ember-native-class-codemod/issues/34
  */
-function getLifecycleHookErrors(actionsProp: EOActionsObjectProp): string[] {
+function getLifecycleHookErrors(actionsProp: EOActionsProp): string[] {
   const actionProps = actionsProp.properties;
   const errors: string[] = [];
   for (const actionProp of actionProps) {
@@ -143,36 +149,38 @@ function getLifecycleHookErrors(actionsProp: EOActionsObjectProp): string[] {
  */
 function getInfiniteLoopErrors(
   j: JSCodeshift,
-  actionsProp: EOActionsObjectProp
+  actionsProp: EOActionsProp
 ): string[] {
   const actionProps = actionsProp.properties;
   const errors: string[] = [];
   for (const actionProp of actionProps) {
     const actionName = actionProp.key.name;
-    const collection = j(actionProp.value);
+    if (isEOActionMethod(actionProp)) {
+      const collection = j(actionProp.body);
 
-    // Occurrences of this.actionName()
-    const isEOActionInfiniteCall =
-      makeEOActionInfiniteCallAssertion(actionName);
-    const actionCalls = findPaths(
-      collection,
-      j.CallExpression,
-      isEOActionInfiniteCall
-    );
-
-    // Occurrences of this.get('actionName')() or get(this, 'actionName')()
-    const isEOActionInfiniteLiteral =
-      makeEOActionInfiniteLiteralAssertion(actionName);
-    const actionLiterals = findPaths(
-      collection,
-      j.Literal,
-      isEOActionInfiniteLiteral
-    );
-
-    if (actionLiterals.length > 0 || actionCalls.length > 0) {
-      errors.push(
-        `[${actionName}]: Transform not supported - calling the passed action would cause an infinite loop. See https://github.com/scalvert/eslint-plugin-ember-es6-class/pull/2 for more details`
+      // Occurrences of this.actionName()
+      const isEOActionInfiniteCall =
+        makeEOActionInfiniteCallAssertion(actionName);
+      const actionCalls = findPaths(
+        collection,
+        j.CallExpression,
+        isEOActionInfiniteCall
       );
+
+      // Occurrences of this.get('actionName')() or get(this, 'actionName')()
+      const isEOActionInfiniteLiteral =
+        makeEOActionInfiniteLiteralAssertion(actionName);
+      const actionLiterals = findPaths(
+        collection,
+        j.StringLiteral,
+        isEOActionInfiniteLiteral
+      );
+
+      if (actionLiterals.length > 0 || actionCalls.length > 0) {
+        errors.push(
+          `[${actionName}]: Transform not supported - calling the passed action would cause an infinite loop. See https://github.com/scalvert/eslint-plugin-ember-es6-class/pull/2 for more details`
+        );
+      }
     }
 
     return errors;

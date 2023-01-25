@@ -6,6 +6,10 @@ import {
 import AbstractEOProp from './abstract';
 
 export default class EOClassDecoratorProp extends AbstractEOProp<EOPropertyForClassDecorator> {
+  get value(): EOPropertyForClassDecorator['value'] {
+    return this._prop.value;
+  }
+
   get classDecoratorName(): string {
     if (
       this.name === LAYOUT_DECORATOR_NAME &&

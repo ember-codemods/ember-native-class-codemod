@@ -1,8 +1,12 @@
-import type { EOAction, EOPropertyWithActionsObject } from '../../ast';
+import type {
+  EOActionMethod,
+  EOActionProperty,
+  EOPropertyWithActionsObject,
+} from '../../ast';
 import type { RuntimeData } from '../../runtime-data';
 import AbstractEOProp from './abstract';
 
-export default class EOActionsObjectProp extends AbstractEOProp<EOPropertyWithActionsObject> {
+export default class EOActionsProp extends AbstractEOProp<EOPropertyWithActionsObject> {
   readonly overriddenActions: string[] = [];
 
   constructor(
@@ -15,7 +19,11 @@ export default class EOActionsObjectProp extends AbstractEOProp<EOPropertyWithAc
     }
   }
 
-  get properties(): EOAction[] {
-    return this._prop.value.properties;
+  get value(): EOPropertyWithActionsObject['value'] {
+    return this._prop.value;
+  }
+
+  get properties(): Array<EOActionMethod | EOActionProperty> {
+    return this.value.properties;
   }
 }

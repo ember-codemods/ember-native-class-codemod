@@ -18,7 +18,7 @@ import {
 import type { DecoratorImportInfoMap } from './decorator-info';
 import type { EOProp, EOProps } from './eo-prop/index';
 import makeEOProp, {
-  EOActionsObjectProp,
+  EOActionsProp,
   EOClassDecoratorProp,
 } from './eo-prop/index';
 import type { RuntimeData } from './runtime-data';
@@ -72,7 +72,7 @@ export function getDecoratorsToImportSpecs(
   let specs = existingSpecs;
   for (const prop of instanceProps) {
     specs = {
-      action: specs.action || prop instanceof EOActionsObjectProp,
+      action: specs.action || prop instanceof EOActionsProp,
       classNames:
         specs.classNames ||
         (prop instanceof EOClassDecoratorProp && prop.isClassNames),

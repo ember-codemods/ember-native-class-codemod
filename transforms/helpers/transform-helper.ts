@@ -6,9 +6,9 @@ import type {
   ClassProperty,
   CommentLine,
   Decorator,
-  EOIdentifierAction,
+  EOActionProperty,
+  EOMethod,
   EOMixin,
-  EOPropertyWithFunctionExpression,
   Identifier,
   ImportDeclaration,
   ImportDefaultSpecifier,
@@ -16,7 +16,7 @@ import type {
   MemberExpression,
   MethodDefinition,
 } from './ast';
-import { findPaths, isEOIdentifierAction, isEOSuperExpression } from './ast';
+import { findPaths, isEOActionProperty, isEOSuperExpression } from './ast';
 import {
   createClassDecorator,
   createIdentifierDecorators,
@@ -25,10 +25,10 @@ import {
 } from './decorator-helper';
 import type { EOProps, EOSimpleProp } from './eo-prop/index';
 import {
-  EOActionsObjectProp,
+  EOActionsProp,
   EOCallExpressionProp,
   EOClassDecoratorProp,
-  EOFunctionExpressionProp,
+  EOMethodProp,
 } from './eo-prop/index';
 import type { Options } from './options';
 import {
@@ -132,13 +132,15 @@ function replaceSuperExpressions(
   return methodDefinition;
 }
 
-interface FunctionProp
-  extends Pick<EOPropertyWithFunctionExpression, 'value' | 'key'> {
+// FIXME: This is super broken
+interface FunctionProp {
+  value: EOMethod;
+  key: EOMethod['key'];
   hasRuntimeData?: boolean | undefined;
   isOverridden?: boolean | undefined;
   isComputed?: boolean | undefined;
   kind?: 'init' | 'get' | 'set' | 'method' | undefined;
-  comments?: EOPropertyWithFunctionExpression['comments'] | undefined;
+  comments?: EOMethod['comments'] | undefined;
 }
 
 function isFunctionProp(prop: unknown): prop is FunctionProp {
@@ -235,7 +237,7 @@ function createClassProp(
  */
 function convertIdentifierActionToMethod(
   j: JSCodeshift,
-  idAction: EOIdentifierAction,
+  idAction: EOActionProperty,
   decorators: Decorator[] = []
 ): MethodDefinition {
   const returnBlock = j.blockStatement([
@@ -274,13 +276,13 @@ function convertIdentifierActionToMethod(
  */
 function createActionDecoratedProps(
   j: JSCodeshift,
-  actionsProp: EOActionsObjectProp
+  actionsProp: EOActionsProp
 ): MethodDefinition[] {
   const actionProps = actionsProp.properties;
   const overriddenActions = actionsProp.overriddenActions;
   const actionDecorators = createIdentifierDecorators(j);
   return actionProps.map((actionProp) => {
-    if (isEOIdentifierAction(actionProp)) {
+    if (isEOActionProperty(actionProp)) {
       return convertIdentifierActionToMethod(j, actionProp, actionDecorators);
     } else {
       assert(
@@ -307,6 +309,7 @@ function createCallExpressionProp(
     const callExprLastArg = defined(callExprArgs.pop());
     const lastArgType = callExprLastArg.type;
 
+    // FIXME: This probably doesn't happen anymore?
     if (lastArgType === 'FunctionExpression') {
       const functionExpr: FunctionProp = {
         isComputed: true,
@@ -390,11 +393,11 @@ export function createClass(
   for (const prop of instanceProps) {
     if (prop instanceof EOClassDecoratorProp) {
       classDecorators.push(createClassDecorator(j, prop));
-    } else if (prop instanceof EOFunctionExpressionProp) {
+    } else if (prop instanceof EOMethodProp) {
       classBody.push(createMethodProp(j, prop));
     } else if (prop instanceof EOCallExpressionProp) {
       classBody = [...classBody, ...createCallExpressionProp(j, prop)];
-    } else if (prop instanceof EOActionsObjectProp) {
+    } else if (prop instanceof EOActionsProp) {
       classBody = [...classBody, ...createActionDecoratedProps(j, prop)];
     } else {
       classBody.push(createClassProp(j, prop));
