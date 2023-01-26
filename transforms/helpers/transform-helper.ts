@@ -193,6 +193,10 @@ function createClassProp(
     decorators = createInstancePropDecorators(j, instanceProp);
   }
 
+  if ('existingDecorators' in instanceProp) {
+    decorators = [...(instanceProp.existingDecorators ?? []), ...decorators];
+  }
+
   const classProp = withDecorators(
     withComments(
       j.classProperty(

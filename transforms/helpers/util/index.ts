@@ -172,6 +172,8 @@ export const LIFECYCLE_HOOKS = new Set([
   'drop',
 ]);
 
+export const ALLOWED_OBJECT_LITERAL_DECORATORS = new Set(['tracked']);
+
 /** Get the first declaration in the program */
 export function getFirstDeclaration(
   j: JSCodeshift,

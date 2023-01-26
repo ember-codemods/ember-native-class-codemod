@@ -5,10 +5,19 @@ import { EOCallExpressionProp } from './eo-prop/index';
 import { assert, defined } from './util/types';
 
 /** Copy decorators `from` => `to` */
-export function withDecorators<T>(to: T, decorators: Decorator[] = []): T {
+export function withDecorators<T extends object>(
+  to: T,
+  decorators: Decorator[] = []
+): T {
   if (decorators.length > 0) {
-    // @ts-expect-error UNSAFE
-    to.decorators = decorators;
+    // eslint-disable-next-line unicorn/prefer-ternary
+    if ('decorators' in to && Array.isArray(to.decorators)) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      to.decorators = [...to.decorators, ...decorators];
+    } else {
+      // @ts-expect-error UNSAFE
+      to.decorators = decorators;
+    }
   }
   return to;
 }

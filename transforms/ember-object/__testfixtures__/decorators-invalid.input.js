@@ -1,7 +1,6 @@
 // Do not transform
 const Foo1 = EmberObject.extend({
   statefulObject: {},
-  statefulArray: [],
 });
 
 // Do not transform if not a primitive value
@@ -49,4 +48,8 @@ const Foo7 = EmberObject.extend({
       this.set('clicked', true);
     },
   },
+});
+
+const Foo8 = EmberObject.extend({
+  statefulArray: [],
 });

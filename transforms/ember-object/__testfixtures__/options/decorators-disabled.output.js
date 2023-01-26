@@ -75,3 +75,8 @@ const Foo12 = EmberObject.extend({
 const Foo13 = EmberObject.extend({
   layout: "div"
 });
+
+// Do not transform
+const Foo14 = EmberObject.extend({
+  @tracked prop: '',
+});

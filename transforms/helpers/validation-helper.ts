@@ -3,6 +3,7 @@ import minimatch from 'minimatch';
 import {
   findPaths,
   isEOActionMethod,
+  isNode,
   makeEOActionInfiniteCallAssertion,
   makeEOActionInfiniteLiteralAssertion,
 } from './ast';
@@ -14,7 +15,10 @@ import {
   EOSimpleProp,
 } from './eo-prop/index';
 import type { Options } from './options';
-import { LIFECYCLE_HOOKS } from './util/index';
+import {
+  ALLOWED_OBJECT_LITERAL_DECORATORS,
+  LIFECYCLE_HOOKS,
+} from './util/index';
 
 const UNSUPPORTED_PROP_NAMES = ['actions', 'layout'] as const;
 
@@ -71,12 +75,30 @@ export function hasValidProps(
       }
 
       if (
-        instanceProp.type === 'ObjectExpression' &&
+        (instanceProp.type === 'ObjectExpression' ||
+          instanceProp.type === 'ArrayExpression') &&
         instanceProp.name !== 'queryParams'
       ) {
         errors.push(
           `[${instanceProp.name}]: Transform not supported - value is of type object. For more details: eslint-plugin-ember/avoid-leaking-state-in-ember-objects`
         );
+      }
+    } else if (instanceProp.existingDecorators) {
+      errors.push(
+        `[${instanceProp.name}]: Transform not supported - can only transform decorators on primitives`
+      );
+    }
+
+    if (instanceProp.existingDecorators) {
+      for (const decorator of instanceProp.existingDecorators) {
+        if (
+          !isNode(decorator.expression, 'Identifier') ||
+          !ALLOWED_OBJECT_LITERAL_DECORATORS.has(decorator.expression.name)
+        ) {
+          errors.push(
+            `[${instanceProp.name}]: Transform not supported - decorator not included in ALLOWED_OBJECT_LITERAL_DECORATORS`
+          );
+        }
       }
     }
 
@@ -87,7 +109,8 @@ export function hasValidProps(
 
     if (
       !decorators &&
-      (instanceProp.hasDecorators ||
+      (instanceProp.existingDecorators ||
+        instanceProp.hasDecorators ||
         instanceProp instanceof EOClassDecoratorProp ||
         instanceProp instanceof EOCallExpressionProp)
     ) {

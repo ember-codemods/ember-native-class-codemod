@@ -1,4 +1,4 @@
-import type { EOMethod, EOProperty } from '../../ast';
+import type { Decorator, EOMethod, EOProperty } from '../../ast';
 import type { DecoratorImportInfo } from '../../decorator-info';
 import type { RuntimeData } from '../../runtime-data';
 
@@ -80,6 +80,10 @@ export default abstract class AbstractEOProp<
 
   get hasRuntimeData(): boolean {
     return !!this.runtimeType;
+  }
+
+  get existingDecorators(): Decorator[] | null {
+    return 'decorators' in this._prop ? this._prop.decorators : null;
   }
 
   get decoratorNames(): string[] {

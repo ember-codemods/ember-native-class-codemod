@@ -43,5 +43,9 @@
   },
   "types/pods/foo/controller": {
     "type": "Controller"
+  },
+  "object-literal-with-decorators-invalid-macro": {
+    "computedProperties": ["computedMacro"],
+    "type": "EmberObject"
   }
 }
