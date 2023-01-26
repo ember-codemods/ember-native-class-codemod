@@ -3,6 +3,7 @@ import type {
   ASTNode,
   CallExpression,
   ClassDeclaration,
+  ClassMethod,
   ClassProperty,
   CommentLine,
   Decorator,
@@ -14,9 +15,13 @@ import type {
   ImportDefaultSpecifier,
   ImportSpecifier,
   MemberExpression,
-  MethodDefinition,
 } from './ast';
-import { findPaths, isEOActionProperty, isEOSuperExpression } from './ast';
+import {
+  findPaths,
+  isEOActionProperty,
+  isEOMethod,
+  isEOSuperExpression,
+} from './ast';
 import {
   createClassDecorator,
   createIdentifierDecorators,
@@ -36,7 +41,7 @@ import {
   LAYOUT_DECORATOR_LOCAL_NAME,
   LAYOUT_DECORATOR_NAME,
 } from './util/index';
-import { assert, defined, isRecord } from './util/types';
+import { assert, defined } from './util/types';
 
 /** Returns true if class property should have value */
 function shouldSetValue(prop: EOSimpleProp | EOCallExpressionProp): boolean {
@@ -73,27 +78,27 @@ function createLineComments(
  * Replace instances of `this._super(...arguments)` to `super.methodName(...arguments)`
  *
  * @param j - jscodeshift lib reference
- * @param methodDefinition - MethodDefinition to replace instances from
+ * @param classMethod - ClassMethod to replace instances from
  * @param functionProp - Function expression to get the runtime data
  */
 function replaceSuperExpressions(
   j: JSCodeshift,
-  methodDefinition: MethodDefinition,
-  functionProp: FunctionProp,
+  classMethod: ClassMethod,
+  functionProp: EOMethodProp | FunctionProp,
   { isAction = false }
-): MethodDefinition {
+): ClassMethod {
   const replaceWithUndefined = functionProp.hasRuntimeData
     ? !functionProp.isOverridden
     : false;
 
   const superExpressionCollection = findPaths(
-    j(methodDefinition),
+    j(classMethod),
     j.CallExpression,
     isEOSuperExpression
   );
 
   if (superExpressionCollection.length === 0) {
-    return methodDefinition;
+    return classMethod;
   }
   // eslint-disable-next-line unicorn/no-array-for-each
   superExpressionCollection.forEach((superExpressionPath) => {
@@ -109,7 +114,7 @@ function replaceSuperExpressions(
           j.memberExpression(
             j.memberExpression(
               j.memberExpression(j.super(), j.identifier('actions')),
-              methodDefinition.key
+              classMethod.key
             ),
             j.identifier('call')
           ),
@@ -121,7 +126,7 @@ function replaceSuperExpressions(
         );
       } else {
         superMethodCall = j.callExpression(
-          j.memberExpression(j.super(), methodDefinition.key),
+          j.memberExpression(j.super(), classMethod.key),
           superMethodArgs
         );
       }
@@ -129,28 +134,18 @@ function replaceSuperExpressions(
     }
   });
 
-  return methodDefinition;
+  return classMethod;
 }
 
-// FIXME: This is super broken
 interface FunctionProp {
-  value: EOMethod;
   key: EOMethod['key'];
+  params: EOMethod['params'];
+  body: EOMethod['body'];
   hasRuntimeData?: boolean | undefined;
   isOverridden?: boolean | undefined;
   isComputed?: boolean | undefined;
   kind?: 'init' | 'get' | 'set' | 'method' | undefined;
   comments?: EOMethod['comments'] | undefined;
-}
-
-function isFunctionProp(prop: unknown): prop is FunctionProp {
-  return (
-    isRecord(prop) &&
-    isRecord(prop['value']) &&
-    prop['value']['type'] === 'FunctionExpression' &&
-    isRecord(prop['key']) &&
-    prop['key']['type'] === 'Identifier'
-  );
 }
 
 /**
@@ -160,12 +155,12 @@ function isFunctionProp(prop: unknown): prop is FunctionProp {
  */
 function createMethodProp(
   j: JSCodeshift,
-  functionProp: FunctionProp,
+  functionProp: EOMethodProp | FunctionProp,
   {
     isAction = false,
     decorators = [],
   }: { isAction?: boolean; decorators?: Decorator[] } = {}
-): MethodDefinition {
+): ClassMethod {
   const propKind =
     functionProp.kind === 'init' ? 'method' : defined(functionProp.kind);
 
@@ -173,7 +168,12 @@ function createMethodProp(
     withComments(
       replaceSuperExpressions(
         j,
-        j.methodDefinition(propKind, functionProp.key, functionProp.value),
+        j.classMethod(
+          propKind,
+          functionProp.key,
+          functionProp.params,
+          functionProp.body
+        ),
         functionProp,
         { isAction }
       ),
@@ -239,7 +239,7 @@ function convertIdentifierActionToMethod(
   j: JSCodeshift,
   idAction: EOActionProperty,
   decorators: Decorator[] = []
-): MethodDefinition {
+): ClassMethod {
   const returnBlock = j.blockStatement([
     j.returnStatement(
       j.callExpression(
@@ -251,7 +251,10 @@ function convertIdentifierActionToMethod(
   const expr = j.functionExpression(null, [], returnBlock);
 
   return withDecorators(
-    withComments(j.methodDefinition('method', idAction.key, expr), idAction),
+    withComments(
+      j.classMethod('method', idAction.key, expr.params, expr.body),
+      idAction
+    ),
     decorators
   );
 }
@@ -277,21 +280,17 @@ function convertIdentifierActionToMethod(
 function createActionDecoratedProps(
   j: JSCodeshift,
   actionsProp: EOActionsProp
-): MethodDefinition[] {
+): ClassMethod[] {
   const actionProps = actionsProp.properties;
-  const overriddenActions = actionsProp.overriddenActions;
+  const overriddenActions = actionsProp.runtimeData.overriddenActions;
   const actionDecorators = createIdentifierDecorators(j);
   return actionProps.map((actionProp) => {
     if (isEOActionProperty(actionProp)) {
       return convertIdentifierActionToMethod(j, actionProp, actionDecorators);
     } else {
-      assert(
-        isFunctionProp(actionProp),
-        'action prop expected to be FunctionProp'
-      );
-      actionProp.hasRuntimeData = actionsProp.hasRuntimeData;
-      actionProp.isOverridden = overriddenActions.includes(actionProp.key.name);
-      return createMethodProp(j, actionProp, {
+      const prop = new EOMethodProp(actionProp, actionsProp.runtimeData);
+      prop.isOverridden = overriddenActions?.includes(actionProp.key.name);
+      return createMethodProp(j, prop, {
         decorators: actionDecorators,
         isAction: true,
       });
@@ -303,46 +302,40 @@ function createActionDecoratedProps(
 function createCallExpressionProp(
   j: JSCodeshift,
   callExprProp: EOCallExpressionProp
-): MethodDefinition[] | ClassProperty[] {
+): ClassMethod[] | ClassProperty[] {
   const callExprArgs = [...callExprProp.arguments];
   if (callExprProp.shouldRemoveLastArg) {
-    const callExprLastArg = defined(callExprArgs.pop());
-    const lastArgType = callExprLastArg.type;
+    const lastArg = defined(callExprArgs.pop());
 
-    // FIXME: This probably doesn't happen anymore?
-    if (lastArgType === 'FunctionExpression') {
-      const functionExpr: FunctionProp = {
+    if (lastArg.type === 'FunctionExpression') {
+      const prop: FunctionProp = {
         isComputed: true,
         kind: callExprProp.kind,
         key: callExprProp.key,
-        value: callExprLastArg,
+        body: lastArg.body,
+        params: lastArg.params,
         comments: callExprProp.comments,
       };
       return [
-        createMethodProp(j, functionExpr, {
+        createMethodProp(j, prop, {
           decorators: createInstancePropDecorators(j, callExprProp),
         }),
       ];
-    } else if (lastArgType === 'ObjectExpression') {
-      const callExprMethods = callExprLastArg.properties.map(
-        (callExprFunction) => {
-          assert(isFunctionProp(callExprFunction));
-          callExprFunction.isComputed = true;
-          assert(
-            (['init', 'get', 'set', 'method'] as const).includes(
-              callExprFunction.key.name as 'init' | 'get' | 'set' | 'method'
-            )
-          );
-          callExprFunction.kind = callExprFunction.key.name as
-            | 'init'
-            | 'get'
-            | 'set'
-            | 'method';
-          callExprFunction.key = callExprProp.key;
-          callExprFunction.value.params.shift();
-          return createMethodProp(j, callExprFunction);
-        }
-      );
+    } else if (lastArg.type === 'ObjectExpression') {
+      const callExprMethods = lastArg.properties.map((property) => {
+        assert(isEOMethod(property), 'expected EOMethod');
+        const prop = new EOMethodProp(property, callExprProp.runtimeData);
+        prop.isComputed = true;
+        assert(
+          (['init', 'get', 'set', 'method'] as const).includes(
+            prop.key.name as 'init' | 'get' | 'set' | 'method'
+          )
+        );
+        prop.kind = prop.key.name as 'init' | 'get' | 'set' | 'method';
+        prop.key = callExprProp.key;
+        prop.value.params.shift();
+        return createMethodProp(j, prop);
+      });
 
       withDecorators(
         withComments(defined(callExprMethods[0]), callExprProp),

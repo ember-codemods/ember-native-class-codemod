@@ -7,6 +7,7 @@ import type {
   ArrayPattern,
   AssignmentPattern,
   CallExpression,
+  FunctionExpression,
   Identifier,
   ImportDeclaration,
   MemberExpression,
@@ -28,21 +29,21 @@ import type {
 import { LAYOUT_DECORATOR_NAME } from './util/index';
 import { isRecord } from './util/types';
 
-// FIXME: Are all of these still used?
 export type {
   ASTNode,
   CallExpression,
   ClassDeclaration,
+  ClassMethod,
   ClassProperty,
   CommentLine,
   Declaration,
   Decorator,
+  FunctionExpression,
   Identifier,
   ImportDeclaration,
   ImportDefaultSpecifier,
   ImportSpecifier,
   MemberExpression,
-  MethodDefinition,
   VariableDeclaration,
 } from 'jscodeshift';
 
@@ -141,6 +142,22 @@ export interface EOMethod extends ObjectMethod {
 
 export function isEOMethod(u: unknown): u is EOMethod {
   return isNode(u, 'ObjectMethod') && isNode(u.key, 'Identifier');
+}
+
+export type EOPropertyForMethod = EOMethod | EOPropertyWithFunctionExpression;
+
+export function isEOPropertyForMethod(u: unknown): u is EOPropertyForMethod {
+  return isEOMethod(u) || isEOPropertyWithFunctionExpression(u);
+}
+
+interface EOPropertyWithFunctionExpression extends EOProperty {
+  value: FunctionExpression;
+}
+
+export function isEOPropertyWithFunctionExpression(
+  u: unknown
+): u is EOPropertyWithFunctionExpression {
+  return isEOProperty(u) && isNode(u.value, 'FunctionExpression');
 }
 
 export interface EOPropertyWithCallExpression extends EOProperty {

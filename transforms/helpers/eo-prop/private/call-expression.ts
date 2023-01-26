@@ -1,5 +1,4 @@
 import type {
-  CallExpression,
   EOCallExpression,
   EOCallExpressionInnerCallee,
   EOPropertyWithCallExpression,
@@ -39,7 +38,7 @@ export default class EOCallExpressionProp extends AbstractEOProp<EOPropertyWithC
 
   constructor(
     eoProp: EOPropertyWithCallExpression,
-    runtimeData: RuntimeData | undefined,
+    runtimeData: RuntimeData,
     existingDecoratorImportInfos: DecoratorImportInfoMap
   ) {
     super(eoProp, runtimeData);
@@ -90,7 +89,7 @@ export default class EOCallExpressionProp extends AbstractEOProp<EOPropertyWithC
     return this.calleeObject.callee.name;
   }
 
-  get arguments(): CallExpression['arguments'] {
+  get arguments(): EOCallExpressionInnerCallee['arguments'] {
     return this.calleeObject.arguments;
   }
 

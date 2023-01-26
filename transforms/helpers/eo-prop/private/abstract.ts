@@ -21,14 +21,16 @@ export default abstract class AbstractEOProp<
   readonly decoratorArgs: EODecoratorArgs = {};
 
   /** Runtime Data */
-  readonly isComputed: boolean | undefined;
-  readonly isOverridden: boolean | undefined;
+  readonly runtimeData: RuntimeData;
+  isComputed: boolean | undefined;
+  isOverridden: boolean | undefined;
   private readonly runtimeType: string | undefined;
 
-  constructor(eoProp: P, runtimeData: RuntimeData | undefined) {
+  constructor(eoProp: P, runtimeData: RuntimeData) {
     this._prop = eoProp;
 
-    if (runtimeData?.type) {
+    this.runtimeData = runtimeData;
+    if (runtimeData.type) {
       const {
         type,
         computedProperties = [],

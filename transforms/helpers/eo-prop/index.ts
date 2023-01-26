@@ -1,8 +1,8 @@
 import type { EOMethod, EOProperty } from '../ast';
 import {
-  isEOMethod,
   isEOPropertyForActionsObject,
   isEOPropertyForClassDecorator,
+  isEOPropertyForMethod,
   isEOPropertySimple,
   isEOPropertyWithCallExpression,
 } from '../ast';
@@ -38,7 +38,7 @@ export interface EOProps {
  */
 export default function makeEOProp(
   eoProp: EOProperty | EOMethod,
-  runtimeData: RuntimeData | undefined,
+  runtimeData: RuntimeData,
   existingDecoratorImportInfos: DecoratorImportInfoMap
 ): EOProp {
   if (isEOPropertyWithCallExpression(eoProp)) {
@@ -47,7 +47,7 @@ export default function makeEOProp(
       runtimeData,
       existingDecoratorImportInfos
     );
-  } else if (isEOMethod(eoProp)) {
+  } else if (isEOPropertyForMethod(eoProp)) {
     return new EOMethodProp(eoProp, runtimeData);
   } else if (isEOPropertyForClassDecorator(eoProp)) {
     return new EOClassDecoratorProp(eoProp, runtimeData);
