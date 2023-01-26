@@ -18,7 +18,6 @@ export function assert(
   message = 'Assertion Error'
 ): asserts condition {
   if (!condition) {
-    debugger;
     throw new Error(message);
   }
 }

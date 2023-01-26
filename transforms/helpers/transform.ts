@@ -41,9 +41,7 @@ export default function maybeTransformEmberObjects(
     return;
   }
 
-  const runtimeData = process.env['DOGFOOD']
-    ? {}
-    : getTelemetryFor(path.resolve(filePath));
+  const runtimeData = getTelemetryFor(path.resolve(filePath));
   if (!runtimeData || !isRuntimeData(runtimeData)) {
     logger.warn(
       `[${filePath}]: SKIPPED: Could not find runtime data NO_RUNTIME_DATA`

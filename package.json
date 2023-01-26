@@ -35,7 +35,6 @@
     "postpublish": "yarn clean",
     "build": "tsc",
     "clean": "tsc --build --clean",
-    "fixme": "rm codemods.log; yarn build; codemod-cli test; yarn clean",
     "lint": "concurrently \"npm:lint:*(!fix)\" --names \"lint:\"",
     "lint:fix": "concurrently \"npm:lint:*:fix\" --names \"fix:\"",
     "lint:js": "eslint . --cache",
