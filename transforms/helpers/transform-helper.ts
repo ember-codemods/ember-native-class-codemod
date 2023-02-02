@@ -144,8 +144,9 @@ interface FunctionProp {
   hasRuntimeData?: boolean | undefined;
   isOverridden?: boolean | undefined;
   isComputed?: boolean | undefined;
-  kind?: 'init' | 'get' | 'set' | 'method' | undefined;
-  comments?: EOMethod['comments'] | undefined;
+  kind: 'init' | 'get' | 'set' | 'method' | undefined;
+  comments: EOMethod['comments'] | undefined;
+  decorators: EOMethod['decorators'] | undefined;
 }
 
 /**
@@ -161,19 +162,25 @@ function createMethodProp(
     decorators = [],
   }: { isAction?: boolean; decorators?: Decorator[] } = {}
 ): ClassMethod {
-  const propKind =
+  const kind =
     functionProp.kind === 'init' ? 'method' : defined(functionProp.kind);
+
+  const existingDecorators =
+    functionProp instanceof EOMethodProp
+      ? functionProp.existingDecorators
+      : functionProp.decorators;
 
   return withDecorators(
     withComments(
       replaceSuperExpressions(
         j,
-        j.classMethod(
-          propKind,
-          functionProp.key,
-          functionProp.params,
-          functionProp.body
-        ),
+        j.classMethod.from({
+          kind,
+          key: functionProp.key,
+          params: functionProp.params,
+          body: functionProp.body,
+          decorators: existingDecorators ?? null,
+        }),
         functionProp,
         { isAction }
       ),
@@ -319,6 +326,7 @@ function createCallExpressionProp(
         body: lastArg.body,
         params: lastArg.params,
         comments: callExprProp.comments,
+        decorators: callExprProp.existingDecorators,
       };
       return [
         createMethodProp(j, prop, {

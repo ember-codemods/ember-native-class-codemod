@@ -172,7 +172,62 @@ export const LIFECYCLE_HOOKS = new Set([
   'drop',
 ]);
 
-export const ALLOWED_OBJECT_LITERAL_DECORATORS = new Set(['tracked']);
+// DANGER! This assumes that the correct decorator is imported just because of
+// the name.
+export const ALLOWED_OBJECT_LITERAL_DECORATORS = new Set([
+  // @ember/object
+  'action',
+  'computed',
+
+  // @ember/object/compat
+  'dependentKeyCompat',
+
+  // @ember/object/computed
+  'alias',
+  'and',
+  'bool',
+  'collect',
+  'deprecatingAlias',
+  'empty',
+  'equal',
+  'filter',
+  'filterBy',
+  'gt',
+  'gte',
+  'intersect',
+  'lt',
+  'lte',
+  'map',
+  'mapBy',
+  'match',
+  'max',
+  'min',
+  'none',
+  'not',
+  'notEmpty',
+  'oneWay',
+  'or',
+  'readOnly',
+  'reads',
+  'setDiff',
+  'sort',
+  'sum',
+  'union',
+  'uniq',
+  'uniqBy',
+
+  // @glimmer/tracking
+  // 'cached',
+  'tracked',
+
+  // @ember-decorators/component
+  'attribute',
+  'className',
+
+  // @ember-decorators/object
+  'observes',
+  'on',
+]);
 
 /** Get the first declaration in the program */
 export function getFirstDeclaration(

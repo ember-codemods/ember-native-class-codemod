@@ -4,6 +4,7 @@ import type { EOClassDecoratorProp, EOSimpleProp } from './eo-prop/index';
 import { EOCallExpressionProp } from './eo-prop/index';
 import { assert, defined } from './util/types';
 
+// FIXME: Can we just remove this (and withComments) and just use the builders.from methods?
 /** Copy decorators `from` => `to` */
 export function withDecorators<T extends object>(
   to: T,

@@ -1,5 +1,6 @@
 import type { JSCodeshift } from 'jscodeshift';
 import minimatch from 'minimatch';
+import type { Decorator } from './ast';
 import {
   findPaths,
   isEOActionMethod,
@@ -12,6 +13,7 @@ import {
   EOActionsProp,
   EOCallExpressionProp,
   EOClassDecoratorProp,
+  EOMethodProp,
   EOSimpleProp,
 } from './eo-prop/index';
 import type { Options } from './options';
@@ -19,6 +21,7 @@ import {
   ALLOWED_OBJECT_LITERAL_DECORATORS,
   LIFECYCLE_HOOKS,
 } from './util/index';
+import { assert } from './util/types';
 
 const UNSUPPORTED_PROP_NAMES = ['actions', 'layout'] as const;
 
@@ -83,22 +86,27 @@ export function hasValidProps(
           `[${instanceProp.name}]: Transform not supported - value is of type object. For more details: eslint-plugin-ember/avoid-leaking-state-in-ember-objects`
         );
       }
-    } else if (instanceProp.existingDecorators) {
-      errors.push(
-        `[${instanceProp.name}]: Transform not supported - can only transform decorators on primitives`
-      );
     }
 
     if (instanceProp.existingDecorators) {
       for (const decorator of instanceProp.existingDecorators) {
-        if (
-          !isNode(decorator.expression, 'Identifier') ||
-          !ALLOWED_OBJECT_LITERAL_DECORATORS.has(decorator.expression.name)
-        ) {
+        const decoratorName = getDecoratorName(decorator);
+        if (!ALLOWED_OBJECT_LITERAL_DECORATORS.has(decoratorName)) {
           errors.push(
-            `[${instanceProp.name}]: Transform not supported - decorator not included in ALLOWED_OBJECT_LITERAL_DECORATORS`
+            `[${instanceProp.name}]: Transform not supported - decorator "@${decoratorName}" not included in ALLOWED_OBJECT_LITERAL_DECORATORS`
           );
         }
+      }
+
+      if (
+        !(
+          instanceProp instanceof EOSimpleProp ||
+          instanceProp instanceof EOMethodProp
+        )
+      ) {
+        errors.push(
+          `[${instanceProp.name}]: Transform not supported - can only transform object literal property decorators on primitives and methods`
+        );
       }
     }
 
@@ -209,4 +217,18 @@ function getInfiniteLoopErrors(
     return errors;
   }
   return errors;
+}
+
+function getDecoratorName(decorator: Decorator): string {
+  if (isNode(decorator.expression, 'Identifier')) {
+    return decorator.expression.name;
+  } else if (
+    isNode(decorator.expression, 'CallExpression') &&
+    isNode(decorator.expression.callee, 'Identifier')
+  ) {
+    return decorator.expression.callee.name;
+  } else {
+    // FIXME: Should we validate this elsewhere and narrow the Decorator type?
+    assert(false, 'Unexpected decorator type');
+  }
 }
