@@ -50,6 +50,7 @@
     "@babel/parser": "^7.20.13",
     "camelcase": "^6.3.0",
     "codemod-cli": "^3.2.0",
+    "cosmiconfig": "^8.0.0",
     "ember-codemods-telemetry-helpers": "^3.0.0",
     "fs-extra": "^8.0.1",
     "git-repo-info": "^2.1.0",

@@ -1,10 +1,7 @@
-import { getOptions } from 'codemod-cli';
 import type { Transform } from 'jscodeshift';
 import path from 'path';
-import type { UserOptions } from '../helpers/options';
-import { DEFAULT_OPTIONS } from '../helpers/options';
+import getConfig from '../helpers/config';
 import maybeTransformEmberObjects from '../helpers/transform';
-import { isRecord, verified } from '../helpers/util/types';
 
 const transformer: Transform = function (
   { source, path: filePath },
@@ -16,11 +13,8 @@ const transformer: Transform = function (
     return;
   }
 
-  const userOptions: UserOptions = {
-    ...DEFAULT_OPTIONS,
-    ...verified<Partial<UserOptions>>(getOptions(), isRecord),
-  };
   const root = j(source);
+  const userOptions = getConfig();
   const replaced = maybeTransformEmberObjects(j, root, filePath, userOptions);
 
   if (replaced) {
