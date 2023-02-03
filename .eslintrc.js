@@ -52,6 +52,7 @@ module.exports = {
         './.eslintrc.js',
         './.prettierrc.js',
         './bin/**/*.js',
+        './jest.config.js',
         './test/run-test.js',
         './transforms/ember-object/test.js',
       ],
@@ -87,7 +88,7 @@ module.exports = {
       files: ['*.ts'],
       parser: '@typescript-eslint/parser',
       parserOptions: {
-        project: './tsconfig.json',
+        project: './tsconfig.lint.json',
         allowAutomaticSingleRunInference: true,
       },
       plugins: ['@typescript-eslint'],

@@ -1,0 +1,5 @@
+{
+  "classFields": false,
+  "quote": "double",
+  "objectLiteralDecorators": ["jsonDecOne", "jsonDecTwo"]
+}

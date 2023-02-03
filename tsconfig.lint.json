@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["transforms/**/*", "test/**/*.test.ts"],
+  "exclude": ["transforms/ember-object/__testfixtures__/**/*"]
+}
