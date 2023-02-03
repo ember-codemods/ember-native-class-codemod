@@ -4,25 +4,6 @@ import type { EOClassDecoratorProp, EOSimpleProp } from './eo-prop/index';
 import { EOCallExpressionProp } from './eo-prop/index';
 import { assert, defined } from './util/types';
 
-// FIXME: Can we just remove this (and withComments) and just use the builders.from methods?
-/** Copy decorators `from` => `to` */
-export function withDecorators<T extends object>(
-  to: T,
-  decorators: Decorator[] = []
-): T {
-  if (decorators.length > 0) {
-    // eslint-disable-next-line unicorn/prefer-ternary
-    if ('decorators' in to && Array.isArray(to.decorators)) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      to.decorators = [...to.decorators, ...decorators];
-    } else {
-      // @ts-expect-error UNSAFE
-      to.decorators = decorators;
-    }
-  }
-  return to;
-}
-
 type CallExpressionArg = Parameters<JSCodeshift['callExpression']>[1][number];
 
 /** Creates a decorator for a class. */

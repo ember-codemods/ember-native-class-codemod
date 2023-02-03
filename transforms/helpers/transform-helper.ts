@@ -26,7 +26,6 @@ import {
   createClassDecorator,
   createIdentifierDecorators,
   createInstancePropDecorators,
-  withDecorators,
 } from './decorator-helper';
 import type { EOProps, EOSimpleProp } from './eo-prop/index';
 import {
@@ -170,23 +169,20 @@ function createMethodProp(
       ? functionProp.existingDecorators
       : functionProp.decorators;
 
-  return withDecorators(
-    withComments(
-      replaceSuperExpressions(
-        j,
-        j.classMethod.from({
-          kind,
-          key: functionProp.key,
-          params: functionProp.params,
-          body: functionProp.body,
-          decorators: existingDecorators ?? null,
-        }),
-        functionProp,
-        { isAction }
-      ),
-      functionProp
-    ),
-    decorators
+  const allDecorators = [...(existingDecorators ?? []), ...decorators];
+
+  return replaceSuperExpressions(
+    j,
+    j.classMethod.from({
+      kind,
+      key: functionProp.key,
+      params: functionProp.params,
+      body: functionProp.body,
+      comments: functionProp.comments ?? null,
+      decorators: allDecorators,
+    }),
+    functionProp,
+    { isAction }
   );
 }
 
@@ -204,18 +200,18 @@ function createClassProp(
     decorators = [...(instanceProp.existingDecorators ?? []), ...decorators];
   }
 
-  const classProp = withDecorators(
-    withComments(
-      j.classProperty(
-        instanceProp.key,
-        shouldSetValue(instanceProp) ? instanceProp.value : null,
-        null
-      ),
-      instanceProp
-    ),
-    decorators
-  );
-  classProp.computed = instanceProp.computed;
+  const classProp = j.classProperty.from({
+    key: instanceProp.key,
+    value: shouldSetValue(instanceProp) ? instanceProp.value : null,
+    comments: instanceProp.comments ?? null,
+    computed: instanceProp.computed,
+  });
+
+  // @ts-expect-error jscodeshift AST types are incorrect
+  // If this ever gets fixed, check if the builder `.from` method above
+  // will now take a decorators param.
+  classProp.decorators = decorators;
+
   return classProp;
 }
 
@@ -260,14 +256,14 @@ function convertIdentifierActionToMethod(
     ),
   ]);
   const expr = j.functionExpression(null, [], returnBlock);
-
-  return withDecorators(
-    withComments(
-      j.classMethod('method', idAction.key, expr.params, expr.body),
-      idAction
-    ),
-    decorators
-  );
+  return j.classMethod.from({
+    kind: 'method',
+    key: idAction.key,
+    params: expr.params,
+    body: expr.body,
+    comments: idAction.comments ?? null,
+    decorators,
+  });
 }
 
 /**
@@ -349,10 +345,10 @@ function createCallExpressionProp(
         return createMethodProp(j, prop);
       });
 
-      withDecorators(
-        withComments(defined(callExprMethods[0]), callExprProp),
-        createInstancePropDecorators(j, callExprProp)
-      );
+      const firstMethod = defined(callExprMethods[0]);
+      firstMethod.comments = callExprProp.comments ?? null;
+      firstMethod.decorators = createInstancePropDecorators(j, callExprProp);
+
       return callExprMethods;
     } else {
       throw new Error(
@@ -409,14 +405,18 @@ export function createClass(
     }
   }
 
-  return withDecorators(
-    j.classDeclaration(
-      className ? j.identifier(className) : null,
-      j.classBody(classBody),
-      createSuperClassExpression(j, superClassName, mixins)
-    ),
-    classDecorators
-  );
+  const classDeclaration = j.classDeclaration.from({
+    id: className ? j.identifier(className) : null,
+    body: j.classBody(classBody),
+    superClass: createSuperClassExpression(j, superClassName, mixins),
+  });
+
+  // @ts-expect-error jscodeshift AST types are incorrect
+  // If this ever gets fixed, check if the builder `.from` method above
+  // will now take a decorators param.
+  classDeclaration.decorators = classDecorators;
+
+  return classDeclaration;
 }
 
 /** Create import statement */
