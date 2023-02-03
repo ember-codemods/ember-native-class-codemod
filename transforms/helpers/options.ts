@@ -12,6 +12,8 @@ export interface UserOptions {
   quotes?: 'single' | 'double';
   /** Apply transformation to only passed type. */
   type?: 'services' | 'routes' | 'components' | 'controllers';
+  /** FIXME: Document */
+  objectLiteralDecorators?: string[];
 }
 
 export interface PrivateOptions {

@@ -174,7 +174,7 @@ export const LIFECYCLE_HOOKS = new Set([
 
 // DANGER! This assumes that the correct decorator is imported just because of
 // the name.
-export const ALLOWED_OBJECT_LITERAL_DECORATORS = new Set([
+const ALLOWED_OBJECT_LITERAL_DECORATORS = new Set([
   // @ember/object
   'action',
   'computed',
@@ -228,6 +228,19 @@ export const ALLOWED_OBJECT_LITERAL_DECORATORS = new Set([
   'observes',
   'on',
 ]);
+
+/**
+ * FIXME: Document
+ */
+export function allowObjectLiteralDecorator(
+  decoratorName: string,
+  userAllowList: string[] = []
+): boolean {
+  return (
+    ALLOWED_OBJECT_LITERAL_DECORATORS.has(decoratorName) ||
+    userAllowList.includes(decoratorName)
+  );
+}
 
 /** Get the first declaration in the program */
 export function getFirstDeclaration(

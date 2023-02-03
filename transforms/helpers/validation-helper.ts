@@ -16,10 +16,7 @@ import {
   EOSimpleProp,
 } from './eo-prop/index';
 import type { Options } from './options';
-import {
-  ALLOWED_OBJECT_LITERAL_DECORATORS,
-  LIFECYCLE_HOOKS,
-} from './util/index';
+import { LIFECYCLE_HOOKS, allowObjectLiteralDecorator } from './util/index';
 
 const UNSUPPORTED_PROP_NAMES = ['actions', 'layout'] as const;
 
@@ -60,7 +57,7 @@ export function isFileOfType(file: string, type: Options['type']): boolean {
 export function hasValidProps(
   j: JSCodeshift,
   { instanceProps }: EOProps,
-  { decorators, classFields }: Options
+  { decorators, classFields, objectLiteralDecorators }: Options
 ): string[] {
   const unsupportedPropNames: readonly string[] = decorators
     ? []
@@ -99,9 +96,11 @@ export function hasValidProps(
           errors.push(
             `[${instanceProp.name}]: Transform not supported - decorator expression type not supported`
           );
-        } else if (!ALLOWED_OBJECT_LITERAL_DECORATORS.has(decoratorName)) {
+        } else if (
+          !allowObjectLiteralDecorator(decoratorName, objectLiteralDecorators)
+        ) {
           errors.push(
-            `[${instanceProp.name}]: Transform not supported - decorator "@${decoratorName}" not included in ALLOWED_OBJECT_LITERAL_DECORATORS`
+            `[${instanceProp.name}]: Transform not supported - decorator "@${decoratorName}" not included in ALLOWED_OBJECT_LITERAL_DECORATORS or "objectLiteralDecorators" config`
           );
         }
       }
