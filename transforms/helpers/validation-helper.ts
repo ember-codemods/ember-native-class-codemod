@@ -1,6 +1,5 @@
 import type { JSCodeshift } from 'jscodeshift';
 import minimatch from 'minimatch';
-import type { Decorator } from './ast';
 import {
   findPaths,
   isEOActionMethod,
@@ -21,7 +20,6 @@ import {
   ALLOWED_OBJECT_LITERAL_DECORATORS,
   LIFECYCLE_HOOKS,
 } from './util/index';
-import { assert } from './util/types';
 
 const UNSUPPORTED_PROP_NAMES = ['actions', 'layout'] as const;
 
@@ -90,8 +88,18 @@ export function hasValidProps(
 
     if (instanceProp.existingDecorators) {
       for (const decorator of instanceProp.existingDecorators) {
-        const decoratorName = getDecoratorName(decorator);
-        if (!ALLOWED_OBJECT_LITERAL_DECORATORS.has(decoratorName)) {
+        const decoratorName = isNode(decorator.expression, 'Identifier')
+          ? decorator.expression.name
+          : isNode(decorator.expression, 'CallExpression') &&
+            isNode(decorator.expression.callee, 'Identifier')
+          ? decorator.expression.callee.name
+          : null;
+
+        if (!decoratorName) {
+          errors.push(
+            `[${instanceProp.name}]: Transform not supported - decorator expression type not supported`
+          );
+        } else if (!ALLOWED_OBJECT_LITERAL_DECORATORS.has(decoratorName)) {
           errors.push(
             `[${instanceProp.name}]: Transform not supported - decorator "@${decoratorName}" not included in ALLOWED_OBJECT_LITERAL_DECORATORS`
           );
@@ -217,18 +225,4 @@ function getInfiniteLoopErrors(
     return errors;
   }
   return errors;
-}
-
-function getDecoratorName(decorator: Decorator): string {
-  if (isNode(decorator.expression, 'Identifier')) {
-    return decorator.expression.name;
-  } else if (
-    isNode(decorator.expression, 'CallExpression') &&
-    isNode(decorator.expression.callee, 'Identifier')
-  ) {
-    return decorator.expression.callee.name;
-  } else {
-    // FIXME: Should we validate this elsewhere and narrow the Decorator type?
-    assert(false, 'Unexpected decorator type');
-  }
 }

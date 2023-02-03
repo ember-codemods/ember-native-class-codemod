@@ -82,7 +82,6 @@ export default abstract class AbstractEOProp<
     return !!this.runtimeType;
   }
 
-  // FIXME: Rename
   get existingDecorators(): Decorator[] | null {
     return 'decorators' in this._prop ? this._prop.decorators : null;
   }
