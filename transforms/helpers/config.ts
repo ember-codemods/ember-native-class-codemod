@@ -1,8 +1,7 @@
 import { getOptions } from 'codemod-cli';
 import { cosmiconfigSync } from 'cosmiconfig';
-import type { UserOptions } from './options';
-import { DEFAULT_OPTIONS } from './options';
-import { isRecord, verified } from './util/types';
+import type { PartialUserOptions, UserOptions } from './options';
+import { DEFAULT_OPTIONS, UserOptionsSchema, parseConfig } from './options';
 
 /**
  * Returns a UserOptions object merging options from three sources:
@@ -11,11 +10,13 @@ import { isRecord, verified } from './util/types';
  * - ENV variables (which overrides the above)
  */
 export default function getConfig(dir = process.cwd()): UserOptions {
-  return {
+  const config = {
     ...DEFAULT_OPTIONS,
     ...getFileConfig(dir),
     ...getCliConfig(),
   };
+
+  return UserOptionsSchema.parse(config);
 }
 
 const searchPlaces = [
@@ -27,12 +28,12 @@ const searchPlaces = [
   '.codemods.yml',
 ];
 
-function getFileConfig(dir: string): Partial<UserOptions> {
+function getFileConfig(dir: string): PartialUserOptions {
   const explorer = cosmiconfigSync('codemods', { searchPlaces });
   const result = explorer.search(dir);
-  return result ? verified<Partial<UserOptions>>(result.config, isRecord) : {};
+  return result ? parseConfig(result.filepath, result.config) : {};
 }
 
-function getCliConfig(): Partial<UserOptions> {
-  return verified<Partial<UserOptions>>(getOptions(), isRecord);
+function getCliConfig(): PartialUserOptions {
+  return parseConfig('CLI', getOptions());
 }

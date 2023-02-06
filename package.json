@@ -31,7 +31,7 @@
   ],
   "scripts": {
     "release": "release-it",
-    "prepare": "yarn build",
+    "prepublishOnly": "yarn build",
     "postpublish": "yarn clean",
     "build": "tsc",
     "clean": "tsc --build --clean",
@@ -58,7 +58,8 @@
     "puppeteer": "^15.3.2",
     "sync-disk-cache": "^1.3.3",
     "walk-sync": "^2.0.2",
-    "winston": "^3.2.1"
+    "winston": "^3.2.1",
+    "zod": "^3.20.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.12",

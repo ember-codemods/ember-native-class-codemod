@@ -230,7 +230,9 @@ const ALLOWED_OBJECT_LITERAL_DECORATORS = new Set([
 ]);
 
 /**
- * FIXME: Document
+ * Allows transformation of decorators in EmberObject's object-literal argument
+ * only if they are part of the `ALLOWED_OBJECT_LITERAL_DECORATORS` set or
+ * configured by the user in the `objectLiteralDecorators` config.
  */
 export function allowObjectLiteralDecorator(
   decoratorName: string,
