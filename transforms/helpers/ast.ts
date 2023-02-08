@@ -159,18 +159,11 @@ export function isEOMethod(u: unknown): u is EOMethod {
   return isNode(u, 'ObjectMethod') && isNode(u.key, 'Identifier');
 }
 
-// FIXME: Split into two classes
-export type EOPropertyForMethod = EOMethod | EOPropertyWithFunctionExpression;
-
-export function isEOPropertyForMethod(u: unknown): u is EOPropertyForMethod {
-  return isEOMethod(u) || isEOPropertyWithFunctionExpression(u);
-}
-
-interface EOPropertyWithFunctionExpression extends EOProperty {
+export interface EOPropertyWithFunctionExpression extends EOProperty {
   value: FunctionExpression;
 }
 
-function isEOPropertyWithFunctionExpression(
+export function isEOPropertyWithFunctionExpression(
   u: unknown
 ): u is EOPropertyWithFunctionExpression {
   return isEOProperty(u) && isNode(u.value, 'FunctionExpression');

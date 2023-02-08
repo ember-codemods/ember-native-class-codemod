@@ -33,6 +33,7 @@ import {
   EOActionsProp,
   EOCallExpressionProp,
   EOClassDecoratorProp,
+  EOFunctionExpressionProp,
   EOMethodProp,
 } from './eo-prop/index';
 import type { Options } from './options';
@@ -84,7 +85,7 @@ function createLineComments(
 function replaceSuperExpressions(
   j: JSCodeshift,
   classMethod: ClassMethod,
-  functionProp: EOMethodProp | FunctionProp,
+  functionProp: EOMethodProp | EOFunctionExpressionProp | FunctionProp,
   { isAction = false }
 ): ClassMethod {
   const replaceWithUndefined = functionProp.hasRuntimeData
@@ -156,7 +157,7 @@ interface FunctionProp {
  */
 function createMethodProp(
   j: JSCodeshift,
-  functionProp: EOMethodProp | FunctionProp,
+  functionProp: EOMethodProp | EOFunctionExpressionProp | FunctionProp,
   {
     isAction = false,
     decorators = [],
@@ -166,7 +167,8 @@ function createMethodProp(
     functionProp.kind === 'init' ? 'method' : defined(functionProp.kind);
 
   const existingDecorators =
-    functionProp instanceof EOMethodProp
+    functionProp instanceof EOMethodProp ||
+    functionProp instanceof EOFunctionExpressionProp
       ? functionProp.existingDecorators
       : functionProp.decorators;
 
@@ -396,6 +398,8 @@ export function createClass(
     if (prop instanceof EOClassDecoratorProp) {
       classDecorators.push(createClassDecorator(j, prop));
     } else if (prop instanceof EOMethodProp) {
+      classBody.push(createMethodProp(j, prop));
+    } else if (prop instanceof EOFunctionExpressionProp) {
       classBody.push(createMethodProp(j, prop));
     } else if (prop instanceof EOCallExpressionProp) {
       classBody = [...classBody, ...createCallExpressionProp(j, prop)];

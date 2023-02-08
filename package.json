@@ -34,7 +34,7 @@
     "prepublishOnly": "yarn build",
     "postpublish": "yarn clean",
     "build": "tsc",
-    "clean": "tsc --build --clean",
+    "clean": "tsc --build --clean && git checkout test/fixtures",
     "lint": "concurrently \"npm:lint:*(!fix)\" --names \"lint:\"",
     "lint:fix": "concurrently \"npm:lint:*:fix\" --names \"fix:\"",
     "lint:js": "eslint . --cache",

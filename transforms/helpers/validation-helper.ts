@@ -13,6 +13,7 @@ import {
   EOActionsProp,
   EOCallExpressionProp,
   EOClassDecoratorProp,
+  EOFunctionExpressionProp,
   EOMethodProp,
   EOSimpleProp,
 } from './eo-prop/index';
@@ -109,11 +110,12 @@ export function hasValidProps(
       if (
         !(
           instanceProp instanceof EOSimpleProp ||
-          instanceProp instanceof EOMethodProp
+          instanceProp instanceof EOMethodProp ||
+          instanceProp instanceof EOFunctionExpressionProp
         )
       ) {
         errors.push(
-          `[${instanceProp.name}]: Transform not supported - can only transform object literal property decorators on primitives and methods`
+          `[${instanceProp.name}]: Transform not supported - can only transform object literal decorators on methods or properties with literal values (string, number, boolean, null, undefined)`
         );
       }
     }

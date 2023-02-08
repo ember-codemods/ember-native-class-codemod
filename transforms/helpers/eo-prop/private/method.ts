@@ -1,23 +1,15 @@
-import type {
-  EOMethod,
-  EOPropertyForMethod,
-  FunctionExpression,
-  Identifier,
-} from '../../ast';
+import type { EOMethod, Identifier } from '../../ast';
 import AbstractEOProp from './abstract';
 
-// FIXME: Split into two classes
-export default class EOMethodProp extends AbstractEOProp<EOPropertyForMethod> {
-  get value(): EOMethod | FunctionExpression {
-    return 'value' in this._prop ? this._prop.value : this._prop;
+export default class EOMethodProp extends AbstractEOProp<EOMethod> {
+  get value(): EOMethod {
+    return this._prop;
   }
 
   private overriddenKind?: 'init' | 'get' | 'set' | 'method';
 
   get kind(): 'init' | 'get' | 'set' | 'method' {
-    return (
-      this.overriddenKind ?? ('kind' in this.value ? this.value.kind : 'method')
-    );
+    return this.overriddenKind ?? this.value.kind;
   }
 
   set kind(kind: 'init' | 'get' | 'set' | 'method') {
@@ -34,11 +26,11 @@ export default class EOMethodProp extends AbstractEOProp<EOPropertyForMethod> {
     this.overriddenKey = key;
   }
 
-  get params(): EOMethod['params'] | FunctionExpression['params'] {
+  get params(): EOMethod['params'] {
     return this.value.params;
   }
 
-  get body(): EOMethod['body'] | FunctionExpression['body'] {
+  get body(): EOMethod['body'] {
     return this.value.body;
   }
 }
