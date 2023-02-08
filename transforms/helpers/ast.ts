@@ -54,10 +54,6 @@ export interface ASTPath<N extends ASTNode = ASTNode> extends _ASTPath<N> {
 
 export type Collection<N extends Node | ASTNode = ASTNode> = _Collection<N>;
 
-export function isPath(u: unknown): u is ASTPath & { parentPath?: ASTPath } {
-  return isRecord(u) && isRecord(u['value']);
-}
-
 export function isNode<T extends ASTNode['type'] = ASTNode['type']>(
   u: unknown,
   ...types: T[]
@@ -135,7 +131,7 @@ export function isEOExpression(u: unknown): u is EOExpression {
 
 export type EOExpressionProp = EOProperty | EOMethod;
 
-export function isEOExpressionProp(u: unknown): u is EOExpressionProp {
+function isEOExpressionProp(u: unknown): u is EOExpressionProp {
   return isEOProperty(u) || isEOMethod(u);
 }
 
@@ -174,7 +170,7 @@ interface EOPropertyWithFunctionExpression extends EOProperty {
   value: FunctionExpression;
 }
 
-export function isEOPropertyWithFunctionExpression(
+function isEOPropertyWithFunctionExpression(
   u: unknown
 ): u is EOPropertyWithFunctionExpression {
   return isEOProperty(u) && isNode(u.value, 'FunctionExpression');
@@ -195,7 +191,7 @@ export interface EOCallExpression extends CallExpression {
   callee: EOCallExpressionCallee;
 }
 
-export function isEOCallExpression(u: unknown): u is EOCallExpression {
+function isEOCallExpression(u: unknown): u is EOCallExpression {
   return isNode(u, 'CallExpression') && isEOCallExpressionCallee(u.callee);
 }
 
@@ -205,7 +201,7 @@ function isEOCallExpressionCallee(u: unknown): u is EOCallExpressionCallee {
   return isNode(u, 'Identifier') || isEOMemberExpressionForModifier(u);
 }
 
-export interface EOMemberExpressionForModifier extends MemberExpression {
+interface EOMemberExpressionForModifier extends MemberExpression {
   object: EOCallExpression;
 }
 
@@ -241,10 +237,7 @@ export function isEOPropertyForClassDecorator(
   );
 }
 
-export type EOClassDecoratorValue =
-  | StringLiteral
-  | ArrayExpression
-  | Identifier;
+type EOClassDecoratorValue = StringLiteral | ArrayExpression | Identifier;
 
 function isEOClassDecoratorValue(u: unknown): u is EOClassDecoratorValue {
   return isNode(u, 'StringLiteral', 'ArrayExpression', 'Identifier');
@@ -267,7 +260,7 @@ const ClassDecoratorPropNames = new Set([
   'attributeBindings',
 ]);
 
-export function isEOClassDecoratorKey(u: unknown): u is EOClassDecoratorKey {
+function isEOClassDecoratorKey(u: unknown): u is EOClassDecoratorKey {
   return isIdent(u, ...ClassDecoratorPropNames);
 }
 
@@ -302,7 +295,7 @@ function isEOAction(u: unknown): u is EOAction {
   return isEOActionMethod(u) || isEOActionProperty(u);
 }
 
-export interface EOActionMethod extends ObjectMethod {
+interface EOActionMethod extends ObjectMethod {
   key: Identifier;
 }
 
@@ -415,7 +408,7 @@ function isEOActionInfiniteLiteral(
   return isNode(u, 'StringLiteral') && (!name || u.value === name);
 }
 
-export interface EOSuperExpression extends CallExpression {
+interface EOSuperExpression extends CallExpression {
   callee: EOSuperExpressionCallee;
 }
 
@@ -445,7 +438,7 @@ export function makeDecoratorImportDeclarationAssertion(
   };
 }
 
-export function isDecoratorImportDeclaration(
+function isDecoratorImportDeclaration(
   u: unknown,
   path?: string
 ): u is DecoratorImportDeclaration {

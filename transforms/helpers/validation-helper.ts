@@ -1,5 +1,6 @@
 import type { JSCodeshift } from 'jscodeshift';
 import minimatch from 'minimatch';
+import type { Collection } from './ast';
 import {
   findPaths,
   isEOActionMethod,
@@ -194,7 +195,7 @@ function getInfiniteLoopErrors(
   for (const actionProp of actionProps) {
     const actionName = actionProp.key.name;
     if (isEOActionMethod(actionProp)) {
-      const collection = j(actionProp.body);
+      const collection = j(actionProp.body) as Collection;
 
       // Occurrences of this.actionName()
       const isEOActionInfiniteCall =

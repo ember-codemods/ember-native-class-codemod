@@ -110,7 +110,7 @@ export function getEOExtendExpressionCollection(
 }
 
 /** Return closest parent var declaration statement */
-export function getClosestVariableDeclaration(
+function getClosestVariableDeclaration(
   j: JSCodeshift,
   eoExtendExpressionPath: ASTPath<EOExtendExpression>
 ): ASTPath<VariableDeclaration> | null {

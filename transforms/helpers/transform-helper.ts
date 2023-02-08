@@ -5,6 +5,7 @@ import type {
   ClassDeclaration,
   ClassMethod,
   ClassProperty,
+  Collection,
   CommentLine,
   Decorator,
   EOActionProperty,
@@ -91,7 +92,7 @@ function replaceSuperExpressions(
     : false;
 
   const superExpressionCollection = findPaths(
-    j(classMethod),
+    j(classMethod) as Collection,
     j.CallExpression,
     isEOSuperExpression
   );

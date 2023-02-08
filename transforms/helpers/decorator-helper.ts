@@ -26,7 +26,7 @@ export function createClassDecorator(
  * Create decorators for computed properties and methods
  * This method handles decorators for `DECORATOR_PROPS` defined in `util.js`
  */
-export function createCallExpressionDecorators(
+function createCallExpressionDecorators(
   j: JSCodeshift,
   decoratorName: string,
   instanceProp: EOCallExpressionProp

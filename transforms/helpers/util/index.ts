@@ -5,7 +5,7 @@ export const LAYOUT_DECORATOR_NAME = 'layout' as const;
 export type LAYOUT_DECORATOR_NAME = typeof LAYOUT_DECORATOR_NAME;
 export const LAYOUT_DECORATOR_LOCAL_NAME = 'templateLayout' as const;
 
-export interface DecoratorPathInfo {
+interface DecoratorPathInfo {
   readonly importPropDecoratorMap?: Record<string, string>;
   readonly decoratorPath: string;
 }

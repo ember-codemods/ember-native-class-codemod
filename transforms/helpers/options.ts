@@ -68,7 +68,7 @@ function logConfigError(
   }
 }
 
-export interface PrivateOptions {
+interface PrivateOptions {
   /** @private */
   runtimeData: RuntimeData;
 }
