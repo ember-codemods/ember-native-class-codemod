@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-empty-interface, jsdoc/require-jsdoc */
+/* eslint-disable jsdoc/require-jsdoc */
 
 import type { Type } from 'ast-types/lib/types';
 import type {
@@ -16,6 +16,7 @@ import type {
   ObjectMethod,
   ObjectPattern,
   ObjectProperty,
+  OptionalMemberExpression,
   PropertyPattern,
   RestElement,
   SpreadElementPattern,
@@ -51,8 +52,7 @@ export interface ASTPath<N extends ASTNode = ASTNode> extends _ASTPath<N> {
   parentPath: ASTPath | null | undefined;
 }
 
-export interface Collection<N extends Node | ASTNode = ASTNode>
-  extends _Collection<N> {}
+export type Collection<N extends Node | ASTNode = ASTNode> = _Collection<N>;
 
 export function isPath(u: unknown): u is ASTPath & { parentPath?: ASTPath } {
   return isRecord(u) && isRecord(u['value']);
@@ -60,28 +60,36 @@ export function isPath(u: unknown): u is ASTPath & { parentPath?: ASTPath } {
 
 export function isNode<T extends ASTNode['type'] = ASTNode['type']>(
   u: unknown,
-  type?: T
+  ...types: T[]
 ): u is Extract<ASTNode, { type: T }> {
   return (
     isRecord(u) &&
     typeof u['type'] === 'string' &&
-    (!type || u['type'] === type)
+    (types.length === 0 || types.includes(u['type'] as T))
   );
+}
+
+function isIdent(u: unknown, ...names: string[]): u is Identifier {
+  return isNode(u, 'Identifier') && names.includes(u.name);
 }
 
 export interface EOExtendExpression extends CallExpression {
   callee: EOExtendExpressionCallee;
-  arguments: Array<EOExpression | EOMixin>;
+  arguments: EOExtendArg[];
 }
 
 export function isEOExtendExpression(u: unknown): u is EOExtendExpression {
   return (
     isNode(u, 'CallExpression') &&
     isEOExtendExpressionCallee(u.callee) &&
-    u.arguments.every(
-      (argument) => isEOExpression(argument) || isEOMixin(argument)
-    )
+    u.arguments.every(isEOExtendArg)
   );
+}
+
+type EOExtendArg = EOExpression | EOMixin;
+
+function isEOExtendArg(u: unknown): u is EOExtendArg {
+  return isEOExpression(u) || isEOMixin(u);
 }
 
 interface EOExtendExpressionCallee extends MemberExpression {
@@ -91,10 +99,18 @@ interface EOExtendExpressionCallee extends MemberExpression {
 
 function isEOExtendExpressionCallee(u: unknown): u is EOExtendExpressionCallee {
   return (
-    (isNode(u, 'MemberExpression') || isNode(u, 'OptionalMemberExpression')) &&
+    isEOExtendsExpressionCandidate(u) &&
     isNode(u.object, 'Identifier') &&
     isEOExtendExpressionCalleeProperty(u.property)
   );
+}
+
+type EOExtendsExpressionCandidate = MemberExpression | OptionalMemberExpression;
+
+function isEOExtendsExpressionCandidate(
+  u: unknown
+): u is EOExtendsExpressionCandidate {
+  return isNode(u, 'MemberExpression', 'OptionalMemberExpression');
 }
 
 interface EOExtendExpressionCalleeProperty extends Identifier {
@@ -104,23 +120,26 @@ interface EOExtendExpressionCalleeProperty extends Identifier {
 function isEOExtendExpressionCalleeProperty(
   u: unknown
 ): u is EOExtendExpressionCalleeProperty {
-  return isNode(u, 'Identifier') && u.name === 'extend';
+  return isIdent(u, 'extend');
 }
 
 export interface EOExpression extends ObjectExpression {
-  properties: Array<EOProperty | EOMethod>;
+  properties: EOExpressionProp[];
 }
 
 export function isEOExpression(u: unknown): u is EOExpression {
   return (
-    isNode(u, 'ObjectExpression') &&
-    u.properties.every(
-      (property) => isEOProperty(property) || isEOMethod(property)
-    )
+    isNode(u, 'ObjectExpression') && u.properties.every(isEOExpressionProp)
   );
 }
 
-export interface EOMixin extends Identifier {}
+export type EOExpressionProp = EOProperty | EOMethod;
+
+export function isEOExpressionProp(u: unknown): u is EOExpressionProp {
+  return isEOProperty(u) || isEOMethod(u);
+}
+
+export type EOMixin = Identifier;
 
 function isEOMixin(u: unknown): u is EOMixin {
   return isNode(u, 'Identifier');
@@ -144,6 +163,7 @@ export function isEOMethod(u: unknown): u is EOMethod {
   return isNode(u, 'ObjectMethod') && isNode(u.key, 'Identifier');
 }
 
+// FIXME: Split into two classes
 export type EOPropertyForMethod = EOMethod | EOPropertyWithFunctionExpression;
 
 export function isEOPropertyForMethod(u: unknown): u is EOPropertyForMethod {
@@ -172,15 +192,17 @@ export function isEOPropertyWithCallExpression(
 
 /** A CallExpression value for an EOProperty */
 export interface EOCallExpression extends CallExpression {
-  callee: Identifier | EOMemberExpressionForModifier;
+  callee: EOCallExpressionCallee;
 }
 
 export function isEOCallExpression(u: unknown): u is EOCallExpression {
-  return (
-    isNode(u, 'CallExpression') &&
-    (isNode(u.callee, 'Identifier') ||
-      isEOMemberExpressionForModifier(u.callee))
-  );
+  return isNode(u, 'CallExpression') && isEOCallExpressionCallee(u.callee);
+}
+
+type EOCallExpressionCallee = Identifier | EOMemberExpressionForModifier;
+
+function isEOCallExpressionCallee(u: unknown): u is EOCallExpressionCallee {
+  return isNode(u, 'Identifier') || isEOMemberExpressionForModifier(u);
 }
 
 export interface EOMemberExpressionForModifier extends MemberExpression {
@@ -225,16 +247,12 @@ export type EOClassDecoratorValue =
   | Identifier;
 
 function isEOClassDecoratorValue(u: unknown): u is EOClassDecoratorValue {
-  return (
-    isNode(u, 'StringLiteral') ||
-    isNode(u, 'ArrayExpression') ||
-    isNode(u, 'Identifier')
-  );
+  return isNode(u, 'StringLiteral', 'ArrayExpression', 'Identifier');
 }
 
 interface EOClassDecoratorKey extends Identifier {
   name:
-    | 'layout'
+    | LAYOUT_DECORATOR_NAME
     | 'tagName'
     | 'classNames'
     | 'classNameBindings'
@@ -250,7 +268,7 @@ const ClassDecoratorPropNames = new Set([
 ]);
 
 export function isEOClassDecoratorKey(u: unknown): u is EOClassDecoratorKey {
-  return isNode(u, 'Identifier') && ClassDecoratorPropNames.has(u.name);
+  return isIdent(u, ...ClassDecoratorPropNames);
 }
 
 export interface EOPropertyWithActionsObject extends EOProperty {
@@ -269,18 +287,19 @@ export function isEOPropertyForActionsObject(
 }
 
 interface EOActionsObjectExpression extends ObjectExpression {
-  properties: Array<EOActionMethod | EOActionProperty>;
+  properties: EOAction[];
 }
 
 function isEOActionsObjectExpression(
   u: unknown
 ): u is EOActionsObjectExpression {
-  return (
-    isNode(u, 'ObjectExpression') &&
-    u.properties.every(
-      (property) => isEOActionMethod(property) || isEOActionProperty(property)
-    )
-  );
+  return isNode(u, 'ObjectExpression') && u.properties.every(isEOAction);
+}
+
+export type EOAction = EOActionMethod | EOActionProperty;
+
+function isEOAction(u: unknown): u is EOAction {
+  return isEOActionMethod(u) || isEOActionProperty(u);
 }
 
 export interface EOActionMethod extends ObjectMethod {
@@ -309,7 +328,7 @@ interface EOActionsObjectKey extends Identifier {
 }
 
 function isEOActionsObjectKey(u: unknown): u is EOActionsObjectKey {
-  return isNode(u, 'Identifier') && u.name === 'actions';
+  return isIdent(u, 'actions');
 }
 
 export interface EOPropertySimple extends EOProperty {
@@ -409,11 +428,7 @@ interface EOSuperExpressionCallee extends MemberExpression {
 }
 
 function isEOSuperExpressionCallee(u: unknown): u is EOSuperExpressionCallee {
-  return (
-    isNode(u, 'MemberExpression') &&
-    isNode(u.property, 'Identifier') &&
-    u.property.name === '_super'
-  );
+  return isNode(u, 'MemberExpression') && isIdent(u.property, '_super');
 }
 
 export interface DecoratorImportDeclaration extends ImportDeclaration {
@@ -440,7 +455,9 @@ export function isDecoratorImportDeclaration(
   );
 }
 
-interface DecoratorImportDeclarationSource extends StringLiteral {}
+interface DecoratorImportDeclarationSource extends StringLiteral {
+  __brand: 'DecoratorImportDeclarationSource';
+}
 
 function isDecoratorImportDeclarationSource(
   u: unknown,

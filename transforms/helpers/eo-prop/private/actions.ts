@@ -1,8 +1,4 @@
-import type {
-  EOActionMethod,
-  EOActionProperty,
-  EOPropertyWithActionsObject,
-} from '../../ast';
+import type { EOAction, EOPropertyWithActionsObject } from '../../ast';
 import AbstractEOProp from './abstract';
 
 export default class EOActionsProp extends AbstractEOProp<EOPropertyWithActionsObject> {
@@ -10,7 +6,7 @@ export default class EOActionsProp extends AbstractEOProp<EOPropertyWithActionsO
     return this._prop.value;
   }
 
-  get properties(): Array<EOActionMethod | EOActionProperty> {
+  get properties(): EOAction[] {
     return this.value.properties;
   }
 }

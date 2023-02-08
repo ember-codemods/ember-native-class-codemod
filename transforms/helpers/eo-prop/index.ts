@@ -1,4 +1,4 @@
-import type { EOMethod, EOProperty } from '../ast';
+import type { EOExpressionProp } from '../ast';
 import {
   isEOPropertyForActionsObject,
   isEOPropertyForClassDecorator,
@@ -37,7 +37,7 @@ export interface EOProps {
  * Property, RuntimeData, and ImportPropDecoratorMap.
  */
 export default function makeEOProp(
-  eoProp: EOProperty | EOMethod,
+  eoProp: EOExpressionProp,
   runtimeData: RuntimeData,
   existingDecoratorImportInfos: DecoratorImportInfoMap
 ): EOProp {

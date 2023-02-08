@@ -6,6 +6,7 @@ import type {
 } from '../../ast';
 import AbstractEOProp from './abstract';
 
+// FIXME: Split into two classes
 export default class EOMethodProp extends AbstractEOProp<EOPropertyForMethod> {
   get value(): EOMethod | FunctionExpression {
     return 'value' in this._prop ? this._prop.value : this._prop;
