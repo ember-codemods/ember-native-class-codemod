@@ -12,6 +12,8 @@ interface EODecoratorArgs {
   off?: Array<string | boolean | number | null> | undefined;
 }
 
+type EOPropValue = EOProperty['value'] | EOMethod;
+
 /**
  * Ember Object Property
  *
@@ -20,7 +22,11 @@ interface EODecoratorArgs {
 export default abstract class AbstractEOProp<
   P extends EOExpressionProp = EOExpressionProp
 > {
-  readonly _prop: P & { decorators?: Decorator[] | null };
+  readonly _prop: P & {
+    decorators?: Decorator[] | null;
+    // ast-types missing `method` boolean property
+    method?: boolean | undefined;
+  };
 
   protected readonly decorators: DecoratorImportInfo[] = [];
   readonly decoratorArgs: EODecoratorArgs = {};
@@ -61,9 +67,9 @@ export default abstract class AbstractEOProp<
     }
   }
 
-  abstract value: EOProperty['value'] | EOMethod;
+  abstract value: EOPropValue;
 
-  get type(): EOProperty['value']['type'] | EOMethod['type'] {
+  get type(): EOPropValue['type'] {
     return this.value.type;
   }
 

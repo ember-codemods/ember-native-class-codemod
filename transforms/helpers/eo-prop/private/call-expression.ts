@@ -69,10 +69,7 @@ export default class EOCallExpressionProp extends AbstractEOProp<EOPropertyWithC
 
   get kind(): 'get' | 'method' | undefined {
     let kind: 'get' | 'method' | undefined;
-    // ast-types missing `method` boolean property
-    const method: boolean =
-      ('method' in this._prop && (this._prop.method as boolean | undefined)) ??
-      false;
+    const method = this._prop.method ?? false;
 
     if (this.decorators.some((d) => d.importedName === 'computed')) {
       kind = 'get';
