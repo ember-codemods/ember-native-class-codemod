@@ -4,9 +4,14 @@ import type {
   EOMethod,
   EOProperty,
 } from '../../ast';
+import { isNode } from '../../ast';
 import type { DecoratorImportInfo } from '../../decorator-info';
 import type { Options } from '../../options';
 import type { RuntimeData } from '../../runtime-data';
+import {
+  DECORATORS_REQUIRED_PROP_NAMES,
+  allowObjectLiteralDecorator,
+} from '../../util/index';
 
 interface EODecoratorArgs {
   unobserves?: Array<string | boolean | number | null> | undefined;
@@ -24,8 +29,8 @@ export default abstract class AbstractEOProp<
   P extends EOExpressionProp = EOExpressionProp
 > {
   readonly _prop: P & {
+    // ast-types missing these properties that exist on @babel/types
     decorators?: Decorator[] | null;
-    // ast-types missing `method` boolean property
     method?: boolean | undefined;
   };
 
@@ -116,5 +121,87 @@ export default abstract class AbstractEOProp<
 
   get hasMetaDecorator(): boolean {
     return this.decorators.some((d) => d.isMetaDecorator);
+  }
+
+  /** Override to `true` if the property type supports object literal decorators. */
+  protected supportsObjectLiteralDecorators = false;
+
+  protected get needsDecorators(): boolean {
+    return this.hasExistingDecorators || this.hasDecorators;
+  }
+
+  private get hasExistingDecorators(): boolean {
+    return (
+      this.existingDecorators !== null && this.existingDecorators.length > 0
+    );
+  }
+
+  get errors(): string[] {
+    let errors: string[] = [];
+
+    const { decorators, objectLiteralDecorators } = this.options;
+
+    if (this.existingDecorators) {
+      if (!this.supportsObjectLiteralDecorators) {
+        errors.push(
+          this.makeError(
+            'can only transform object literal decorators on methods or properties with literal values (string, number, boolean, null, undefined)'
+          )
+        );
+      }
+
+      // FIXME: only include if existing decorators are supported?
+      for (const decorator of this.existingDecorators) {
+        const decoratorName = isNode(decorator.expression, 'Identifier')
+          ? decorator.expression.name
+          : isNode(decorator.expression, 'CallExpression') &&
+            isNode(decorator.expression.callee, 'Identifier')
+          ? decorator.expression.callee.name
+          : null;
+
+        if (!decoratorName) {
+          errors.push(
+            this.makeError('decorator expression type not supported')
+          );
+        } else if (
+          // TODO: Don't check this for EOMethodProp
+          !allowObjectLiteralDecorator(decoratorName, objectLiteralDecorators)
+        ) {
+          errors.push(
+            this.makeError(
+              "decorator '@${decoratorName}' not included in ALLOWED_OBJECT_LITERAL_DECORATORS or option '--objectLiteralDecorators'"
+            )
+          );
+        }
+      }
+    }
+
+    if (!decorators && this.needsDecorators) {
+      errors.push(this.makeError("need option '--decorators=true'"));
+    }
+
+    const unsupportedPropNames: readonly string[] = decorators
+      ? []
+      : DECORATORS_REQUIRED_PROP_NAMES;
+    if (unsupportedPropNames.includes(this.name)) {
+      errors.push(
+        this.makeError(
+          `property with name '${this.name}' and type '${this.type}' can not be transformed`
+        )
+      );
+    }
+
+    errors = [...errors, ...this._errors];
+
+    return errors;
+  }
+
+  /** Override to add errors specific to the property type. */
+  protected get _errors(): string[] {
+    return [];
+  }
+
+  protected makeError(message: string): string {
+    return `[${this.name}]: Transform not supported - ${message}`;
   }
 }

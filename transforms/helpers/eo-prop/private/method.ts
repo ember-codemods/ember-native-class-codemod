@@ -2,6 +2,8 @@ import type { EOMethod, Identifier } from '../../ast';
 import AbstractEOProp from './abstract';
 
 export default class EOMethodProp extends AbstractEOProp<EOMethod> {
+  protected override supportsObjectLiteralDecorators = true;
+
   get value(): EOMethod {
     return this._prop;
   }

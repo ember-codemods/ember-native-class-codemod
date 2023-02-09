@@ -5,6 +5,8 @@ import type {
 import AbstractEOProp from './abstract';
 
 export default class EOFunctionExpressionProp extends AbstractEOProp<EOPropertyWithFunctionExpression> {
+  protected override supportsObjectLiteralDecorators = true;
+
   get value(): FunctionExpression {
     return this._prop.value;
   }

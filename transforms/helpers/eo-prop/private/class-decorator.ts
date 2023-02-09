@@ -44,4 +44,9 @@ export default class EOClassDecoratorProp extends AbstractEOProp<EOPropertyForCl
   get isAttributeBindings(): boolean {
     return this.name === 'attributeBindings';
   }
+
+  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
+  protected override get needsDecorators(): boolean {
+    return true;
+  }
 }

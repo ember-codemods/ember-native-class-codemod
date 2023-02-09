@@ -123,4 +123,35 @@ export default class EOCallExpressionProp extends AbstractEOProp<EOPropertyWithC
   get shouldRemoveLastArg(): boolean {
     return this.kind === 'method' || this.kind === 'get';
   }
+
+  protected override get _errors(): string[] {
+    const errors: string[] = [];
+
+    if (!this.hasDecorators) {
+      errors.push(
+        this.makeError(`call to '${this.calleeName}' can not be transformed`)
+      );
+    }
+
+    if (this.hasModifierWithArgs) {
+      errors.push(
+        this.makeError("value has modifiers like 'property' or 'meta'")
+      );
+    }
+
+    if (this.hasVolatile && this.hasMetaDecorator) {
+      errors.push(
+        this.makeError(
+          "value has 'volatile' modifier with computed meta ('@ember/object/computed') is not supported"
+        )
+      );
+    }
+
+    return errors;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
+  protected override get needsDecorators(): boolean {
+    return true;
+  }
 }

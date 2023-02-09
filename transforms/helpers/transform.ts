@@ -118,7 +118,7 @@ function _maybeTransformEmberObjects(
         options
       );
 
-      const errors = hasValidProps(j, eoProps, options);
+      const errors = hasValidProps(eoProps);
 
       if (
         isNode(eoExtendExpressionPath.parentPath?.value, 'MemberExpression')

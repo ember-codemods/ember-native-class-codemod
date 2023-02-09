@@ -230,6 +230,8 @@ const ALLOWED_OBJECT_LITERAL_DECORATORS = new Set([
   'on',
 ]);
 
+export const DECORATORS_REQUIRED_PROP_NAMES = ['actions', 'layout'] as const;
+
 /**
  * Allows transformation of decorators in EmberObject's object-literal argument
  * only if they are part of the `ALLOWED_OBJECT_LITERAL_DECORATORS` set or
