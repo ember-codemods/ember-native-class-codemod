@@ -1,8 +1,8 @@
 import { getTelemetryFor } from 'ember-codemods-telemetry-helpers';
 import type { JSCodeshift } from 'jscodeshift';
 import path from 'path';
-import type { ASTPath, Collection, EOExtendExpression } from './ast';
-import { isNode } from './ast';
+import type { Collection } from './ast';
+import EOExtendExpression from './eo-extend-expression';
 import {
   createDecoratorImportDeclarations,
   getDecoratorImportInfos as getExistingDecoratorImportInfos,
@@ -11,16 +11,13 @@ import logger from './log-helper';
 import type { Options, UserOptions } from './options';
 import type { DecoratorImportSpecs } from './parse-helper';
 import {
-  getClassName,
   getDecoratorsToImportSpecs,
   getEOExtendExpressionCollection,
-  getEOProps,
   getExpressionToReplace,
-  parseEOExtendExpression,
 } from './parse-helper';
 import { isRuntimeData } from './runtime-data';
 import { createClass, withComments } from './transform-helper';
-import { hasValidProps, isFileOfType, isTestFile } from './validation-helper';
+import { isFileOfType, isTestFile } from './validation-helper';
 
 /** Main entry point for parsing and replacing ember objects */
 export default function maybeTransformEmberObjects(
@@ -106,76 +103,40 @@ function _maybeTransformEmberObjects(
   }
 
   // eslint-disable-next-line unicorn/no-array-for-each
-  eoExtendExpressionPaths.forEach(
-    (eoExtendExpressionPath: ASTPath<EOExtendExpression>) => {
-      const { eoExpression, mixins } = parseEOExtendExpression(
-        eoExtendExpressionPath.value
+  eoExtendExpressionPaths.forEach((eoExtendExpressionPath) => {
+    const extendExpression = EOExtendExpression.from(
+      eoExtendExpressionPath,
+      filePath,
+      existingDecoratorImportInfos,
+      options
+    );
+
+    const { className, errors, properties } = extendExpression;
+
+    if (errors.length > 0) {
+      const message = errors.join('\n\t');
+      logger.error(
+        `[${filePath}]: FAILURE \nValidation errors for class '${className}': \n\t${message}`
       );
-
-      const eoProps = getEOProps(
-        eoExpression,
-        existingDecoratorImportInfos,
-        options
-      );
-
-      const errors = hasValidProps(eoProps);
-
-      if (
-        isNode(eoExtendExpressionPath.parentPath?.value, 'MemberExpression')
-      ) {
-        errors.push(
-          'class has chained definition (e.g. EmberObject.extend().reopenClass();'
-        );
-      }
-
-      if (errors.length > 0) {
-        logger.error(
-          `[${filePath}]: FAILURE \nValidation errors: \n\t${errors.join(
-            '\n\t'
-          )}`
-        );
-        return;
-      }
-
-      let className = getClassName(
-        j,
-        eoExtendExpressionPath,
-        filePath,
-        options.runtimeData.type
-      );
-
-      const callee = eoExtendExpressionPath.value.callee;
-      const superClassName = callee.object.name;
-
-      if (className === superClassName) {
-        className = `_${className}`;
-      }
-
-      const es6ClassDeclaration = createClass(
-        j,
-        className,
-        eoProps,
-        superClassName,
-        mixins,
-        options
-      );
-
-      const expressionToReplace = getExpressionToReplace(
-        j,
-        eoExtendExpressionPath
-      );
-      j(expressionToReplace).replaceWith(
-        withComments(es6ClassDeclaration, expressionToReplace.value)
-      );
-
-      transformed = true;
-
-      decoratorImportSpecs = getDecoratorsToImportSpecs(
-        eoProps.instanceProps,
-        decoratorImportSpecs
-      );
+      return;
     }
-  );
+
+    const es6ClassDeclaration = createClass(j, extendExpression, options);
+    const expressionToReplace = getExpressionToReplace(
+      j,
+      eoExtendExpressionPath
+    );
+    j(expressionToReplace).replaceWith(
+      withComments(es6ClassDeclaration, expressionToReplace.value)
+    );
+
+    transformed = true;
+
+    decoratorImportSpecs = getDecoratorsToImportSpecs(
+      properties,
+      decoratorImportSpecs
+    );
+  });
 
   return { transformed, decoratorImportSpecs };
 }

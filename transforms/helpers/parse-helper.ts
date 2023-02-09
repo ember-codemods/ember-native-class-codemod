@@ -1,22 +1,17 @@
 import camelCase from 'camelcase';
 import type { JSCodeshift } from 'jscodeshift';
+import { default as j } from 'jscodeshift';
 import path from 'path';
 import type {
   ASTPath,
   Collection,
   EOExpression,
-  EOExtendExpression,
-  EOMixin,
+  RawEOExtendExpression,
   VariableDeclaration,
 } from './ast';
-import {
-  findPaths,
-  getFirstPath,
-  isEOExpression,
-  isEOExtendExpression,
-} from './ast';
+import { findPaths, getFirstPath, isEOExtendExpression } from './ast';
 import type { DecoratorImportInfoMap } from './decorator-info';
-import type { EOProp, EOProps } from './eo-prop/index';
+import type { EOProp } from './eo-prop/index';
 import makeEOProp, {
   EOActionsProp,
   EOClassDecoratorProp,
@@ -39,14 +34,11 @@ export function getEOProps(
   eoExpression: EOExpression | null,
   existingDecoratorImportInfos: DecoratorImportInfoMap,
   options: Options
-): EOProps {
+): EOProp[] {
   const properties = eoExpression?.properties ?? [];
-
-  return {
-    instanceProps: properties.map((property) =>
-      makeEOProp(property, existingDecoratorImportInfos, options)
-    ),
-  };
+  return properties.map((property) =>
+    makeEOProp(property, existingDecoratorImportInfos, options)
+  );
 }
 
 export interface DecoratorImportSpecs {
@@ -103,7 +95,7 @@ export function getDecoratorsToImportSpecs(
 export function getEOExtendExpressionCollection(
   j: JSCodeshift,
   root: Collection
-): Collection<EOExtendExpression> {
+): Collection<RawEOExtendExpression> {
   return findPaths(root, j.CallExpression, isEOExtendExpression).filter(
     (path: ASTPath) => path.parentPath?.value.type !== 'ClassDeclaration'
   );
@@ -112,7 +104,7 @@ export function getEOExtendExpressionCollection(
 /** Return closest parent var declaration statement */
 function getClosestVariableDeclaration(
   j: JSCodeshift,
-  eoExtendExpressionPath: ASTPath<EOExtendExpression>
+  eoExtendExpressionPath: ASTPath<RawEOExtendExpression>
 ): ASTPath<VariableDeclaration> | null {
   const varDeclarations = j(eoExtendExpressionPath).closest(
     j.VariableDeclaration
@@ -127,8 +119,8 @@ function getClosestVariableDeclaration(
  */
 export function getExpressionToReplace(
   j: JSCodeshift,
-  eoExtendExpressionPath: ASTPath<EOExtendExpression>
-): ASTPath<EOExtendExpression> | ASTPath<VariableDeclaration> {
+  eoExtendExpressionPath: ASTPath<RawEOExtendExpression>
+): ASTPath<RawEOExtendExpression> | ASTPath<VariableDeclaration> {
   const varDeclaration = getClosestVariableDeclaration(
     j,
     eoExtendExpressionPath
@@ -140,7 +132,7 @@ export function getExpressionToReplace(
     parentValue.property['name'] === 'create';
 
   let expressionToReplace:
-    | ASTPath<EOExtendExpression>
+    | ASTPath<RawEOExtendExpression>
     | ASTPath<VariableDeclaration> = eoExtendExpressionPath;
   if (varDeclaration && !isFollowedByCreate) {
     expressionToReplace = varDeclaration;
@@ -150,8 +142,7 @@ export function getExpressionToReplace(
 
 /** Returns name of class to be created */
 export function getClassName(
-  j: JSCodeshift,
-  eoExtendExpressionPath: ASTPath<EOExtendExpression>,
+  eoExtendExpressionPath: ASTPath<RawEOExtendExpression>,
   filePath: string,
   type = ''
 ): string {
@@ -191,29 +182,4 @@ export function getClassName(
   }
 
   return className;
-}
-
-interface EOCallExpressionProps {
-  eoExpression: EOExpression | null;
-  mixins: EOMixin[];
-}
-
-/**
- * Parse ember object call expression, returns EmberObjectExpression and list of mixins
- */
-export function parseEOExtendExpression(
-  eoExtendExpression: EOExtendExpression
-): EOCallExpressionProps {
-  const props: EOCallExpressionProps = {
-    eoExpression: null,
-    mixins: [],
-  };
-  for (const arg of eoExtendExpression.arguments) {
-    if (isEOExpression(arg)) {
-      props.eoExpression = arg;
-    } else {
-      props.mixins.push(arg);
-    }
-  }
-  return props;
 }

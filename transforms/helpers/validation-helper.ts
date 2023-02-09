@@ -1,5 +1,4 @@
 import minimatch from 'minimatch';
-import type { EOProps } from './eo-prop/index';
 import type { Options } from './options';
 
 const TYPE_PATTERNS = {
@@ -30,17 +29,4 @@ export function isFileOfType(file: string, type: Options['type']): boolean {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     !!type && !!TYPE_PATTERNS[type] && minimatch(file, TYPE_PATTERNS[type])
   );
-}
-
-/**
- * Iterates through instance properties to verify if there are any props that
- * can not be transformed
- */
-// FIXME: Rename...Make EO class??
-export function hasValidProps({ instanceProps }: EOProps): string[] {
-  let errors: string[] = [];
-  for (const instanceProp of instanceProps) {
-    errors = [...errors, ...instanceProp.errors];
-  }
-  return errors;
 }

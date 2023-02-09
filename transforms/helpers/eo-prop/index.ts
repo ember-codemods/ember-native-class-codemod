@@ -32,10 +32,6 @@ export type EOProp =
   | EOFunctionExpressionProp
   | EOMethodProp;
 
-export interface EOProps {
-  instanceProps: EOProp[];
-}
-
 /**
  * Makes an object representing an Ember Object property for the given
  * Property, RuntimeData, and ImportPropDecoratorMap.

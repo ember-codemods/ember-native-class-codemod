@@ -28,7 +28,8 @@ import {
   createIdentifierDecorators,
   createInstancePropDecorators,
 } from './decorator-helper';
-import type { EOProps, EOSimpleProp } from './eo-prop/index';
+import type EOExtendExpression from './eo-extend-expression';
+import type { EOSimpleProp } from './eo-prop/index';
 import {
   EOActionsProp,
   EOCallExpressionProp,
@@ -383,12 +384,10 @@ function createSuperClassExpression(
 /** Create the class */
 export function createClass(
   j: JSCodeshift,
-  className: string,
-  { instanceProps }: EOProps,
-  superClassName: string,
-  mixins: EOMixin[],
+  expression: EOExtendExpression,
   options: Options
 ): ClassDeclaration {
+  const { className, superClassName, mixins, properties } = expression;
   let classBody: Parameters<typeof j.classBody>[0] = [];
   const classDecorators: Decorator[] = [];
 
@@ -396,7 +395,7 @@ export function createClass(
     classDecorators.push(j.decorator(j.identifier('classic')));
   }
 
-  for (const prop of instanceProps) {
+  for (const prop of properties) {
     if (prop instanceof EOClassDecoratorProp) {
       classDecorators.push(createClassDecorator(j, prop));
     } else if (prop instanceof EOMethodProp) {

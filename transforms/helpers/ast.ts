@@ -69,12 +69,12 @@ function isIdent(u: unknown, ...names: string[]): u is Identifier {
   return isNode(u, 'Identifier') && names.includes(u.name);
 }
 
-export interface EOExtendExpression extends CallExpression {
+export interface RawEOExtendExpression extends CallExpression {
   callee: EOExtendExpressionCallee;
   arguments: EOExtendArg[];
 }
 
-export function isEOExtendExpression(u: unknown): u is EOExtendExpression {
+export function isEOExtendExpression(u: unknown): u is RawEOExtendExpression {
   return (
     isNode(u, 'CallExpression') &&
     isEOExtendExpressionCallee(u.callee) &&
