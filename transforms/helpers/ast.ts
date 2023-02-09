@@ -33,6 +33,7 @@ import { isRecord } from './util/types';
 export type {
   ASTNode,
   CallExpression,
+  ClassBody,
   ClassDeclaration,
   ClassMethod,
   ClassProperty,
@@ -47,6 +48,8 @@ export type {
   MemberExpression,
   VariableDeclaration,
 } from 'jscodeshift';
+
+export type { ClassBodyBuilder } from 'ast-types/gen/builders';
 
 export interface ASTPath<N extends ASTNode = ASTNode> extends _ASTPath<N> {
   parentPath: ASTPath | null | undefined;
@@ -288,25 +291,18 @@ function isEOAction(u: unknown): u is EOAction {
   return isEOActionMethod(u) || isEOActionProperty(u);
 }
 
-interface EOActionMethod extends ObjectMethod {
-  key: Identifier;
-}
+export type EOActionMethod = EOMethod;
 
 export function isEOActionMethod(u: unknown): u is EOActionMethod {
-  return isNode(u, 'ObjectMethod') && isNode(u.key, 'Identifier');
+  return isEOMethod(u);
 }
 
-export interface EOActionProperty extends ObjectProperty {
-  key: Identifier;
+export interface EOActionProperty extends EOProperty {
   value: Identifier;
 }
 
 export function isEOActionProperty(u: unknown): u is EOActionProperty {
-  return (
-    isNode(u, 'ObjectProperty') &&
-    isNode(u.key, 'Identifier') &&
-    isNode(u.value, 'Identifier')
-  );
+  return isEOProperty(u) && isNode(u.value, 'Identifier');
 }
 
 interface EOActionsObjectKey extends Identifier {

@@ -12,23 +12,24 @@ import type { Options } from '../options';
 import { assert } from '../util/types';
 import EOActionsProp from './private/actions';
 import EOCallExpressionProp from './private/call-expression';
-import EOClassDecoratorProp from './private/class-decorator';
+import EOClassDecorator from './private/class-decorator';
 import EOFunctionExpressionProp from './private/function-expression';
 import EOMethodProp from './private/method';
 import EOSimpleProp from './private/simple';
 
 export { default as EOActionsProp } from './private/actions';
 export { default as EOCallExpressionProp } from './private/call-expression';
-export { default as EOClassDecoratorProp } from './private/class-decorator';
 export { default as EOFunctionExpressionProp } from './private/function-expression';
 export { default as EOMethodProp } from './private/method';
 export { default as EOSimpleProp } from './private/simple';
+
+// Intentionally not included in EOProp union type.
+export { default as EOClassDecorator } from './private/class-decorator';
 
 export type EOProp =
   | EOActionsProp
   | EOSimpleProp
   | EOCallExpressionProp
-  | EOClassDecoratorProp
   | EOFunctionExpressionProp
   | EOMethodProp;
 
@@ -40,7 +41,7 @@ export default function makeEOProp(
   eoProp: EOExpressionProp,
   existingDecoratorImportInfos: DecoratorImportInfoMap,
   options: Options
-): EOProp {
+): EOProp | EOClassDecorator {
   if (isEOPropertyWithCallExpression(eoProp)) {
     return new EOCallExpressionProp(
       eoProp,
@@ -52,7 +53,7 @@ export default function makeEOProp(
   } else if (isEOPropertyWithFunctionExpression(eoProp)) {
     return new EOFunctionExpressionProp(eoProp, options);
   } else if (isEOPropertyForClassDecorator(eoProp)) {
-    return new EOClassDecoratorProp(eoProp, options);
+    return new EOClassDecorator(eoProp, options);
   } else if (isEOPropertyForActionsObject(eoProp)) {
     return new EOActionsProp(eoProp, options);
   } else {

@@ -1,7 +1,14 @@
-import type { EOPropertySimple } from '../../ast';
+import type { ClassProperty, EOPropertySimple } from '../../ast';
 import AbstractEOProp from './abstract';
 
-export default class EOSimpleProp extends AbstractEOProp<EOPropertySimple> {
+export default class EOSimpleProp extends AbstractEOProp<
+  EOPropertySimple,
+  ClassProperty
+> {
+  override build(): ClassProperty {
+    throw new Error('Method not implemented.');
+  }
+
   protected override supportsObjectLiteralDecorators = true;
 
   get value(): EOPropertySimple['value'] {

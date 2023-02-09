@@ -1,4 +1,6 @@
 import type {
+  ClassMethod,
+  ClassProperty,
   EOCallExpression,
   EOCallExpressionInnerCallee,
   EOPropertyWithCallExpression,
@@ -32,7 +34,15 @@ function getModifier(calleeObject: EOCallExpression): CallExpressionModifier {
   };
 }
 
-export default class EOCallExpressionProp extends AbstractEOProp<EOPropertyWithCallExpression> {
+export default class EOCallExpressionProp extends AbstractEOProp<
+  EOPropertyWithCallExpression,
+  // FIXME: This seems fishy. Should it be split into multiple classes?
+  ClassMethod[] | ClassProperty[]
+> {
+  override build(): ClassMethod[] | ClassProperty[] {
+    throw new Error('Method not implemented.');
+  }
+
   private calleeObject: EOCallExpressionInnerCallee;
   readonly modifiers: CallExpressionModifier[];
 

@@ -1,19 +1,27 @@
 import { default as j } from 'jscodeshift';
 import type {
+  ClassMethod,
   Collection,
   EOAction,
   EOPropertyWithActionsObject,
-} from '../../ast';
+} from '../../../ast';
 import {
   findPaths,
   isEOActionMethod,
   makeEOActionInfiniteCallAssertion,
   makeEOActionInfiniteLiteralAssertion,
-} from '../../ast';
-import { LIFECYCLE_HOOKS } from '../../util/index';
-import AbstractEOProp from './abstract';
+} from '../../../ast';
+import { LIFECYCLE_HOOKS } from '../../../util/index';
+import AbstractEOProp from '../abstract';
 
-export default class EOActionsProp extends AbstractEOProp<EOPropertyWithActionsObject> {
+export default class EOActionsProp extends AbstractEOProp<
+  EOPropertyWithActionsObject,
+  ClassMethod[]
+> {
+  override build(): ClassMethod[] {
+    throw new Error('Method not implemented.');
+  }
+
   get value(): EOPropertyWithActionsObject['value'] {
     return this._prop.value;
   }

@@ -13,10 +13,8 @@ import type { DecoratorImportSpecs } from './parse-helper';
 import {
   getDecoratorsToImportSpecs,
   getEOExtendExpressionCollection,
-  getExpressionToReplace,
 } from './parse-helper';
 import { isRuntimeData } from './runtime-data';
-import { createClass, withComments } from './transform-helper';
 import { isFileOfType, isTestFile } from './validation-helper';
 
 /** Main entry point for parsing and replacing ember objects */
@@ -104,36 +102,18 @@ function _maybeTransformEmberObjects(
 
   // eslint-disable-next-line unicorn/no-array-for-each
   eoExtendExpressionPaths.forEach((eoExtendExpressionPath) => {
-    const extendExpression = EOExtendExpression.from(
+    const extendExpression = new EOExtendExpression(
       eoExtendExpressionPath,
       filePath,
       existingDecoratorImportInfos,
       options
     );
 
-    const { className, errors, properties } = extendExpression;
+    transformed = extendExpression.transform();
 
-    if (errors.length > 0) {
-      const message = errors.join('\n\t');
-      logger.error(
-        `[${filePath}]: FAILURE \nValidation errors for class '${className}': \n\t${message}`
-      );
-      return;
-    }
-
-    const es6ClassDeclaration = createClass(j, extendExpression, options);
-    const expressionToReplace = getExpressionToReplace(
-      j,
-      eoExtendExpressionPath
-    );
-    j(expressionToReplace).replaceWith(
-      withComments(es6ClassDeclaration, expressionToReplace.value)
-    );
-
-    transformed = true;
-
+    // FIXME: Move to class
     decoratorImportSpecs = getDecoratorsToImportSpecs(
-      properties,
+      [...extendExpression.decorators, ...extendExpression.properties],
       decoratorImportSpecs
     );
   });

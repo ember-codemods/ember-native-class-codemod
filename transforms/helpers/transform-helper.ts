@@ -2,7 +2,6 @@ import type { JSCodeshift } from 'jscodeshift';
 import type {
   ASTNode,
   CallExpression,
-  ClassDeclaration,
   ClassMethod,
   ClassProperty,
   Collection,
@@ -10,8 +9,6 @@ import type {
   Decorator,
   EOActionProperty,
   EOMethod,
-  EOMixin,
-  Identifier,
   ImportDeclaration,
   ImportDefaultSpecifier,
   ImportSpecifier,
@@ -24,19 +21,15 @@ import {
   isEOSuperExpression,
 } from './ast';
 import {
-  createClassDecorator,
   createIdentifierDecorators,
   createInstancePropDecorators,
 } from './decorator-helper';
-import type EOExtendExpression from './eo-extend-expression';
-import type { EOSimpleProp } from './eo-prop/index';
-import {
+import type {
   EOActionsProp,
   EOCallExpressionProp,
-  EOClassDecoratorProp,
-  EOFunctionExpressionProp,
-  EOMethodProp,
+  EOSimpleProp,
 } from './eo-prop/index';
+import { EOFunctionExpressionProp, EOMethodProp } from './eo-prop/index';
 import type { Options } from './options';
 import {
   ACTION_SUPER_EXPRESSION_COMMENT,
@@ -156,7 +149,7 @@ interface FunctionProp {
  *
  * For example { foo: function() { }} --> { foo() { }}
  */
-function createMethodProp(
+export function createMethodProp(
   j: JSCodeshift,
   functionProp: EOMethodProp | EOFunctionExpressionProp | FunctionProp,
   {
@@ -191,7 +184,7 @@ function createMethodProp(
 }
 
 /** Create the class property from passed instance property */
-function createClassProp(
+export function createClassProp(
   j: JSCodeshift,
   instanceProp: EOCallExpressionProp | EOSimpleProp,
   decorators: Decorator[] = []
@@ -288,7 +281,7 @@ function convertIdentifierActionToMethod(
  * }
  * ```
  */
-function createActionDecoratedProps(
+export function createActionDecoratedProps(
   j: JSCodeshift,
   actionsProp: EOActionsProp,
   options: Options
@@ -311,7 +304,7 @@ function createActionDecoratedProps(
 }
 
 /** Iterate and covert the computed properties to class methods */
-function createCallExpressionProp(
+export function createCallExpressionProp(
   j: JSCodeshift,
   callExprProp: EOCallExpressionProp,
   options: Options
@@ -364,68 +357,6 @@ function createCallExpressionProp(
   } else {
     return [createClassProp(j, callExprProp)];
   }
-}
-
-/** Create identifier for super class with mixins */
-function createSuperClassExpression(
-  j: JSCodeshift,
-  superClassName = '',
-  mixins: EOMixin[] = []
-): CallExpression | Identifier {
-  if (mixins.length > 0) {
-    return j.callExpression(
-      j.memberExpression(j.identifier(superClassName), j.identifier('extend')),
-      mixins
-    );
-  }
-  return j.identifier(superClassName);
-}
-
-/** Create the class */
-export function createClass(
-  j: JSCodeshift,
-  expression: EOExtendExpression,
-  options: Options
-): ClassDeclaration {
-  const { className, superClassName, mixins, properties } = expression;
-  let classBody: Parameters<typeof j.classBody>[0] = [];
-  const classDecorators: Decorator[] = [];
-
-  if (options.classicDecorator) {
-    classDecorators.push(j.decorator(j.identifier('classic')));
-  }
-
-  for (const prop of properties) {
-    if (prop instanceof EOClassDecoratorProp) {
-      classDecorators.push(createClassDecorator(j, prop));
-    } else if (prop instanceof EOMethodProp) {
-      classBody.push(createMethodProp(j, prop));
-    } else if (prop instanceof EOFunctionExpressionProp) {
-      classBody.push(createMethodProp(j, prop));
-    } else if (prop instanceof EOCallExpressionProp) {
-      classBody = [...classBody, ...createCallExpressionProp(j, prop, options)];
-    } else if (prop instanceof EOActionsProp) {
-      classBody = [
-        ...classBody,
-        ...createActionDecoratedProps(j, prop, options),
-      ];
-    } else {
-      classBody.push(createClassProp(j, prop));
-    }
-  }
-
-  const classDeclaration = j.classDeclaration.from({
-    id: className ? j.identifier(className) : null,
-    body: j.classBody(classBody),
-    superClass: createSuperClassExpression(j, superClassName, mixins),
-  });
-
-  // @ts-expect-error jscodeshift AST types are incorrect
-  // If this ever gets fixed, check if the builder `.from` method above
-  // will now take a decorators param.
-  classDeclaration.decorators = classDecorators;
-
-  return classDeclaration;
 }
 
 /** Create import statement */

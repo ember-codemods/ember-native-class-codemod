@@ -25,9 +25,7 @@ type EOPropValue = EOProperty['value'] | EOMethod;
  *
  * A wrapper object for ember object properties
  */
-export default abstract class AbstractEOProp<
-  P extends EOExpressionProp = EOExpressionProp
-> {
+export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
   readonly _prop: P & {
     // ast-types missing these properties that exist on @babel/types
     decorators?: Decorator[] | null;
@@ -73,7 +71,11 @@ export default abstract class AbstractEOProp<
     }
   }
 
+  // FIXME: Verify that everything on these classes is still needed
+  // FIXME: Verify access modifiers
   abstract value: EOPropValue;
+
+  abstract build(): B;
 
   get type(): EOPropValue['type'] {
     return this.value.type;

@@ -1,11 +1,18 @@
-import type { EOPropertyForClassDecorator } from '../../ast';
+import type { Decorator, EOPropertyForClassDecorator } from '../../ast';
 import {
   LAYOUT_DECORATOR_LOCAL_NAME,
   LAYOUT_DECORATOR_NAME,
 } from '../../util/index';
 import AbstractEOProp from './abstract';
 
-export default class EOClassDecoratorProp extends AbstractEOProp<EOPropertyForClassDecorator> {
+export default class EOClassDecorator extends AbstractEOProp<
+  EOPropertyForClassDecorator,
+  Decorator
+> {
+  override build(): Decorator {
+    throw new Error('Method not implemented.');
+  }
+
   get value(): EOPropertyForClassDecorator['value'] {
     return this._prop.value;
   }

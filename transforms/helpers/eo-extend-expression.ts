@@ -1,52 +1,57 @@
+import { default as j } from 'jscodeshift';
 import type {
   ASTPath,
+  CallExpression,
+  ClassBody,
+  ClassBodyBuilder,
+  ClassDeclaration,
+  Decorator,
   EOExpression,
   EOMixin,
+  Identifier,
   RawEOExtendExpression,
 } from './ast';
 import { isEOExpression, isNode } from './ast';
+import { createClassDecorator } from './decorator-helper';
 import type { DecoratorImportInfoMap } from './decorator-info';
 import type { EOProp } from './eo-prop/index';
+import makeEOProp, {
+  EOActionsProp,
+  EOCallExpressionProp,
+  EOClassDecorator,
+  EOFunctionExpressionProp,
+  EOMethodProp,
+} from './eo-prop/index';
+import logger from './log-helper';
 import type { Options } from './options';
-import { getClassName, getEOProps } from './parse-helper';
+import { getClassName, getExpressionToReplace } from './parse-helper';
+import {
+  createActionDecoratedProps,
+  createCallExpressionProp,
+  createClassProp,
+  createMethodProp,
+  withComments,
+} from './transform-helper';
 
 export default class EOExtendExpression {
-  static from(
-    path: ASTPath<RawEOExtendExpression>,
-    filePath: string,
-    existingDecoratorImportInfos: DecoratorImportInfoMap,
-    options: Options
-  ): EOExtendExpression {
-    let className = getClassName(path, filePath, options.runtimeData.type);
-    const superClassName = path.value.callee.object.name;
+  private className: string;
+  private superClassName: string;
 
-    if (className === superClassName) {
-      className = `_${className}`;
-    }
-
-    return new this(
-      path,
-      className,
-      superClassName,
-      existingDecoratorImportInfos,
-      options
-    );
-  }
-
-  readonly expression: EOExpression | null = null;
-  readonly mixins: EOMixin[];
+  private expression: EOExpression | null = null;
+  private mixins: EOMixin[];
   readonly properties: EOProp[];
-
-  private _parseErrors: string[] = [];
+  readonly decorators: EOClassDecorator[];
 
   constructor(
     private path: ASTPath<RawEOExtendExpression>,
-    readonly className: string,
-    readonly superClassName: string,
+    private filePath: string,
     existingDecoratorImportInfos: DecoratorImportInfoMap,
-    options: Options
+    private options: Options
   ) {
     const raw = path.value;
+
+    this.className = getClassName(path, filePath, options.runtimeData.type);
+    this.superClassName = raw.callee.object.name;
 
     const mixins: EOMixin[] = [];
     for (const arg of raw.arguments) {
@@ -65,18 +70,140 @@ export default class EOExtendExpression {
     }
     this.mixins = mixins;
 
-    this.properties = getEOProps(
-      this.expression,
-      existingDecoratorImportInfos,
-      options
+    const rawProperties = this.expression?.properties ?? [];
+    const properties: EOProp[] = [];
+    const decorators: EOClassDecorator[] = [];
+
+    for (const property of rawProperties) {
+      const eoProp = makeEOProp(
+        property,
+        existingDecoratorImportInfos,
+        options
+      );
+      if (eoProp instanceof EOClassDecorator) {
+        decorators.push(eoProp);
+      } else {
+        properties.push(eoProp);
+      }
+    }
+
+    this.properties = properties;
+    this.decorators = decorators;
+  }
+
+  transform(): boolean {
+    const es6ClassDeclaration = this.build();
+    if (es6ClassDeclaration) {
+      const expressionToReplace = getExpressionToReplace(j, this.path);
+      j(expressionToReplace).replaceWith(
+        withComments(es6ClassDeclaration, expressionToReplace.value)
+      );
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  private build(): ClassDeclaration | null {
+    const errors = this.validate();
+    if (errors.length > 0) {
+      const message = errors.join('\n\t');
+      logger.error(
+        `[${this.filePath}]: FAILURE \nValidation errors for class '${this.className}': \n\t${message}`
+      );
+      return null;
+    }
+
+    const classDeclaration = j.classDeclaration.from({
+      id: this.buildClassIdentifier(),
+      body: this.buildClassBody(),
+      superClass: this.buildSuperClassExpression(),
+    });
+
+    // @ts-expect-error jscodeshift AST types are incorrect
+    // If this ever gets fixed, check if the builder `.from` method above
+    // will now take a decorators param.
+    classDeclaration.decorators = this.buildClassDecorators();
+
+    return classDeclaration;
+  }
+
+  private buildClassIdentifier(): Identifier {
+    const { className, superClassName } = this;
+    return j.identifier(
+      className === superClassName ? `_${className}` : className
     );
   }
+
+  private buildClassBody(): ClassBody {
+    const { properties } = this;
+    let classBody: Parameters<ClassBodyBuilder>[0] = [];
+
+    for (const prop of properties) {
+      if (prop instanceof EOMethodProp) {
+        classBody.push(createMethodProp(j, prop));
+      } else if (prop instanceof EOFunctionExpressionProp) {
+        classBody.push(createMethodProp(j, prop));
+      } else if (prop instanceof EOCallExpressionProp) {
+        classBody = [
+          ...classBody,
+          ...createCallExpressionProp(j, prop, this.options),
+        ];
+      } else if (prop instanceof EOActionsProp) {
+        classBody = [
+          ...classBody,
+          ...createActionDecoratedProps(j, prop, this.options),
+        ];
+      } else {
+        classBody.push(createClassProp(j, prop));
+      }
+    }
+
+    return j.classBody(classBody);
+  }
+
+  /**
+   * Create the Identifier for the super class.
+   * If there are Mixins, the CallExpression will be a CallExpression with
+   * the Mixins included.
+   */
+  private buildSuperClassExpression(): CallExpression | Identifier {
+    const { superClassName, mixins } = this;
+    if (mixins.length > 0) {
+      return j.callExpression(
+        j.memberExpression(
+          j.identifier(superClassName),
+          j.identifier('extend')
+        ),
+        mixins
+      );
+    }
+    return j.identifier(superClassName);
+  }
+
+  private buildClassDecorators(): Decorator[] {
+    const { decorators } = this;
+    const { classicDecorator } = this.options;
+    const classDecorators: Decorator[] = [];
+
+    if (classicDecorator) {
+      classDecorators.push(j.decorator(j.identifier('classic')));
+    }
+
+    for (const decorator of decorators) {
+      classDecorators.push(createClassDecorator(j, decorator));
+    }
+
+    return classDecorators;
+  }
+
+  private _parseErrors: string[] = [];
 
   /**
    * Iterates through instance properties to verify if there are any props that
    * can not be transformed
    */
-  get errors(): string[] {
+  private validate(): string[] {
     let errors = this._parseErrors;
 
     if (isNode(this.path.parentPath?.value, 'MemberExpression')) {

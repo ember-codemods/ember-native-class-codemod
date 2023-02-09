@@ -5,41 +5,14 @@ import path from 'path';
 import type {
   ASTPath,
   Collection,
-  EOExpression,
   RawEOExtendExpression,
   VariableDeclaration,
 } from './ast';
 import { findPaths, getFirstPath, isEOExtendExpression } from './ast';
-import type { DecoratorImportInfoMap } from './decorator-info';
 import type { EOProp } from './eo-prop/index';
-import makeEOProp, {
-  EOActionsProp,
-  EOClassDecoratorProp,
-} from './eo-prop/index';
-import type { Options } from './options';
+import { EOActionsProp, EOClassDecorator } from './eo-prop/index';
 import { capitalizeFirstLetter } from './util/index';
 import { assert, defined, isRecord } from './util/types';
-
-/**
- * Return the map of instance props and functions from Ember Object
- *
- * For example
- * const myObj = EmberObject.extend({ key: value });
- * will be parsed as:
- * {
- *   instanceProps: [ Property({key: value}) ]
- *  }
- */
-export function getEOProps(
-  eoExpression: EOExpression | null,
-  existingDecoratorImportInfos: DecoratorImportInfoMap,
-  options: Options
-): EOProp[] {
-  const properties = eoExpression?.properties ?? [];
-  return properties.map((property) =>
-    makeEOProp(property, existingDecoratorImportInfos, options)
-  );
-}
 
 export interface DecoratorImportSpecs {
   action: boolean;
@@ -58,7 +31,7 @@ export interface DecoratorImportSpecs {
  * which already have imports in the code
  */
 export function getDecoratorsToImportSpecs(
-  instanceProps: EOProp[],
+  instanceProps: Array<EOProp | EOClassDecorator>,
   existingSpecs: DecoratorImportSpecs
 ): DecoratorImportSpecs {
   let specs = existingSpecs;
@@ -67,24 +40,22 @@ export function getDecoratorsToImportSpecs(
       action: specs.action || prop instanceof EOActionsProp,
       classNames:
         specs.classNames ||
-        (prop instanceof EOClassDecoratorProp && prop.isClassNames),
+        (prop instanceof EOClassDecorator && prop.isClassNames),
       classNameBindings:
         specs.classNameBindings ||
-        (prop instanceof EOClassDecoratorProp && prop.isClassNameBindings),
+        (prop instanceof EOClassDecorator && prop.isClassNameBindings),
       attributeBindings:
         specs.attributeBindings ||
-        (prop instanceof EOClassDecoratorProp && prop.isAttributeBindings),
+        (prop instanceof EOClassDecorator && prop.isAttributeBindings),
       layout:
         specs.layout ||
-        (prop instanceof EOClassDecoratorProp && prop.isLayoutDecorator),
+        (prop instanceof EOClassDecorator && prop.isLayoutDecorator),
       templateLayout:
         specs.templateLayout ||
-        (prop instanceof EOClassDecoratorProp &&
-          prop.isTemplateLayoutDecorator),
+        (prop instanceof EOClassDecorator && prop.isTemplateLayoutDecorator),
       off: specs.off || prop.hasOffDecorator,
       tagName:
-        specs.tagName ||
-        (prop instanceof EOClassDecoratorProp && prop.isTagName),
+        specs.tagName || (prop instanceof EOClassDecorator && prop.isTagName),
       unobserves: specs.unobserves || prop.hasUnobservesDecorator,
     };
   }

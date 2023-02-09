@@ -1,7 +1,14 @@
-import type { EOMethod, Identifier } from '../../ast';
+import type { ClassMethod, EOMethod, Identifier } from '../../ast';
 import AbstractEOProp from './abstract';
 
-export default class EOMethodProp extends AbstractEOProp<EOMethod> {
+export default class EOMethodProp extends AbstractEOProp<
+  EOMethod,
+  ClassMethod
+> {
+  override build(): ClassMethod {
+    throw new Error('Method not implemented.');
+  }
+
   protected override supportsObjectLiteralDecorators = true;
 
   get value(): EOMethod {
