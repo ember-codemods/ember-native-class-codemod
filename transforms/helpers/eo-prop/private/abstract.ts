@@ -5,6 +5,7 @@ import type {
   EOProperty,
 } from '../../ast';
 import type { DecoratorImportInfo } from '../../decorator-info';
+import type { Options } from '../../options';
 import type { RuntimeData } from '../../runtime-data';
 
 interface EODecoratorArgs {
@@ -37,18 +38,18 @@ export default abstract class AbstractEOProp<
   isOverridden: boolean | undefined;
   private readonly runtimeType: string | undefined;
 
-  constructor(eoProp: P, runtimeData: RuntimeData) {
+  constructor(eoProp: P, protected readonly options: Options) {
     this._prop = eoProp;
 
-    this.runtimeData = runtimeData;
-    if (runtimeData.type) {
+    this.runtimeData = options.runtimeData;
+    if (this.runtimeData.type) {
       const {
         type,
         computedProperties = [],
         offProperties = {},
         overriddenProperties = [],
         unobservedProperties = {},
-      } = runtimeData;
+      } = this.runtimeData;
 
       const name = this.name;
       if (name in unobservedProperties) {

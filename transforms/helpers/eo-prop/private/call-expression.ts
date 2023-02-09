@@ -8,7 +8,7 @@ import {
   isEOMemberExpressionForModifier,
 } from '../../ast';
 import type { DecoratorImportInfoMap } from '../../decorator-info';
-import type { RuntimeData } from '../../runtime-data';
+import type { Options } from '../../options';
 import { verified } from '../../util/types';
 import AbstractEOProp from './abstract';
 
@@ -38,10 +38,10 @@ export default class EOCallExpressionProp extends AbstractEOProp<EOPropertyWithC
 
   constructor(
     eoProp: EOPropertyWithCallExpression,
-    runtimeData: RuntimeData,
-    existingDecoratorImportInfos: DecoratorImportInfoMap
+    existingDecoratorImportInfos: DecoratorImportInfoMap,
+    options: Options
   ) {
-    super(eoProp, runtimeData);
+    super(eoProp, options);
 
     let calleeObject = this._prop.value;
     const modifiers = [getModifier(calleeObject)];

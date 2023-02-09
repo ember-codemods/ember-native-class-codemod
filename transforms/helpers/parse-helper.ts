@@ -21,7 +21,7 @@ import makeEOProp, {
   EOActionsProp,
   EOClassDecoratorProp,
 } from './eo-prop/index';
-import type { RuntimeData } from './runtime-data';
+import type { Options } from './options';
 import { capitalizeFirstLetter } from './util/index';
 import { assert, defined, isRecord } from './util/types';
 
@@ -38,13 +38,13 @@ import { assert, defined, isRecord } from './util/types';
 export function getEOProps(
   eoExpression: EOExpression | null,
   existingDecoratorImportInfos: DecoratorImportInfoMap,
-  runtimeData: RuntimeData
+  options: Options
 ): EOProps {
   const properties = eoExpression?.properties ?? [];
 
   return {
     instanceProps: properties.map((property) =>
-      makeEOProp(property, runtimeData, existingDecoratorImportInfos)
+      makeEOProp(property, existingDecoratorImportInfos, options)
     ),
   };
 }

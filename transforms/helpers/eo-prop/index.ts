@@ -8,7 +8,7 @@ import {
   isEOPropertyWithFunctionExpression,
 } from '../ast';
 import type { DecoratorImportInfoMap } from '../decorator-info';
-import type { RuntimeData } from '../runtime-data';
+import type { Options } from '../options';
 import { assert } from '../util/types';
 import EOActionsProp from './private/actions';
 import EOCallExpressionProp from './private/call-expression';
@@ -42,25 +42,25 @@ export interface EOProps {
  */
 export default function makeEOProp(
   eoProp: EOExpressionProp,
-  runtimeData: RuntimeData,
-  existingDecoratorImportInfos: DecoratorImportInfoMap
+  existingDecoratorImportInfos: DecoratorImportInfoMap,
+  options: Options
 ): EOProp {
   if (isEOPropertyWithCallExpression(eoProp)) {
     return new EOCallExpressionProp(
       eoProp,
-      runtimeData,
-      existingDecoratorImportInfos
+      existingDecoratorImportInfos,
+      options
     );
   } else if (isEOMethod(eoProp)) {
-    return new EOMethodProp(eoProp, runtimeData);
+    return new EOMethodProp(eoProp, options);
   } else if (isEOPropertyWithFunctionExpression(eoProp)) {
-    return new EOFunctionExpressionProp(eoProp, runtimeData);
+    return new EOFunctionExpressionProp(eoProp, options);
   } else if (isEOPropertyForClassDecorator(eoProp)) {
-    return new EOClassDecoratorProp(eoProp, runtimeData);
+    return new EOClassDecoratorProp(eoProp, options);
   } else if (isEOPropertyForActionsObject(eoProp)) {
-    return new EOActionsProp(eoProp, runtimeData);
+    return new EOActionsProp(eoProp, options);
   } else {
     assert(isEOPropertySimple(eoProp));
-    return new EOSimpleProp(eoProp, runtimeData);
+    return new EOSimpleProp(eoProp, options);
   }
 }

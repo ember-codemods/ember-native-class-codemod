@@ -115,7 +115,7 @@ function _maybeTransformEmberObjects(
       const eoProps = getEOProps(
         eoExpression,
         existingDecoratorImportInfos,
-        options.runtimeData
+        options
       );
 
       const errors = hasValidProps(j, eoProps, options);

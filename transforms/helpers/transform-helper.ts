@@ -289,7 +289,8 @@ function convertIdentifierActionToMethod(
  */
 function createActionDecoratedProps(
   j: JSCodeshift,
-  actionsProp: EOActionsProp
+  actionsProp: EOActionsProp,
+  options: Options
 ): ClassMethod[] {
   const actionProps = actionsProp.properties;
   const overriddenActions = actionsProp.runtimeData.overriddenActions;
@@ -298,7 +299,7 @@ function createActionDecoratedProps(
     if (isEOActionProperty(actionProp)) {
       return convertIdentifierActionToMethod(j, actionProp, actionDecorators);
     } else {
-      const prop = new EOMethodProp(actionProp, actionsProp.runtimeData);
+      const prop = new EOMethodProp(actionProp, options);
       prop.isOverridden = overriddenActions?.includes(actionProp.key.name);
       return createMethodProp(j, prop, {
         decorators: actionDecorators,
@@ -311,7 +312,8 @@ function createActionDecoratedProps(
 /** Iterate and covert the computed properties to class methods */
 function createCallExpressionProp(
   j: JSCodeshift,
-  callExprProp: EOCallExpressionProp
+  callExprProp: EOCallExpressionProp,
+  options: Options
 ): ClassMethod[] | ClassProperty[] {
   const callExprArgs = [...callExprProp.arguments];
   if (callExprProp.shouldRemoveLastArg) {
@@ -335,7 +337,7 @@ function createCallExpressionProp(
     } else if (lastArg.type === 'ObjectExpression') {
       const callExprMethods = lastArg.properties.map((property) => {
         assert(isEOMethod(property), 'expected EOMethod');
-        const prop = new EOMethodProp(property, callExprProp.runtimeData);
+        const prop = new EOMethodProp(property, options);
         prop.isComputed = true;
         assert(
           (['init', 'get', 'set', 'method'] as const).includes(
@@ -402,9 +404,12 @@ export function createClass(
     } else if (prop instanceof EOFunctionExpressionProp) {
       classBody.push(createMethodProp(j, prop));
     } else if (prop instanceof EOCallExpressionProp) {
-      classBody = [...classBody, ...createCallExpressionProp(j, prop)];
+      classBody = [...classBody, ...createCallExpressionProp(j, prop, options)];
     } else if (prop instanceof EOActionsProp) {
-      classBody = [...classBody, ...createActionDecoratedProps(j, prop)];
+      classBody = [
+        ...classBody,
+        ...createActionDecoratedProps(j, prop, options),
+      ];
     } else {
       classBody.push(createClassProp(j, prop));
     }
