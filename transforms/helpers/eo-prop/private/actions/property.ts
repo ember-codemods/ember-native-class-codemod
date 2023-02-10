@@ -55,7 +55,7 @@ export default class ActionProp extends AbstractEOProp<
       key: this.key,
       params: expr.params,
       body: expr.body,
-      comments: this.comments ?? null,
+      comments: this.comments,
       decorators: buildActionDecorator(),
     });
   }

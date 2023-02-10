@@ -17,7 +17,6 @@ import type { DecoratorImportInfoMap } from './decorator-info';
 import type { EOProp } from './eo-prop/index';
 import makeEOProp, {
   EOActionsProp,
-  EOCallExpressionProp,
   EOClassDecorator,
   EOFunctionExpressionProp,
   EOMethodProp,
@@ -25,11 +24,7 @@ import makeEOProp, {
 import logger from './log-helper';
 import type { Options } from './options';
 import { getClassName, getExpressionToReplace } from './parse-helper';
-import {
-  createCallExpressionProp,
-  createMethodProp,
-  withComments,
-} from './transform-helper';
+import { createMethodProp, withComments } from './transform-helper';
 
 export default class EOExtendExpression {
   private className: string;
@@ -142,14 +137,17 @@ export default class EOExtendExpression {
         classBody.push(createMethodProp(j, prop));
       } else if (prop instanceof EOFunctionExpressionProp) {
         classBody.push(createMethodProp(j, prop));
-      } else if (prop instanceof EOCallExpressionProp) {
-        classBody = [
-          ...classBody,
-          ...createCallExpressionProp(j, prop, this.options),
-        ];
+      } else if (prop.isEOCallExpressionProp) {
+        const built = prop.build();
+        if (Array.isArray(built)) {
+          classBody = [...classBody, ...built];
+        } else {
+          classBody.push(built);
+        }
       } else if (prop instanceof EOActionsProp) {
         classBody = [...classBody, ...prop.build()];
       } else {
+        // @ts-expect-error FIXME
         classBody.push(prop.build());
       }
     }

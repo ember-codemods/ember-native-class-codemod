@@ -11,7 +11,7 @@ export default class EOSimpleProp extends AbstractEOProp<
     const classProp = j.classProperty.from({
       key: this.key,
       value: this.shouldSetValue ? this.value : null,
-      comments: this.comments ?? null,
+      comments: this.comments,
       computed: this.computed,
     });
 

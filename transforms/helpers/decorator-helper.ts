@@ -2,7 +2,7 @@ import type { JSCodeshift } from 'jscodeshift';
 import { default as j } from 'jscodeshift';
 import type { Decorator } from './ast';
 import type { EOClassDecorator, EOSimpleProp } from './eo-prop/index';
-import { EOCallExpressionProp } from './eo-prop/index';
+import type { EOCallExpressionProp } from './eo-prop/index';
 import { assert, defined } from './util/types';
 
 type CallExpressionArg = Parameters<JSCodeshift['callExpression']>[1][number];
@@ -36,7 +36,7 @@ function createCallExpressionDecorators(
     return [];
   }
 
-  const decoratorArgs = instanceProp.shouldRemoveLastArg
+  const decoratorArgs = instanceProp.shouldBuildMethods
     ? instanceProp.arguments.slice(0, -1)
     : // eslint-disable-next-line unicorn/prefer-spread
       instanceProp.arguments.slice(0);
@@ -97,6 +97,7 @@ function createBindingDecorators(
   return [j.decorator(j.identifier(decoratorName))];
 }
 
+// FIXME: Move in-h0ouse
 /** Handles decorators for instance properties */
 export function createInstancePropDecorators(
   j: JSCodeshift,
@@ -116,7 +117,7 @@ export function createInstancePropDecorators(
         ),
       ];
     } else if (decorator) {
-      assert(instanceProp instanceof EOCallExpressionProp);
+      assert(instanceProp.isEOCallExpressionProp);
       decorators = [
         ...decorators,
         ...createCallExpressionDecorators(j, decorator, instanceProp),

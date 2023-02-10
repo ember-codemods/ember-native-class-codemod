@@ -1,4 +1,5 @@
 import type {
+  CommentKind,
   Decorator,
   EOExpressionProp,
   EOMethod,
@@ -26,13 +27,14 @@ type EOPropValue = EOProperty['value'] | EOMethod;
  * A wrapper object for ember object properties
  */
 export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
+  isEOCallExpressionProp = false as const;
+
   readonly _prop: P & {
     // ast-types missing these properties that exist on @babel/types
     decorators?: Decorator[] | null;
-    method?: boolean | undefined;
   };
 
-  protected readonly decorators: DecoratorImportInfo[] = [];
+  protected decorators: DecoratorImportInfo[] = [];
   readonly decoratorArgs: EODecoratorArgs = {};
 
   /** Runtime Data */
@@ -82,8 +84,8 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
     return this._prop.key.name;
   }
 
-  get comments(): P['comments'] {
-    return this._prop.comments;
+  get comments(): CommentKind[] | null {
+    return this._prop.comments ?? null;
   }
 
   get computed(): boolean {

@@ -14,7 +14,7 @@ export default class ActionMethod extends EOMethodProp {
         key: this.key,
         params: this.params,
         body: this.body,
-        comments: this.comments ?? null,
+        comments: this.comments,
         decorators: buildActionDecorator(),
       }),
       this,

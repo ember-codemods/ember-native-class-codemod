@@ -4,38 +4,23 @@ import type {
   ASTNode,
   CallExpression,
   ClassMethod,
-  ClassProperty,
   Collection,
   CommentLine,
   Decorator,
-  EOMethod,
   ImportDeclaration,
   ImportDefaultSpecifier,
   ImportSpecifier,
   MemberExpression,
 } from './ast';
-import { findPaths, isEOMethod, isEOSuperExpression } from './ast';
-import { createInstancePropDecorators } from './decorator-helper';
-import type { EOCallExpressionProp, EOSimpleProp } from './eo-prop/index';
-import { EOFunctionExpressionProp, EOMethodProp } from './eo-prop/index';
-import type { Options } from './options';
+import { findPaths, isEOSuperExpression } from './ast';
+import type { EOCallExpressionProp } from './eo-prop/index';
+import type { EOFunctionExpressionProp, EOMethodProp } from './eo-prop/index';
 import {
   ACTION_SUPER_EXPRESSION_COMMENT,
   LAYOUT_DECORATOR_LOCAL_NAME,
   LAYOUT_DECORATOR_NAME,
 } from './util/index';
-import { assert, defined } from './util/types';
-
-/** Returns true if class property should have value */
-function shouldSetValue(prop: EOSimpleProp | EOCallExpressionProp): boolean {
-  if (!prop.hasDecorators) {
-    return true;
-  }
-  return prop.decoratorNames.every(
-    (decoratorName) =>
-      decoratorName === 'className' || decoratorName === 'attribute'
-  );
-}
+import { defined } from './util/types';
 
 /** Copy comments `from` => `to` */
 export function withComments<
@@ -66,8 +51,8 @@ function createLineComments(
  */
 export function replaceSuperExpressions(
   classMethod: ClassMethod,
-  functionProp: EOMethodProp | EOFunctionExpressionProp | FunctionProp,
-  { isAction = false }
+  functionProp: EOMethodProp | EOFunctionExpressionProp | EOCallExpressionProp,
+  { isAction = false, isComputed = false }
 ): ClassMethod {
   const replaceWithUndefined = functionProp.hasRuntimeData
     ? !functionProp.isOverridden
@@ -89,7 +74,7 @@ export function replaceSuperExpressions(
     } else {
       let superMethodCall: MemberExpression | CallExpression;
       const superMethodArgs = superExpressionPath.value.arguments;
-      if (functionProp.isComputed) {
+      if (isComputed || functionProp.isComputed) {
         superMethodCall = j.memberExpression(j.super(), functionProp.key);
       } else if (isAction) {
         superMethodCall = j.callExpression(
@@ -119,18 +104,6 @@ export function replaceSuperExpressions(
   return classMethod;
 }
 
-interface FunctionProp {
-  key: EOMethod['key'];
-  params: EOMethod['params'];
-  body: EOMethod['body'];
-  hasRuntimeData?: boolean | undefined;
-  isOverridden?: boolean | undefined;
-  isComputed?: boolean | undefined;
-  kind: 'init' | 'get' | 'set' | 'method' | undefined;
-  comments: EOMethod['comments'] | undefined;
-  decorators: EOMethod['decorators'] | undefined;
-}
-
 /**
  * Transform functions to class methods
  *
@@ -138,7 +111,7 @@ interface FunctionProp {
  */
 export function createMethodProp(
   j: JSCodeshift,
-  functionProp: EOMethodProp | EOFunctionExpressionProp | FunctionProp,
+  functionProp: EOMethodProp | EOFunctionExpressionProp,
   {
     isAction = false,
     decorators = [],
@@ -147,11 +120,7 @@ export function createMethodProp(
   const kind =
     functionProp.kind === 'init' ? 'method' : defined(functionProp.kind);
 
-  const existingDecorators =
-    functionProp instanceof EOMethodProp ||
-    functionProp instanceof EOFunctionExpressionProp
-      ? functionProp.existingDecorators
-      : functionProp.decorators;
+  const existingDecorators = functionProp.existingDecorators;
 
   const allDecorators = [...(existingDecorators ?? []), ...decorators];
 
@@ -167,91 +136,6 @@ export function createMethodProp(
     functionProp,
     { isAction }
   );
-}
-
-/** Create the class property from passed instance property */
-function createClassProp(
-  j: JSCodeshift,
-  instanceProp: EOCallExpressionProp | EOSimpleProp,
-  decorators: Decorator[] = []
-): ClassProperty {
-  if (decorators.length === 0) {
-    decorators = createInstancePropDecorators(j, instanceProp);
-  }
-
-  if ('existingDecorators' in instanceProp) {
-    decorators = [...(instanceProp.existingDecorators ?? []), ...decorators];
-  }
-
-  const classProp = j.classProperty.from({
-    key: instanceProp.key,
-    value: shouldSetValue(instanceProp) ? instanceProp.value : null,
-    comments: instanceProp.comments ?? null,
-    computed: instanceProp.computed,
-  });
-
-  // @ts-expect-error jscodeshift AST types are incorrect
-  // If this ever gets fixed, check if the builder `.from` method above
-  // will now take a decorators param.
-  classProp.decorators = decorators;
-
-  return classProp;
-}
-
-/** Iterate and covert the computed properties to class methods */
-export function createCallExpressionProp(
-  j: JSCodeshift,
-  callExprProp: EOCallExpressionProp,
-  options: Options
-): ClassMethod[] | ClassProperty[] {
-  const callExprArgs = [...callExprProp.arguments];
-  if (callExprProp.shouldRemoveLastArg) {
-    const lastArg = defined(callExprArgs.pop());
-
-    if (lastArg.type === 'FunctionExpression') {
-      const prop: FunctionProp = {
-        isComputed: true,
-        kind: callExprProp.kind,
-        key: callExprProp.key,
-        body: lastArg.body,
-        params: lastArg.params,
-        comments: callExprProp.comments,
-        decorators: callExprProp.existingDecorators,
-      };
-      return [
-        createMethodProp(j, prop, {
-          decorators: createInstancePropDecorators(j, callExprProp),
-        }),
-      ];
-    } else if (lastArg.type === 'ObjectExpression') {
-      const callExprMethods = lastArg.properties.map((property) => {
-        assert(isEOMethod(property), 'expected EOMethod');
-        const prop = new EOMethodProp(property, options);
-        prop.isComputed = true;
-        assert(
-          (['init', 'get', 'set', 'method'] as const).includes(
-            prop.key.name as 'init' | 'get' | 'set' | 'method'
-          )
-        );
-        prop.kind = prop.key.name as 'init' | 'get' | 'set' | 'method';
-        prop.key = callExprProp.key;
-        prop.value.params.shift();
-        return createMethodProp(j, prop);
-      });
-
-      const firstMethod = defined(callExprMethods[0]);
-      firstMethod.comments = callExprProp.comments ?? null;
-      firstMethod.decorators = createInstancePropDecorators(j, callExprProp);
-
-      return callExprMethods;
-    } else {
-      throw new Error(
-        'Expected last argument in call expression to be a FunctionExpression or ObjectExpression'
-      );
-    }
-  } else {
-    return [createClassProp(j, callExprProp)];
-  }
 }
 
 /** Create import statement */
