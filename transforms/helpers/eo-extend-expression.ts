@@ -27,7 +27,6 @@ import type { Options } from './options';
 import { getClassName, getExpressionToReplace } from './parse-helper';
 import {
   createCallExpressionProp,
-  createClassProp,
   createMethodProp,
   withComments,
 } from './transform-helper';
@@ -151,7 +150,7 @@ export default class EOExtendExpression {
       } else if (prop instanceof EOActionsProp) {
         classBody = [...classBody, ...prop.build()];
       } else {
-        classBody.push(createClassProp(j, prop));
+        classBody.push(prop.build());
       }
     }
 
