@@ -1,4 +1,5 @@
 import type { JSCodeshift } from 'jscodeshift';
+import { default as j } from 'jscodeshift';
 import type {
   ASTNode,
   CallExpression,
@@ -7,28 +8,15 @@ import type {
   Collection,
   CommentLine,
   Decorator,
-  EOActionProperty,
   EOMethod,
   ImportDeclaration,
   ImportDefaultSpecifier,
   ImportSpecifier,
   MemberExpression,
 } from './ast';
-import {
-  findPaths,
-  isEOActionProperty,
-  isEOMethod,
-  isEOSuperExpression,
-} from './ast';
-import {
-  createIdentifierDecorators,
-  createInstancePropDecorators,
-} from './decorator-helper';
-import type {
-  EOActionsProp,
-  EOCallExpressionProp,
-  EOSimpleProp,
-} from './eo-prop/index';
+import { findPaths, isEOMethod, isEOSuperExpression } from './ast';
+import { createInstancePropDecorators } from './decorator-helper';
+import type { EOCallExpressionProp, EOSimpleProp } from './eo-prop/index';
 import { EOFunctionExpressionProp, EOMethodProp } from './eo-prop/index';
 import type { Options } from './options';
 import {
@@ -76,8 +64,7 @@ function createLineComments(
  * @param classMethod - ClassMethod to replace instances from
  * @param functionProp - Function expression to get the runtime data
  */
-function replaceSuperExpressions(
-  j: JSCodeshift,
+export function replaceSuperExpressions(
   classMethod: ClassMethod,
   functionProp: EOMethodProp | EOFunctionExpressionProp | FunctionProp,
   { isAction = false }
@@ -169,7 +156,6 @@ export function createMethodProp(
   const allDecorators = [...(existingDecorators ?? []), ...decorators];
 
   return replaceSuperExpressions(
-    j,
     j.classMethod.from({
       kind,
       key: functionProp.key,
@@ -210,97 +196,6 @@ export function createClassProp(
   classProp.decorators = decorators;
 
   return classProp;
-}
-
-/**
- * Actions with identifier converted to method definition
- *
- * For example in case of following action
- * ```
- * import someActionUtil from 'some/action/util';
- *
- * const Foo = Component.extend({
- *   actions: {
- *     someActionUtil
- *   }
- * });
- * ```
- *
- * will be transformed to:
- *
- * ```
- * import someActionUtil from 'some/action/util';
- *
- * const Foo = Component.extend({
- *   @action
- *   someActionUtil() {
- *     return someActionUtil.call(this, ...arguments);
- *   }
- * });
- * ```
- */
-function convertIdentifierActionToMethod(
-  j: JSCodeshift,
-  idAction: EOActionProperty,
-  decorators: Decorator[] = []
-): ClassMethod {
-  const returnBlock = j.blockStatement([
-    j.returnStatement(
-      j.callExpression(
-        j.memberExpression(idAction.value, j.identifier('call')),
-        [j.thisExpression(), j.spreadElement(j.identifier('arguments'))]
-      )
-    ),
-  ]);
-  const expr = j.functionExpression(null, [], returnBlock);
-  return j.classMethod.from({
-    kind: 'method',
-    key: idAction.key,
-    params: expr.params,
-    body: expr.body,
-    comments: idAction.comments ?? null,
-    decorators,
-  });
-}
-
-/**
- * Create action decorators
- * ```
- * Converts
- * {
- *  actions: {
- *    foo() {}
- *  }
- * }
- * ```
- * to
- * ```
- * {
- *  @action
- *  foo(){ }
- * }
- * ```
- */
-export function createActionDecoratedProps(
-  j: JSCodeshift,
-  actionsProp: EOActionsProp,
-  options: Options
-): ClassMethod[] {
-  const actionProps = actionsProp.properties;
-  const overriddenActions = actionsProp.runtimeData.overriddenActions;
-  const actionDecorators = createIdentifierDecorators(j);
-  return actionProps.map((actionProp) => {
-    if (isEOActionProperty(actionProp)) {
-      return convertIdentifierActionToMethod(j, actionProp, actionDecorators);
-    } else {
-      const prop = new EOMethodProp(actionProp, options);
-      prop.isOverridden = overriddenActions?.includes(actionProp.key.name);
-      return createMethodProp(j, prop, {
-        decorators: actionDecorators,
-        isAction: true,
-      });
-    }
-  });
 }
 
 /** Iterate and covert the computed properties to class methods */

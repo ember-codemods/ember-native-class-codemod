@@ -1,4 +1,5 @@
 import type { JSCodeshift } from 'jscodeshift';
+import { default as j } from 'jscodeshift';
 import type { Decorator } from './ast';
 import type { EOClassDecorator, EOSimpleProp } from './eo-prop/index';
 import { EOCallExpressionProp } from './eo-prop/index';
@@ -82,11 +83,8 @@ function createDecoratorsWithArgs(
 }
 
 /** Create `@action` decorator */
-export function createIdentifierDecorators(
-  j: JSCodeshift,
-  identifier = 'action'
-): [Decorator] {
-  return [j.decorator(j.identifier(identifier))];
+export function buildActionDecorator(): [Decorator] {
+  return [j.decorator(j.identifier('action'))];
 }
 
 /**

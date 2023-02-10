@@ -15,6 +15,7 @@ export default class EOMethodProp extends AbstractEOProp<
     return this._prop;
   }
 
+  // FIXME: are these overrides still necessary?
   private overriddenKind?: 'init' | 'get' | 'set' | 'method';
 
   get kind(): 'init' | 'get' | 'set' | 'method' {

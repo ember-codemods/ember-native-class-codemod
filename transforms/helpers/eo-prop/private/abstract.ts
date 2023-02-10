@@ -38,7 +38,6 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
   /** Runtime Data */
   readonly runtimeData: RuntimeData;
   isComputed: boolean | undefined;
-  isOverridden: boolean | undefined;
   private readonly runtimeType: string | undefined;
 
   constructor(eoProp: P, protected readonly options: Options) {
@@ -50,7 +49,6 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
         type,
         computedProperties = [],
         offProperties = {},
-        overriddenProperties = [],
         unobservedProperties = {},
       } = this.runtimeData;
 
@@ -66,7 +64,6 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
       if (computedProperties.includes(name)) {
         this.isComputed = true;
       }
-      this.isOverridden = overriddenProperties.includes(name);
       this.runtimeType = type;
     }
   }
@@ -95,6 +92,10 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
 
   get computed(): boolean {
     return this._prop.computed ?? false;
+  }
+
+  get isOverridden(): boolean {
+    return this.runtimeData.overriddenProperties?.includes(this.name) ?? false;
   }
 
   get hasRuntimeData(): boolean {

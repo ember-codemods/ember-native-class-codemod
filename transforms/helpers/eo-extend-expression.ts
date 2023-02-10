@@ -26,7 +26,6 @@ import logger from './log-helper';
 import type { Options } from './options';
 import { getClassName, getExpressionToReplace } from './parse-helper';
 import {
-  createActionDecoratedProps,
   createCallExpressionProp,
   createClassProp,
   createMethodProp,
@@ -150,10 +149,7 @@ export default class EOExtendExpression {
           ...createCallExpressionProp(j, prop, this.options),
         ];
       } else if (prop instanceof EOActionsProp) {
-        classBody = [
-          ...classBody,
-          ...createActionDecoratedProps(j, prop, this.options),
-        ];
+        classBody = [...classBody, ...prop.build()];
       } else {
         classBody.push(createClassProp(j, prop));
       }
