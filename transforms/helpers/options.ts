@@ -61,7 +61,7 @@ function logConfigError(
   { errors }: ZodError<PartialUserOptions>
 ): void {
   for (const error of errors) {
-    const key = Array.isArray(error.path) ? error.path.join('.') : error.path;
+    const key = error.path.join('.');
     logger.error(
       `[${source}]: CONFIG ERROR key="${key}" message="${error.message}"`
     );

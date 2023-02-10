@@ -45,12 +45,8 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
 
     this.runtimeData = options.runtimeData;
     if (this.runtimeData.type) {
-      const {
-        type,
-        computedProperties = [],
-        offProperties = {},
-        unobservedProperties = {},
-      } = this.runtimeData;
+      const { type, computedProperties, offProperties, unobservedProperties } =
+        this.runtimeData;
 
       const name = this.name;
       if (name in unobservedProperties) {
@@ -94,8 +90,13 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
     return this._prop.computed ?? false;
   }
 
+  // FIXME: uncomment
+  // get isComputed(): boolean {
+  //   return this.runtimeData.computedProperties.includes(this.name);
+  // }
+
   get isOverridden(): boolean {
-    return this.runtimeData.overriddenProperties?.includes(this.name) ?? false;
+    return this.runtimeData.overriddenProperties.includes(this.name);
   }
 
   get hasRuntimeData(): boolean {

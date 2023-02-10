@@ -24,6 +24,6 @@ export default class ActionMethod extends EOMethodProp {
   }
 
   override get isOverridden(): boolean {
-    return this.runtimeData.overriddenActions?.includes(this.name) ?? false;
+    return this.runtimeData.overriddenActions.includes(this.name);
   }
 }

@@ -14,7 +14,7 @@ import {
   getDecoratorsToImportSpecs,
   getEOExtendExpressionCollection,
 } from './parse-helper';
-import { isRuntimeData } from './runtime-data';
+import { RuntimeDataSchema } from './runtime-data';
 import { isFileOfType, isTestFile } from './validation-helper';
 
 /** Main entry point for parsing and replacing ember objects */
@@ -36,10 +36,27 @@ export default function maybeTransformEmberObjects(
     return;
   }
 
-  const runtimeData = getTelemetryFor(path.resolve(filePath));
-  if (!runtimeData || !isRuntimeData(runtimeData)) {
+  const rawTelemetry = getTelemetryFor(path.resolve(filePath));
+  if (!rawTelemetry) {
     logger.warn(
-      `[${filePath}]: SKIPPED: Could not find runtime data NO_RUNTIME_DATA`
+      `[${filePath}]: SKIPPED \nCould not find runtime data NO_RUNTIME_DATA`
+    );
+    return;
+  }
+
+  let runtimeData;
+  const result = RuntimeDataSchema.safeParse(rawTelemetry);
+  if (result.success) {
+    runtimeData = result.data;
+  } else {
+    const { errors } = result.error;
+    const messages = errors.map((error) => {
+      return `[${error.path.join('.')}]: ${error.message}`;
+    });
+    logger.warn(
+      `[${filePath}]: SKIPPED \nCould not parse runtime data: \n\t${messages.join(
+        '\n\t'
+      )}`
     );
     return;
   }
