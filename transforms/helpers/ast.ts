@@ -285,13 +285,13 @@ function isEOActionsObjectExpression(
   return isNode(u, 'ObjectExpression') && u.properties.every(isEOAction);
 }
 
-export type EOAction = EOActionMethod | EOActionProperty;
+type EOAction = EOActionMethod | EOActionProperty;
 
 function isEOAction(u: unknown): u is EOAction {
   return isEOActionMethod(u) || isEOActionProperty(u);
 }
 
-export type EOActionMethod = EOMethod;
+type EOActionMethod = EOMethod;
 
 export function isEOActionMethod(u: unknown): u is EOActionMethod {
   return isEOMethod(u);
@@ -301,7 +301,7 @@ export interface EOActionProperty extends EOProperty {
   value: Identifier;
 }
 
-export function isEOActionProperty(u: unknown): u is EOActionProperty {
+function isEOActionProperty(u: unknown): u is EOActionProperty {
   return isEOProperty(u) && isNode(u.value, 'Identifier');
 }
 

@@ -170,7 +170,7 @@ export function createMethodProp(
 }
 
 /** Create the class property from passed instance property */
-export function createClassProp(
+function createClassProp(
   j: JSCodeshift,
   instanceProp: EOCallExpressionProp | EOSimpleProp,
   decorators: Decorator[] = []
