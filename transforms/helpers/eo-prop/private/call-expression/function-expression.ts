@@ -5,7 +5,7 @@ import { assert, defined } from '../../../util/types';
 import AbstractEOCallExpressionProp from './abstract';
 
 export default class EOComputedFunctionExpressionProp extends AbstractEOCallExpressionProp<ClassMethod> {
-  override build(): ClassMethod {
+  build(): ClassMethod {
     const args = this.arguments;
     const lastArg = args[args.length - 1];
     assert(

@@ -8,12 +8,18 @@ export default class EOSimpleProp extends AbstractEOProp<
   EOPropertySimple,
   ClassProperty
 > {
-  override build(): ClassProperty {
+  readonly isClassDecorator = false as const;
+
+  protected readonly value = this.rawProp.value;
+
+  protected override readonly supportsObjectLiteralDecorators = true;
+
+  build(): ClassProperty {
     const classProp = j.classProperty.from({
       key: this.key,
       value: this.hasDecorators ? null : this.value,
       comments: this.comments,
-      computed: this.computed,
+      computed: this.rawProp.computed ?? false,
     });
 
     // @ts-expect-error jscodeshift AST types are incorrect
@@ -24,27 +30,7 @@ export default class EOSimpleProp extends AbstractEOProp<
     return classProp;
   }
 
-  protected override supportsObjectLiteralDecorators = true;
-
-  get value(): EOPropertySimple['value'] {
-    return this._prop.value;
-  }
-
-  protected buildDecorators(): Decorator[] {
-    const decorators: Decorator[] = [];
-    for (const decorator of this.decorators) {
-      const decoratorName = decorator.name;
-      if ('args' in decorator) {
-        decorators.push(createDecoratorWithArgs(decoratorName, decorator.args));
-      } else {
-        logger.info(`[${this.name}] Ignored decorator ${decoratorName}`);
-      }
-    }
-
-    return [...(this.existingDecorators ?? []), ...decorators];
-  }
-
-  protected override get _errors(): string[] {
+  protected override get typeErrors(): string[] {
     const errors: string[] = [];
     const { classFields } = this.options;
 
@@ -64,5 +50,19 @@ export default class EOSimpleProp extends AbstractEOProp<
     }
 
     return errors;
+  }
+
+  private buildDecorators(): Decorator[] {
+    const decorators: Decorator[] = [];
+    for (const decorator of this.decorators) {
+      const decoratorName = decorator.name;
+      if ('args' in decorator) {
+        decorators.push(createDecoratorWithArgs(decoratorName, decorator.args));
+      } else {
+        logger.info(`[${this.name}] Ignored decorator ${decoratorName}`);
+      }
+    }
+
+    return [...(this.existingDecorators ?? []), ...decorators];
   }
 }

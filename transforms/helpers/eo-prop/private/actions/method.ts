@@ -11,24 +11,6 @@ import EOMethodProp from '../method';
 import type { Action } from './index';
 
 export default class ActionMethod extends EOMethodProp implements Action {
-  override build(): ClassMethod {
-    return replaceActionSuperExpressions(
-      j.classMethod.from({
-        kind: this.kind,
-        key: this.key,
-        params: this.params,
-        body: this.body,
-        comments: this.comments,
-        decorators: buildActionDecorator(),
-      }),
-      this.replaceSuperWithUndefined
-    );
-  }
-
-  override get isOverridden(): boolean {
-    return this.runtimeData.overriddenActions.includes(this.name);
-  }
-
   get hasInfiniteLoop(): boolean {
     const { name, value } = this;
     const collection = j(value.body) as Collection;
@@ -51,5 +33,23 @@ export default class ActionMethod extends EOMethodProp implements Action {
     );
 
     return actionLiterals.length > 0 || actionCalls.length > 0;
+  }
+
+  override build(): ClassMethod {
+    return replaceActionSuperExpressions(
+      j.classMethod.from({
+        kind: this.kind,
+        key: this.key,
+        params: this.params,
+        body: this.body,
+        comments: this.comments,
+        decorators: buildActionDecorator(),
+      }),
+      this.replaceSuperWithUndefined
+    );
+  }
+
+  protected override get isOverridden(): boolean {
+    return this.runtimeData.overriddenActions.includes(this.name);
   }
 }

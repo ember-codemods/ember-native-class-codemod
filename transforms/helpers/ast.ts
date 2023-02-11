@@ -31,7 +31,6 @@ import { LAYOUT_DECORATOR_NAME } from './util/index';
 import { isRecord } from './util/types';
 
 export type { ClassBodyBuilder } from 'ast-types/gen/builders';
-export type { CommentKind } from 'ast-types/gen/kinds';
 export type {
   ASTNode,
   CallExpression,

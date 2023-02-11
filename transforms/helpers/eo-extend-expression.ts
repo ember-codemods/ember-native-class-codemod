@@ -69,7 +69,7 @@ export default class EOExtendExpression {
         existingDecoratorImportInfos,
         options
       );
-      if ('isClassDecorator' in eoProp) {
+      if (eoProp.isClassDecorator) {
         decorators.push(eoProp);
       } else {
         properties.push(eoProp);

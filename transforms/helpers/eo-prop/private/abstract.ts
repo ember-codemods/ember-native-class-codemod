@@ -1,5 +1,4 @@
 import type {
-  CommentKind,
   Decorator,
   EOExpressionProp,
   EOMethod,
@@ -23,23 +22,33 @@ type EOPropValue = EOProperty['value'] | EOMethod;
  * A wrapper object for ember object properties
  */
 export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
-  readonly _prop: P & {
-    // ast-types missing these properties that exist on @babel/types
-    decorators?: Decorator[] | null;
-  };
+  abstract readonly isClassDecorator: boolean;
+
+  protected abstract readonly value: EOPropValue;
+
+  protected readonly key = this.rawProp.key;
+
+  protected readonly comments = this.rawProp.comments ?? null;
+
+  protected readonly existingDecorators = this.rawProp.decorators ?? null;
 
   protected decorators: DecoratorImportInfo[] = [];
 
-  /** Runtime Data */
-  readonly runtimeData: RuntimeData;
-  private readonly runtimeType: string | undefined;
+  protected readonly runtimeData: RuntimeData;
 
-  constructor(eoProp: P, protected readonly options: Options) {
-    this._prop = eoProp;
+  /** Override to `true` if the property type supports object literal decorators. */
+  protected readonly supportsObjectLiteralDecorators: boolean = false;
 
+  constructor(
+    protected readonly rawProp: P & {
+      // ast-types missing these properties that exist on @babel/types
+      decorators?: Decorator[] | null;
+    },
+    protected readonly options: Options
+  ) {
     this.runtimeData = options.runtimeData;
     if (this.runtimeData.type) {
-      const { type, offProperties, unobservedProperties } = this.runtimeData;
+      const { offProperties, unobservedProperties } = this.runtimeData;
 
       const unobservedArgs = unobservedProperties[this.name];
       if (unobservedArgs) {
@@ -53,15 +62,12 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
       if (offArgs) {
         this.decorators.push({ name: 'off', args: offArgs });
       }
-      this.runtimeType = type;
     }
   }
 
-  // FIXME: Verify that everything on these classes is still needed
-  // FIXME: Verify access modifiers
-  abstract value: EOPropValue;
-
-  abstract build(): B;
+  get name(): string {
+    return this.key.name;
+  }
 
   /**
    * Get the map of decorators to import other than the computed props, services etc
@@ -81,75 +87,6 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
     };
   }
 
-  get type(): EOPropValue['type'] {
-    return this.value.type;
-  }
-
-  get key(): P['key'] {
-    return this._prop.key;
-  }
-
-  get name(): string {
-    return this._prop.key.name;
-  }
-
-  get comments(): CommentKind[] | null {
-    return this._prop.comments ?? null;
-  }
-
-  get computed(): boolean {
-    return this._prop.computed ?? false;
-  }
-
-  get isComputed(): boolean {
-    return this.runtimeData.computedProperties.includes(this.name);
-  }
-
-  get isOverridden(): boolean {
-    return this.runtimeData.overriddenProperties.includes(this.name);
-  }
-
-  get hasRuntimeData(): boolean {
-    return !!this.runtimeType;
-  }
-
-  get replaceSuperWithUndefined(): boolean {
-    return this.hasRuntimeData && !this.isOverridden;
-  }
-
-  get existingDecorators(): Decorator[] | null {
-    return this._prop.decorators ?? null;
-  }
-
-  get hasDecorators(): boolean {
-    return this.decorators.length > 0;
-  }
-
-  get hasUnobservesDecorator(): boolean {
-    return this.decorators.some((d) => d.name === 'unobserves');
-  }
-
-  get hasOffDecorator(): boolean {
-    return this.decorators.some((d) => d.name === 'off');
-  }
-
-  get hasMetaDecorator(): boolean {
-    return this.decorators.some((d) => d.isMetaDecorator);
-  }
-
-  /** Override to `true` if the property type supports object literal decorators. */
-  protected supportsObjectLiteralDecorators = false;
-
-  protected get needsDecorators(): boolean {
-    return this.hasExistingDecorators || this.hasDecorators;
-  }
-
-  private get hasExistingDecorators(): boolean {
-    return (
-      this.existingDecorators !== null && this.existingDecorators.length > 0
-    );
-  }
-
   get errors(): string[] {
     let errors: string[] = [];
 
@@ -164,7 +101,6 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
         );
       }
 
-      // FIXME: only include if existing decorators are supported?
       for (const decorator of this.existingDecorators) {
         const decoratorName = isNode(decorator.expression, 'Identifier')
           ? decorator.expression.name
@@ -205,17 +141,58 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
       );
     }
 
-    errors = [...errors, ...this._errors];
+    errors = [...errors, ...this.typeErrors];
 
     return errors;
   }
 
-  /** Override to add errors specific to the property type. */
-  protected get _errors(): string[] {
-    return [];
-  }
+  /** Returns the appropriate ClassBody member for the property type. */
+  abstract build(): B;
 
   protected makeError(message: string): string {
     return `[${this.name}]: Transform not supported - ${message}`;
+  }
+
+  /** Override to add errors specific to the property type. */
+  protected get typeErrors(): string[] {
+    return [];
+  }
+
+  protected get type(): EOPropValue['type'] {
+    return this.value.type;
+  }
+
+  protected get isOverridden(): boolean {
+    return this.runtimeData.overriddenProperties.includes(this.name);
+  }
+
+  protected get replaceSuperWithUndefined(): boolean {
+    return this.hasRuntimeData && !this.isOverridden;
+  }
+
+  private get hasRuntimeData(): boolean {
+    return !!this.runtimeData.type;
+  }
+
+  protected get hasDecorators(): boolean {
+    return this.decorators.length > 0;
+  }
+
+  protected get needsDecorators(): boolean {
+    return this.hasExistingDecorators || this.hasDecorators;
+  }
+
+  private get hasUnobservesDecorator(): boolean {
+    return this.decorators.some((d) => d.name === 'unobserves');
+  }
+
+  private get hasOffDecorator(): boolean {
+    return this.decorators.some((d) => d.name === 'off');
+  }
+
+  private get hasExistingDecorators(): boolean {
+    return (
+      this.existingDecorators !== null && this.existingDecorators.length > 0
+    );
   }
 }

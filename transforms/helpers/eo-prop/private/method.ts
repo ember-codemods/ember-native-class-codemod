@@ -7,12 +7,18 @@ export default class EOMethodProp extends AbstractEOProp<
   EOMethod,
   ClassMethod
 > {
+  readonly isClassDecorator = false as const;
+
+  protected readonly value = this.rawProp;
+
+  protected override readonly supportsObjectLiteralDecorators = true;
+
   /**
    * Transform object method to class method
    *
    * For example { foo() { }} --> { foo() { }}
    */
-  override build(): ClassMethod {
+  build(): ClassMethod {
     return replaceMethodSuperExpression(
       j.classMethod.from({
         kind: this.kind,
@@ -26,21 +32,15 @@ export default class EOMethodProp extends AbstractEOProp<
     );
   }
 
-  protected override supportsObjectLiteralDecorators = true;
-
-  get value(): EOMethod {
-    return this._prop;
-  }
-
-  get kind(): 'get' | 'set' | 'method' {
+  protected get kind(): 'get' | 'set' | 'method' {
     return this.value.kind;
   }
 
-  get params(): EOMethod['params'] {
+  protected get params(): EOMethod['params'] {
     return this.value.params;
   }
 
-  get body(): EOMethod['body'] {
+  protected get body(): EOMethod['body'] {
     return this.value.body;
   }
 }

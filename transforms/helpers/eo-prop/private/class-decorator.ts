@@ -11,11 +11,9 @@ export default class EOClassDecorator extends AbstractEOProp<
   EOPropertyForClassDecorator,
   Decorator
 > {
-  isClassDecorator = true;
+  readonly isClassDecorator = true as const;
 
-  override build(): Decorator {
-    return createClassDecorator(this.classDecoratorName, this.value);
-  }
+  protected readonly value = this.rawProp.value;
 
   override get decoratorImportSpecs(): DecoratorImportSpecs {
     return {
@@ -29,11 +27,40 @@ export default class EOClassDecorator extends AbstractEOProp<
     };
   }
 
-  get value(): EOPropertyForClassDecorator['value'] {
-    return this._prop.value;
+  build(): Decorator {
+    return createClassDecorator(this.classDecoratorName, this.value);
   }
 
-  get classDecoratorName(): string {
+  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
+  protected override get needsDecorators(): true {
+    return true;
+  }
+
+  private get isLayoutDecorator(): boolean {
+    return this.classDecoratorName === LAYOUT_DECORATOR_NAME;
+  }
+
+  private get isTemplateLayoutDecorator(): boolean {
+    return this.classDecoratorName === LAYOUT_DECORATOR_LOCAL_NAME;
+  }
+
+  private get isTagName(): boolean {
+    return this.name === 'tagName';
+  }
+
+  private get isClassNames(): boolean {
+    return this.name === 'classNames';
+  }
+
+  private get isClassNameBindings(): boolean {
+    return this.name === 'classNameBindings';
+  }
+
+  private get isAttributeBindings(): boolean {
+    return this.name === 'attributeBindings';
+  }
+
+  private get classDecoratorName(): string {
     if (
       this.name === LAYOUT_DECORATOR_NAME &&
       'name' in this.value && // e.g. CallExpression doesn't have `name`
@@ -42,34 +69,5 @@ export default class EOClassDecorator extends AbstractEOProp<
       return LAYOUT_DECORATOR_LOCAL_NAME;
     }
     return this.name;
-  }
-
-  get isLayoutDecorator(): boolean {
-    return this.classDecoratorName === LAYOUT_DECORATOR_NAME;
-  }
-
-  get isTemplateLayoutDecorator(): boolean {
-    return this.classDecoratorName === LAYOUT_DECORATOR_LOCAL_NAME;
-  }
-
-  get isTagName(): boolean {
-    return this.name === 'tagName';
-  }
-
-  get isClassNames(): boolean {
-    return this.name === 'classNames';
-  }
-
-  get isClassNameBindings(): boolean {
-    return this.name === 'classNameBindings';
-  }
-
-  get isAttributeBindings(): boolean {
-    return this.name === 'attributeBindings';
-  }
-
-  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
-  protected override get needsDecorators(): boolean {
-    return true;
   }
 }

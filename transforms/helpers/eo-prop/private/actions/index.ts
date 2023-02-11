@@ -14,6 +14,17 @@ export default class EOActionsProp extends AbstractEOProp<
   EOPropertyWithActionsObject,
   ClassMethod[]
 > {
+  readonly isClassDecorator = false as const;
+
+  protected readonly value = this.rawProp.value;
+
+  override get decoratorImportSpecs(): DecoratorImportSpecs {
+    return {
+      ...super.decoratorImportSpecs,
+      action: true,
+    };
+  }
+
   /**
    * FIXME: Verify docs
    *
@@ -34,21 +45,14 @@ export default class EOActionsProp extends AbstractEOProp<
    * }
    * ```
    */
-  override build(): ClassMethod[] {
+  build(): ClassMethod[] {
     return this.actions.map((action) => {
       return action.build();
     });
   }
 
-  override get decoratorImportSpecs(): DecoratorImportSpecs {
-    return {
-      ...super.decoratorImportSpecs,
-      action: true,
-    };
-  }
-
-  get value(): EOPropertyWithActionsObject['value'] {
-    return this._prop.value;
+  protected override get typeErrors(): string[] {
+    return [...this.lifecycleHookErrors, ...this.infiniteLoopErrors];
   }
 
   private get actions(): Array<ActionProp | ActionMethod> {
@@ -57,10 +61,6 @@ export default class EOActionsProp extends AbstractEOProp<
         ? new ActionMethod(raw, this.options)
         : new ActionProp(raw, this.options)
     );
-  }
-
-  protected override get _errors(): string[] {
-    return [...this.lifecycleHookErrors, ...this.infiniteLoopErrors];
   }
 
   /**

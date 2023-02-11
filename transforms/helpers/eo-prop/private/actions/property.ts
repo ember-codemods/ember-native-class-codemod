@@ -8,11 +8,11 @@ export default class ActionProp
   extends AbstractEOProp<EOActionProperty, ClassMethod>
   implements Action
 {
-  hasInfiniteLoop = false;
+  readonly isClassDecorator = false as const;
 
-  get value(): EOActionProperty['value'] {
-    return this._prop.value;
-  }
+  readonly hasInfiniteLoop = false;
+
+  protected readonly value = this.rawProp.value;
 
   /**
    * Actions with identifier converted to method definition
@@ -41,7 +41,7 @@ export default class ActionProp
    * });
    * ```
    */
-  override build(): ClassMethod {
+  build(): ClassMethod {
     const body = j.blockStatement([
       j.returnStatement(
         j.callExpression(j.memberExpression(this.value, j.identifier('call')), [

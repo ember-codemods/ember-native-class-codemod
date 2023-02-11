@@ -8,7 +8,7 @@ import AbstractEOCallExpressionProp from './abstract';
 export default class EOComputedObjectExpressionProp extends AbstractEOCallExpressionProp<
   ClassMethod[]
 > {
-  override build(): ClassMethod[] {
+  build(): ClassMethod[] {
     const args = this.arguments;
     const lastArg = args[args.length - 1];
     assert(
@@ -19,11 +19,11 @@ export default class EOComputedObjectExpressionProp extends AbstractEOCallExpres
     const classMethods = lastArg.properties.map((property) => {
       assert(isEOMethod(property), 'expected EOMethod');
       assert(
-        (['init', 'get', 'set', 'method'] as const).includes(
-          property.key.name as 'init' | 'get' | 'set' | 'method'
+        (['init', 'get', 'set'] as const).includes(
+          property.key.name as 'init' | 'get' | 'set'
         )
       );
-      const rawKind = property.key.name as 'init' | 'get' | 'set' | 'method';
+      const rawKind = property.key.name as 'init' | 'get' | 'set';
       const kind = rawKind === 'init' ? 'method' : rawKind;
 
       const key = this.key;
