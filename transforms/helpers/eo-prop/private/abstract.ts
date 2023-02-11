@@ -39,7 +39,6 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
 
   /** Runtime Data */
   readonly runtimeData: RuntimeData;
-  isComputed: boolean | undefined;
   private readonly runtimeType: string | undefined;
 
   constructor(eoProp: P, protected readonly options: Options) {
@@ -47,8 +46,7 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
 
     this.runtimeData = options.runtimeData;
     if (this.runtimeData.type) {
-      const { type, computedProperties, offProperties, unobservedProperties } =
-        this.runtimeData;
+      const { type, offProperties, unobservedProperties } = this.runtimeData;
 
       const name = this.name;
       if (name in unobservedProperties) {
@@ -58,9 +56,6 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
       if (name in offProperties) {
         this.decorators.push({ name: 'off' });
         this.decoratorArgs.off = offProperties[name];
-      }
-      if (computedProperties.includes(name)) {
-        this.isComputed = true;
       }
       this.runtimeType = type;
     }
@@ -92,10 +87,9 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
     return this._prop.computed ?? false;
   }
 
-  // FIXME: uncomment
-  // get isComputed(): boolean {
-  //   return this.runtimeData.computedProperties.includes(this.name);
-  // }
+  get isComputed(): boolean {
+    return this.runtimeData.computedProperties.includes(this.name);
+  }
 
   get isOverridden(): boolean {
     return this.runtimeData.overriddenProperties.includes(this.name);
