@@ -97,6 +97,10 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
     return !!this.runtimeType;
   }
 
+  get replaceSuperWithUndefined(): boolean {
+    return this.hasRuntimeData && !this.isOverridden;
+  }
+
   get existingDecorators(): Decorator[] | null {
     return this._prop.decorators ?? null;
   }

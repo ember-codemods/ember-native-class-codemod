@@ -397,7 +397,7 @@ function isEOActionInfiniteLiteral(
   return isNode(u, 'StringLiteral') && (!name || u.value === name);
 }
 
-interface EOSuperExpression extends CallExpression {
+export interface EOSuperExpression extends CallExpression {
   callee: EOSuperExpressionCallee;
 }
 

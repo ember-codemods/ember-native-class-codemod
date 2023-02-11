@@ -1,6 +1,6 @@
 import { default as j } from 'jscodeshift';
 import type { ClassMethod, EOMethod } from '../../ast';
-import { replaceSuperExpressions } from '../../transform-helper';
+import { replaceMethodSuperExpression } from '../../transform-helper';
 import AbstractEOProp from './abstract';
 
 export default class EOMethodProp extends AbstractEOProp<
@@ -13,7 +13,7 @@ export default class EOMethodProp extends AbstractEOProp<
    * For example { foo() { }} --> { foo() { }}
    */
   override build(): ClassMethod {
-    return replaceSuperExpressions(
+    return replaceMethodSuperExpression(
       j.classMethod.from({
         kind: this.kind,
         key: this.key,
@@ -22,8 +22,7 @@ export default class EOMethodProp extends AbstractEOProp<
         comments: this.comments,
         decorators: this.existingDecorators,
       }),
-      this,
-      { isAction: false }
+      this.replaceSuperWithUndefined
     );
   }
 

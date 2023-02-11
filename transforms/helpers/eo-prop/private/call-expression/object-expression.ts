@@ -1,7 +1,7 @@
 import { default as j } from 'jscodeshift';
 import type { ClassMethod } from '../../../ast';
 import { isEOMethod } from '../../../ast';
-import { replaceSuperExpressions } from '../../../transform-helper';
+import { replaceComputedSuperExpressions } from '../../../transform-helper';
 import { assert, defined } from '../../../util/types';
 import AbstractEOCallExpressionProp from './abstract';
 
@@ -31,7 +31,7 @@ export default class EOComputedObjectExpressionProp extends AbstractEOCallExpres
       const params = [...property.params];
       params.shift();
 
-      return replaceSuperExpressions(
+      return replaceComputedSuperExpressions(
         j.classMethod.from({
           kind,
           key,
@@ -39,8 +39,8 @@ export default class EOComputedObjectExpressionProp extends AbstractEOCallExpres
           body: property.body,
           comments: property.comments ?? null,
         }),
-        this, // FIXME ???
-        { isAction: false, isComputed: true }
+        this.replaceSuperWithUndefined,
+        this.key
       );
     });
 

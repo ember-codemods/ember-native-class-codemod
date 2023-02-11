@@ -4,7 +4,7 @@ import type {
   EOPropertyWithFunctionExpression,
   FunctionExpression,
 } from '../../ast';
-import { replaceSuperExpressions } from '../../transform-helper';
+import { replaceMethodSuperExpression } from '../../transform-helper';
 import AbstractEOProp from './abstract';
 
 export default class EOFunctionExpressionProp extends AbstractEOProp<
@@ -17,7 +17,7 @@ export default class EOFunctionExpressionProp extends AbstractEOProp<
    * For example { foo: function() { }} --> { foo() { }}
    */
   override build(): ClassMethod {
-    return replaceSuperExpressions(
+    return replaceMethodSuperExpression(
       j.classMethod.from({
         kind: this.kind,
         key: this.key,
@@ -26,8 +26,7 @@ export default class EOFunctionExpressionProp extends AbstractEOProp<
         comments: this.comments,
         decorators: this.existingDecorators,
       }),
-      this,
-      { isAction: false }
+      this.replaceSuperWithUndefined
     );
   }
 

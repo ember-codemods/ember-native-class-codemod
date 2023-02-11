@@ -1,6 +1,6 @@
 import { default as j } from 'jscodeshift';
 import type { ClassMethod } from '../../../ast';
-import { replaceSuperExpressions } from '../../../transform-helper';
+import { replaceComputedSuperExpressions as replaceComputedSuperExpression } from '../../../transform-helper';
 import { assert, defined } from '../../../util/types';
 import AbstractEOCallExpressionProp from './abstract';
 
@@ -12,7 +12,7 @@ export default class EOComputedFunctionExpressionProp extends AbstractEOCallExpr
       lastArg && lastArg.type === 'FunctionExpression',
       'expected lastArg to be a FunctionExpression'
     );
-    return replaceSuperExpressions(
+    return replaceComputedSuperExpression(
       j.classMethod.from({
         kind: defined(this.kind),
         key: this.key,
@@ -21,8 +21,8 @@ export default class EOComputedFunctionExpressionProp extends AbstractEOCallExpr
         comments: this.comments,
         decorators: this.buildDecorators(),
       }),
-      this,
-      { isAction: false, isComputed: true }
+      this.replaceSuperWithUndefined,
+      this.key
     );
   }
 }

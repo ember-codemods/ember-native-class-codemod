@@ -6,17 +6,14 @@ import type {
   ClassMethod,
   Collection,
   CommentLine,
+  EOSuperExpression,
+  Identifier,
   ImportDeclaration,
   ImportDefaultSpecifier,
   ImportSpecifier,
   MemberExpression,
 } from './ast';
 import { findPaths, isEOSuperExpression } from './ast';
-import type {
-  EOCallExpressionProp,
-  EOFunctionExpressionProp,
-  EOMethodProp,
-} from './eo-prop/index';
 import {
   ACTION_SUPER_EXPRESSION_COMMENT,
   LAYOUT_DECORATOR_LOCAL_NAME,
@@ -36,7 +33,7 @@ export function withComments<
 }
 
 /** Creates line comments from passed lines */
-function createLineComments(
+export function createLineComments(
   j: JSCodeshift,
   lines: readonly string[] = []
 ): CommentLine[] {
@@ -45,20 +42,14 @@ function createLineComments(
 
 /**
  * Replace instances of `this._super(...arguments)` to `super.methodName(...arguments)`
- *
- * @param j - jscodeshift lib reference
- * @param classMethod - ClassMethod to replace instances from
- * @param functionProp - Function expression to get the runtime data
  */
 export function replaceSuperExpressions(
   classMethod: ClassMethod,
-  functionProp: EOMethodProp | EOFunctionExpressionProp | EOCallExpressionProp,
-  { isAction = false, isComputed = false }
+  replaceWithUndefined: boolean,
+  buildSuperMethodCall: (
+    superMethodArgs: EOSuperExpression['arguments']
+  ) => CallExpression | MemberExpression
 ): ClassMethod {
-  const replaceWithUndefined = functionProp.hasRuntimeData
-    ? !functionProp.isOverridden
-    : false;
-
   const superExpressionCollection = findPaths(
     j(classMethod) as Collection,
     j.CallExpression,
@@ -73,36 +64,69 @@ export function replaceSuperExpressions(
     if (replaceWithUndefined) {
       j(superExpressionPath).replaceWith(j.identifier('undefined'));
     } else {
-      let superMethodCall: MemberExpression | CallExpression;
       const superMethodArgs = superExpressionPath.value.arguments;
-      if (isComputed || functionProp.isComputed) {
-        superMethodCall = j.memberExpression(j.super(), functionProp.key);
-      } else if (isAction) {
-        superMethodCall = j.callExpression(
-          j.memberExpression(
-            j.memberExpression(
-              j.memberExpression(j.super(), j.identifier('actions')),
-              classMethod.key
-            ),
-            j.identifier('call')
-          ),
-          [j.thisExpression(), ...superMethodArgs]
-        );
-        superMethodCall.comments = createLineComments(
-          j,
-          ACTION_SUPER_EXPRESSION_COMMENT
-        );
-      } else {
-        superMethodCall = j.callExpression(
-          j.memberExpression(j.super(), classMethod.key),
-          superMethodArgs
-        );
-      }
+      const superMethodCall = buildSuperMethodCall(superMethodArgs);
       j(superExpressionPath).replaceWith(superMethodCall);
     }
   });
 
   return classMethod;
+}
+
+/** FIXME */
+export function replaceActionSuperExpressions(
+  classMethod: ClassMethod,
+  replaceWithUndefined: boolean
+): ClassMethod {
+  return replaceSuperExpressions(
+    classMethod,
+    replaceWithUndefined,
+    (superMethodArgs) => {
+      const superMethodCall = j.callExpression(
+        j.memberExpression(
+          j.memberExpression(
+            j.memberExpression(j.super(), j.identifier('actions')),
+            classMethod.key
+          ),
+          j.identifier('call')
+        ),
+        [j.thisExpression(), ...superMethodArgs]
+      );
+      superMethodCall.comments = createLineComments(
+        j,
+        ACTION_SUPER_EXPRESSION_COMMENT
+      );
+      return superMethodCall;
+    }
+  );
+}
+
+/** FIXME */
+export function replaceComputedSuperExpressions(
+  classMethod: ClassMethod,
+  replaceWithUndefined: boolean,
+  identifier: Identifier
+): ClassMethod {
+  return replaceSuperExpressions(classMethod, replaceWithUndefined, () =>
+    j.memberExpression(j.super(), identifier)
+  );
+}
+
+/** FIXME */
+export function replaceMethodSuperExpression(
+  classMethod: ClassMethod,
+  replaceWithUndefined: boolean
+): ClassMethod {
+  return replaceSuperExpressions(
+    classMethod,
+    replaceWithUndefined,
+    (superMethodArgs) => {
+      return j.callExpression(
+        j.memberExpression(j.super(), classMethod.key),
+        superMethodArgs
+      );
+    }
+  );
 }
 
 /** Create import statement */

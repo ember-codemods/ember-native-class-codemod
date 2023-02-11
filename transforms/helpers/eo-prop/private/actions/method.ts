@@ -1,13 +1,13 @@
 import { default as j } from 'jscodeshift';
 import type { ClassMethod } from '../../../ast';
-import { replaceSuperExpressions } from '../../../transform-helper';
-import EOMethodProp from '../method';
 import { buildActionDecorator } from '../../../decorator-helper';
+import { replaceActionSuperExpressions } from '../../../transform-helper';
+import EOMethodProp from '../method';
 
 export default class ActionMethod extends EOMethodProp {
   // FIXME: Try to reuse EOMethodProp build?
   override build(): ClassMethod {
-    return replaceSuperExpressions(
+    return replaceActionSuperExpressions(
       j.classMethod.from({
         kind: this.kind,
         key: this.key,
@@ -16,9 +16,7 @@ export default class ActionMethod extends EOMethodProp {
         comments: this.comments,
         decorators: buildActionDecorator(),
       }),
-      this,
-      // FIXME: This is fishy
-      { isAction: true }
+      this.replaceSuperWithUndefined
     );
   }
 
