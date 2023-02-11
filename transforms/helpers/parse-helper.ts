@@ -26,6 +26,7 @@ export interface DecoratorImportSpecs {
   unobserves: boolean;
 }
 
+// FIXME: Make property on classes to merge?
 /**
  * Get the map of decorators to import other than the computed props, services etc
  * which already have imports in the code
