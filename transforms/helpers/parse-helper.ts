@@ -9,8 +9,6 @@ import type {
   VariableDeclaration,
 } from './ast';
 import { findPaths, getFirstPath, isEOExtendExpression } from './ast';
-import type { EOProp } from './eo-prop/index';
-import { EOActionsProp, EOClassDecorator } from './eo-prop/index';
 import { capitalizeFirstLetter } from './util/index';
 import { assert, defined, isRecord } from './util/types';
 
@@ -26,41 +24,25 @@ export interface DecoratorImportSpecs {
   unobserves: boolean;
 }
 
-// FIXME: Make property on classes to merge?
 /**
  * Get the map of decorators to import other than the computed props, services etc
  * which already have imports in the code
  */
-export function getDecoratorsToImportSpecs(
-  instanceProps: Array<EOProp | EOClassDecorator>,
-  existingSpecs: DecoratorImportSpecs
+export function mergeDecoratorImportSpecs(
+  newSpecs: DecoratorImportSpecs,
+  existing: DecoratorImportSpecs
 ): DecoratorImportSpecs {
-  let specs = existingSpecs;
-  for (const prop of instanceProps) {
-    specs = {
-      action: specs.action || prop instanceof EOActionsProp,
-      classNames:
-        specs.classNames ||
-        (prop instanceof EOClassDecorator && prop.isClassNames),
-      classNameBindings:
-        specs.classNameBindings ||
-        (prop instanceof EOClassDecorator && prop.isClassNameBindings),
-      attributeBindings:
-        specs.attributeBindings ||
-        (prop instanceof EOClassDecorator && prop.isAttributeBindings),
-      layout:
-        specs.layout ||
-        (prop instanceof EOClassDecorator && prop.isLayoutDecorator),
-      templateLayout:
-        specs.templateLayout ||
-        (prop instanceof EOClassDecorator && prop.isTemplateLayoutDecorator),
-      off: specs.off || prop.hasOffDecorator,
-      tagName:
-        specs.tagName || (prop instanceof EOClassDecorator && prop.isTagName),
-      unobserves: specs.unobserves || prop.hasUnobservesDecorator,
-    };
-  }
-  return specs;
+  return {
+    action: existing.action || newSpecs.action,
+    classNames: existing.classNames || newSpecs.classNames,
+    classNameBindings: existing.classNameBindings || newSpecs.classNameBindings,
+    attributeBindings: existing.attributeBindings || newSpecs.attributeBindings,
+    layout: existing.layout || newSpecs.layout,
+    templateLayout: existing.templateLayout || newSpecs.templateLayout,
+    off: existing.off || newSpecs.off,
+    tagName: existing.tagName || newSpecs.tagName,
+    unobserves: existing.unobserves || newSpecs.unobserves,
+  };
 }
 
 /** Find the `EmberObject.extend` statements */

@@ -11,8 +11,8 @@ import logger from './log-helper';
 import type { Options, UserOptions } from './options';
 import type { DecoratorImportSpecs } from './parse-helper';
 import {
-  getDecoratorsToImportSpecs,
   getEOExtendExpressionCollection,
+  mergeDecoratorImportSpecs,
 } from './parse-helper';
 import { RuntimeDataSchema } from './runtime-data';
 import { isFileOfType, isTestFile } from './validation-helper';
@@ -128,9 +128,8 @@ function _maybeTransformEmberObjects(
 
     transformed = extendExpression.transform();
 
-    // FIXME: Move to class
-    decoratorImportSpecs = getDecoratorsToImportSpecs(
-      [...extendExpression.decorators, ...extendExpression.properties],
+    decoratorImportSpecs = mergeDecoratorImportSpecs(
+      extendExpression.decoratorImportSpecs,
       decoratorImportSpecs
     );
   });

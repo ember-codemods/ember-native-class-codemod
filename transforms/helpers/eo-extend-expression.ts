@@ -14,10 +14,11 @@ import type {
 import { isEOExpression, isNode } from './ast';
 import { createIdentifierDecorator } from './decorator-helper';
 import type { DecoratorImportInfoMap } from './decorator-info';
-import type { EOProp } from './eo-prop/index';
-import makeEOProp, { EOClassDecorator } from './eo-prop/index';
+import type { EOClassDecorator, EOProp } from './eo-prop/index';
+import makeEOProp from './eo-prop/index';
 import logger from './log-helper';
 import type { Options } from './options';
+import type { DecoratorImportSpecs } from './parse-helper';
 import { getClassName, getExpressionToReplace } from './parse-helper';
 import { withComments } from './transform-helper';
 
@@ -68,7 +69,7 @@ export default class EOExtendExpression {
         existingDecoratorImportInfos,
         options
       );
-      if (eoProp instanceof EOClassDecorator) {
+      if ('isClassDecorator' in eoProp) {
         decorators.push(eoProp);
       } else {
         properties.push(eoProp);
@@ -90,6 +91,44 @@ export default class EOExtendExpression {
     } else {
       return false;
     }
+  }
+
+  /**
+   * Get the map of decorators to import other than the computed props, services etc
+   * which already have imports in the code
+   */
+  get decoratorImportSpecs(): DecoratorImportSpecs {
+    let specs = {
+      action: false,
+      classNames: false,
+      classNameBindings: false,
+      attributeBindings: false,
+      layout: false,
+      templateLayout: false,
+      off: false,
+      tagName: false,
+      unobserves: false,
+    };
+    const allProps = [...this.decorators, ...this.properties];
+    for (const prop of allProps) {
+      specs = {
+        action: specs.action || prop.decoratorImportSpecs.action,
+        classNames: specs.classNames || prop.decoratorImportSpecs.classNames,
+        classNameBindings:
+          specs.classNameBindings ||
+          prop.decoratorImportSpecs.classNameBindings,
+        attributeBindings:
+          specs.attributeBindings ||
+          prop.decoratorImportSpecs.attributeBindings,
+        layout: specs.layout || prop.decoratorImportSpecs.layout,
+        templateLayout:
+          specs.templateLayout || prop.decoratorImportSpecs.templateLayout,
+        off: specs.off || prop.decoratorImportSpecs.off,
+        tagName: specs.tagName || prop.decoratorImportSpecs.tagName,
+        unobserves: specs.unobserves || prop.decoratorImportSpecs.unobserves,
+      };
+    }
+    return specs;
   }
 
   private build(): ClassDeclaration | null {

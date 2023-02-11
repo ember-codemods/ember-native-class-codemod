@@ -8,6 +8,7 @@ import type {
 import { isNode } from '../../ast';
 import type { DecoratorImportInfo } from '../../decorator-info';
 import type { Options } from '../../options';
+import type { DecoratorImportSpecs } from '../../parse-helper';
 import type { RuntimeData } from '../../runtime-data';
 import {
   DECORATORS_REQUIRED_PROP_NAMES,
@@ -64,6 +65,24 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
   abstract value: EOPropValue;
 
   abstract build(): B;
+
+  /**
+   * Get the map of decorators to import other than the computed props, services etc
+   * which already have imports in the code
+   */
+  get decoratorImportSpecs(): DecoratorImportSpecs {
+    return {
+      action: false,
+      classNames: false,
+      classNameBindings: false,
+      attributeBindings: false,
+      layout: false,
+      templateLayout: false,
+      off: this.hasOffDecorator,
+      tagName: false,
+      unobserves: this.hasUnobservesDecorator,
+    };
+  }
 
   get type(): EOPropValue['type'] {
     return this.value.type;

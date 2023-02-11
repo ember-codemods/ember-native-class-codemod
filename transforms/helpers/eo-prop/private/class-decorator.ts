@@ -1,5 +1,6 @@
 import type { Decorator, EOPropertyForClassDecorator } from '../../ast';
 import { createClassDecorator } from '../../decorator-helper';
+import type { DecoratorImportSpecs } from '../../parse-helper';
 import {
   LAYOUT_DECORATOR_LOCAL_NAME,
   LAYOUT_DECORATOR_NAME,
@@ -10,8 +11,22 @@ export default class EOClassDecorator extends AbstractEOProp<
   EOPropertyForClassDecorator,
   Decorator
 > {
+  isClassDecorator = true;
+
   override build(): Decorator {
     return createClassDecorator(this.classDecoratorName, this.value);
+  }
+
+  override get decoratorImportSpecs(): DecoratorImportSpecs {
+    return {
+      ...super.decoratorImportSpecs,
+      classNames: this.isClassNames,
+      classNameBindings: this.isClassNameBindings,
+      attributeBindings: this.isAttributeBindings,
+      layout: this.isLayoutDecorator,
+      templateLayout: this.isTemplateLayoutDecorator,
+      tagName: this.isTagName,
+    };
   }
 
   get value(): EOPropertyForClassDecorator['value'] {

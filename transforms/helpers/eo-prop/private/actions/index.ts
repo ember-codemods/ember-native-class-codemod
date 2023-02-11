@@ -14,6 +14,7 @@ import { LIFECYCLE_HOOKS } from '../../../util/index';
 import AbstractEOProp from '../abstract';
 import ActionMethod from './method';
 import ActionProp from './property';
+import type { DecoratorImportSpecs } from '../../../parse-helper';
 
 export default class EOActionsProp extends AbstractEOProp<
   EOPropertyWithActionsObject,
@@ -43,6 +44,13 @@ export default class EOActionsProp extends AbstractEOProp<
     return this.actions.map((action) => {
       return action.build();
     });
+  }
+
+  override get decoratorImportSpecs(): DecoratorImportSpecs {
+    return {
+      ...super.decoratorImportSpecs,
+      action: true,
+    };
   }
 
   get value(): EOPropertyWithActionsObject['value'] {

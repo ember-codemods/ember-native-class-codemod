@@ -20,9 +20,8 @@ import EOFunctionExpressionProp from './private/function-expression';
 import EOMethodProp from './private/method';
 import EOSimpleProp from './private/simple';
 
-export { default as EOActionsProp } from './private/actions';
 // Intentionally not included in EOProp union type.
-export { default as EOClassDecorator } from './private/class-decorator';
+export type { default as EOClassDecorator } from './private/class-decorator';
 
 export type EOProp =
   | EOActionsProp
