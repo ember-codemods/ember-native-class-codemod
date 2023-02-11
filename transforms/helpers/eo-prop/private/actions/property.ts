@@ -1,12 +1,15 @@
 import { default as j } from 'jscodeshift';
 import type { ClassMethod, EOActionProperty } from '../../../ast';
-import AbstractEOProp from '../abstract';
 import { buildActionDecorator } from '../../../decorator-helper';
+import AbstractEOProp from '../abstract';
+import type { Action } from './index';
 
-export default class ActionProp extends AbstractEOProp<
-  EOActionProperty,
-  ClassMethod
-> {
+export default class ActionProp
+  extends AbstractEOProp<EOActionProperty, ClassMethod>
+  implements Action
+{
+  hasInfiniteLoop = false;
+
   get value(): EOActionProperty['value'] {
     return this._prop.value;
   }

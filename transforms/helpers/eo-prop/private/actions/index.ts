@@ -1,20 +1,14 @@
-import { default as j } from 'jscodeshift';
-import type {
-  ClassMethod,
-  Collection,
-  EOPropertyWithActionsObject,
-} from '../../../ast';
-import {
-  findPaths,
-  isEOActionMethod,
-  makeEOActionInfiniteCallAssertion,
-  makeEOActionInfiniteLiteralAssertion,
-} from '../../../ast';
+import type { ClassMethod, EOPropertyWithActionsObject } from '../../../ast';
+import { isEOActionMethod } from '../../../ast';
+import type { DecoratorImportSpecs } from '../../../parse-helper';
 import { LIFECYCLE_HOOKS } from '../../../util/index';
 import AbstractEOProp from '../abstract';
 import ActionMethod from './method';
 import ActionProp from './property';
-import type { DecoratorImportSpecs } from '../../../parse-helper';
+
+export interface Action {
+  hasInfiniteLoop: boolean;
+}
 
 export default class EOActionsProp extends AbstractEOProp<
   EOPropertyWithActionsObject,
@@ -69,7 +63,6 @@ export default class EOActionsProp extends AbstractEOProp<
     return [...this.lifecycleHookErrors, ...this.infiniteLoopErrors];
   }
 
-  // FIXME: Try to move these onto action class(es)
   /**
    * Iterate over actions and verify that the action name does not match the lifecycle hooks
    * The transformation is not supported if an action has the same name as lifecycle hook
@@ -92,7 +85,6 @@ export default class EOActionsProp extends AbstractEOProp<
     return errors;
   }
 
-  // FIXME: Try to move these onto action class(es)
   /**
    * Validation against pattern mentioned https://github.com/scalvert/eslint-plugin-ember-es6-class/pull/2
    */
@@ -100,35 +92,14 @@ export default class EOActionsProp extends AbstractEOProp<
     const { actions } = this;
     const errors: string[] = [];
     for (const action of actions) {
-      const { name } = action;
-      if (action instanceof ActionMethod) {
-        const collection = j(action.value.body) as Collection;
-
-        // Occurrences of this.actionName()
-        const isEOActionInfiniteCall = makeEOActionInfiniteCallAssertion(name);
-        const actionCalls = findPaths(
-          collection,
-          j.CallExpression,
-          isEOActionInfiniteCall
+      if (action.hasInfiniteLoop) {
+        const { name } = action;
+        errors.push(
+          this.makeActionError(
+            name,
+            `calling the passed action would cause an infinite loop. See https://github.com/scalvert/eslint-plugin-ember-es6-class/pull/2 for more details`
+          )
         );
-
-        // Occurrences of this.get('actionName')() or get(this, 'actionName')()
-        const isEOActionInfiniteLiteral =
-          makeEOActionInfiniteLiteralAssertion(name);
-        const actionLiterals = findPaths(
-          collection,
-          j.StringLiteral,
-          isEOActionInfiniteLiteral
-        );
-
-        if (actionLiterals.length > 0 || actionCalls.length > 0) {
-          errors.push(
-            this.makeActionError(
-              name,
-              `calling the passed action would cause an infinite loop. See https://github.com/scalvert/eslint-plugin-ember-es6-class/pull/2 for more details`
-            )
-          );
-        }
       }
 
       return errors;

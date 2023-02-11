@@ -43,7 +43,6 @@ export default class EOSimpleProp extends AbstractEOProp<
   }
 
   protected buildDecorators(): Decorator[] {
-    // FIXME: does this get used by all the sub-types?
     const decorators: Decorator[] = [];
     for (const decoratorName of this.decoratorNames) {
       if (decoratorName === 'off' || decoratorName === 'unobserves') {
