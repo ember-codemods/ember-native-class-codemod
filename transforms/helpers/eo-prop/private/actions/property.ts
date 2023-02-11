@@ -39,7 +39,7 @@ export default class ActionProp extends AbstractEOProp<
    * ```
    */
   override build(): ClassMethod {
-    const returnBlock = j.blockStatement([
+    const body = j.blockStatement([
       j.returnStatement(
         j.callExpression(j.memberExpression(this.value, j.identifier('call')), [
           j.thisExpression(),
@@ -47,14 +47,12 @@ export default class ActionProp extends AbstractEOProp<
         ])
       ),
     ]);
-    // FIXME: Why bother making the expression?
-    const expr = j.functionExpression(null, [], returnBlock);
 
     return j.classMethod.from({
       kind: 'method',
       key: this.key,
-      params: expr.params,
-      body: expr.body,
+      params: [],
+      body,
       comments: this.comments,
       decorators: buildActionDecorator(),
     });
