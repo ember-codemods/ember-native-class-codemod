@@ -33,7 +33,7 @@ export function withComments<
 }
 
 /** Creates line comments from passed lines */
-export function createLineComments(
+function createLineComments(
   j: JSCodeshift,
   lines: readonly string[] = []
 ): CommentLine[] {
@@ -43,7 +43,7 @@ export function createLineComments(
 /**
  * Replace instances of `this._super(...arguments)` to `super.methodName(...arguments)`
  */
-export function replaceSuperExpressions(
+function replaceSuperExpressions(
   classMethod: ClassMethod,
   replaceWithUndefined: boolean,
   buildSuperMethodCall: (

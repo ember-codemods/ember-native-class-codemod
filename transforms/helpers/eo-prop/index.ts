@@ -11,19 +11,16 @@ import type { DecoratorImportInfoMap } from '../decorator-info';
 import type { Options } from '../options';
 import { assert } from '../util/types';
 import EOActionsProp from './private/actions';
+import type EOComputedFunctionExpressionProp from './private/call-expression/function-expression';
+import { makeEOCallExpressionProp } from './private/call-expression/index';
+import type EOComputedObjectExpressionProp from './private/call-expression/object-expression';
+import type EODecoratedProp from './private/call-expression/property';
 import EOClassDecorator from './private/class-decorator';
 import EOFunctionExpressionProp from './private/function-expression';
 import EOMethodProp from './private/method';
 import EOSimpleProp from './private/simple';
-import { makeEOCallExpressionProp } from './private/call-expression/index';
-import type EOComputedFunctionExpressionProp from './private/call-expression/function-expression';
-import type EOComputedObjectExpressionProp from './private/call-expression/object-expression';
-import type EODecoratedProp from './private/call-expression/property';
 
 export { default as EOActionsProp } from './private/actions';
-export { default as EOFunctionExpressionProp } from './private/function-expression';
-export { default as EOMethodProp } from './private/method';
-
 // Intentionally not included in EOProp union type.
 export { default as EOClassDecorator } from './private/class-decorator';
 
@@ -35,12 +32,6 @@ export type EOProp =
   | EODecoratedProp
   | EOFunctionExpressionProp
   | EOMethodProp;
-
-// FIXME: Remove
-export type EOCallExpressionProp =
-  | EOComputedFunctionExpressionProp
-  | EOComputedObjectExpressionProp
-  | EODecoratedProp;
 
 /**
  * Makes an object representing an Ember Object property for the given
