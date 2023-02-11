@@ -7,6 +7,11 @@ export default class EOMethodProp extends AbstractEOProp<
   EOMethod,
   ClassMethod
 > {
+  /**
+   * Transform object method to class method
+   *
+   * For example { foo() { }} --> { foo() { }}
+   */
   override build(): ClassMethod {
     return replaceSuperExpressions(
       j.classMethod.from({
@@ -14,7 +19,7 @@ export default class EOMethodProp extends AbstractEOProp<
         key: this.key,
         params: this.params,
         body: this.body,
-        comments: this.comments ?? null,
+        comments: this.comments,
         decorators: this.existingDecorators,
       }),
       this,

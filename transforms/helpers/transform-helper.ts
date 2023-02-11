@@ -105,29 +105,6 @@ export function replaceSuperExpressions(
   return classMethod;
 }
 
-/**
- * Transform functions to class methods
- *
- * For example { foo: function() { }} --> { foo() { }}
- */
-export function createMethodProp(
-  j: JSCodeshift,
-  functionProp: EOMethodProp | EOFunctionExpressionProp
-): ClassMethod {
-  return replaceSuperExpressions(
-    j.classMethod.from({
-      kind: functionProp.kind,
-      key: functionProp.key,
-      params: functionProp.params,
-      body: functionProp.body,
-      comments: functionProp.comments ?? null,
-      decorators: functionProp.existingDecorators,
-    }),
-    functionProp,
-    { isAction: false }
-  );
-}
-
 /** Create import statement */
 export function createImportDeclaration(
   j: JSCodeshift,

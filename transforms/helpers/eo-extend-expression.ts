@@ -15,16 +15,11 @@ import { isEOExpression, isNode } from './ast';
 import { createClassDecorator } from './decorator-helper';
 import type { DecoratorImportInfoMap } from './decorator-info';
 import type { EOProp } from './eo-prop/index';
-import makeEOProp, {
-  EOActionsProp,
-  EOClassDecorator,
-  EOFunctionExpressionProp,
-  EOMethodProp,
-} from './eo-prop/index';
+import makeEOProp, { EOClassDecorator } from './eo-prop/index';
 import logger from './log-helper';
 import type { Options } from './options';
 import { getClassName, getExpressionToReplace } from './parse-helper';
-import { createMethodProp, withComments } from './transform-helper';
+import { withComments } from './transform-helper';
 
 export default class EOExtendExpression {
   private className: string;
@@ -133,22 +128,11 @@ export default class EOExtendExpression {
     let classBody: Parameters<ClassBodyBuilder>[0] = [];
 
     for (const prop of properties) {
-      if (prop instanceof EOMethodProp) {
-        classBody.push(prop.build());
-      } else if (prop instanceof EOFunctionExpressionProp) {
-        classBody.push(createMethodProp(j, prop));
-      } else if (prop.isEOCallExpressionProp) {
-        const built = prop.build();
-        if (Array.isArray(built)) {
-          classBody = [...classBody, ...built];
-        } else {
-          classBody.push(built);
-        }
-      } else if (prop instanceof EOActionsProp) {
-        classBody = [...classBody, ...prop.build()];
+      const built = prop.build();
+      if (Array.isArray(built)) {
+        classBody = [...classBody, ...built];
       } else {
-        // @ts-expect-error FIXME
-        classBody.push(prop.build());
+        classBody.push(built);
       }
     }
 
