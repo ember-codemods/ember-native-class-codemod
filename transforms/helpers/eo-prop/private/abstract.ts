@@ -27,8 +27,6 @@ type EOPropValue = EOProperty['value'] | EOMethod;
  * A wrapper object for ember object properties
  */
 export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
-  isEOCallExpressionProp = false as const;
-
   readonly _prop: P & {
     // ast-types missing these properties that exist on @babel/types
     decorators?: Decorator[] | null;

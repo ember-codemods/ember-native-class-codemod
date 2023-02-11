@@ -12,7 +12,10 @@ import type {
   RawEOExtendExpression,
 } from './ast';
 import { isEOExpression, isNode } from './ast';
-import { createClassDecorator } from './decorator-helper';
+import {
+  createClassDecorator,
+  createIdentifierDecorator,
+} from './decorator-helper';
 import type { DecoratorImportInfoMap } from './decorator-info';
 import type { EOProp } from './eo-prop/index';
 import makeEOProp, { EOClassDecorator } from './eo-prop/index';
@@ -164,7 +167,7 @@ export default class EOExtendExpression {
     const classDecorators: Decorator[] = [];
 
     if (classicDecorator) {
-      classDecorators.push(j.decorator(j.identifier('classic')));
+      classDecorators.push(createIdentifierDecorator('classic'));
     }
 
     for (const decorator of decorators) {

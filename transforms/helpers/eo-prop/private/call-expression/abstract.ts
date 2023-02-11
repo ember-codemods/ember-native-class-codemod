@@ -6,27 +6,61 @@ import type {
   EOCallExpressionInnerCallee,
   EOPropertyWithCallExpression,
 } from '../../../ast';
-import { createInstancePropDecorators } from '../../../decorator-helper';
 import type { DecoratorImportInfo } from '../../../decorator-info';
+import logger from '../../../log-helper';
 import type { Options } from '../../../options';
-import type { EOCallExpressionProp } from '../../index';
+import { defined } from '../../../util/types';
 import AbstractEOProp from '../abstract';
 import type { CallExpressionModifier } from './modifier-helper';
 
 export default abstract class AbstractEOCallExpressionProp<
   B extends ClassProperty | ClassMethod | ClassMethod[]
 > extends AbstractEOProp<EOPropertyWithCallExpression, B> {
-  // FIXME: Remove
-  // @ts-expect-error FIXME
-  override isEOCallExpressionProp = true;
-
   protected buildDecorators(): Decorator[] {
-    // FIXME: Should we always pass through existing decorators?
-    return [
-      ...(this.existingDecorators ?? []),
-      // FIXME: Weird
-      ...createInstancePropDecorators(j, this as EOCallExpressionProp),
-    ];
+    const decorators: Decorator[] = [];
+    for (const decoratorName of this.decoratorNames) {
+      if (this.isVolatileReadOnly) {
+        logger.info(`[${this.name}] Ignored decorator ${decoratorName}`);
+      } else {
+        decorators.push(this.buildDecorator(decoratorName));
+      }
+    }
+
+    return [...(this.existingDecorators ?? []), ...decorators];
+  }
+
+  /**
+   * Create decorator for computed properties and methods
+   * This method handles decorators for `DECORATOR_PROPS` defined in `util.js`
+   */
+  private buildDecorator(decoratorName: string): Decorator {
+    const decoratorArgs = this.shouldBuildMethods
+      ? this.arguments.slice(0, -1)
+      : // eslint-disable-next-line unicorn/prefer-spread
+        this.arguments.slice(0);
+
+    let decoratorExpression =
+      ['computed', 'service', 'controller'].includes(decoratorName) &&
+      decoratorArgs.length === 0
+        ? j.identifier(decoratorName)
+        : j.callExpression(j.identifier(decoratorName), decoratorArgs);
+
+    for (const modifier of this.modifiers) {
+      decoratorExpression = j.callExpression(
+        j.memberExpression(decoratorExpression, defined(modifier.prop)),
+        modifier.args
+      );
+    }
+
+    if (this.modifiers.length === 0) {
+      return j.decorator(decoratorExpression);
+    }
+
+    // If has modifiers wrap decorators in anonymous call expression
+    // it transforms @computed('').readOnly() => @(computed('').readOnly())
+    return j.decorator(
+      j.callExpression(j.identifier(''), [decoratorExpression])
+    );
   }
 
   constructor(

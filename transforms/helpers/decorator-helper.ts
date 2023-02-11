@@ -1,9 +1,7 @@
 import type { JSCodeshift } from 'jscodeshift';
 import { default as j } from 'jscodeshift';
 import type { Decorator } from './ast';
-import type { EOClassDecorator, EOSimpleProp } from './eo-prop/index';
-import type { EOCallExpressionProp } from './eo-prop/index';
-import { assert, defined } from './util/types';
+import type { EOClassDecorator } from './eo-prop/index';
 
 type CallExpressionArg = Parameters<JSCodeshift['callExpression']>[1][number];
 
@@ -23,106 +21,27 @@ export function createClassDecorator(
   );
 }
 
-/**
- * Create decorators for computed properties and methods
- * This method handles decorators for `DECORATOR_PROPS` defined in `util.js`
- */
-function createCallExpressionDecorators(
-  j: JSCodeshift,
-  decoratorName: string,
-  instanceProp: EOCallExpressionProp
-): Decorator[] {
-  if (instanceProp.isVolatileReadOnly) {
-    return [];
-  }
-
-  const decoratorArgs = instanceProp.shouldBuildMethods
-    ? instanceProp.arguments.slice(0, -1)
-    : // eslint-disable-next-line unicorn/prefer-spread
-      instanceProp.arguments.slice(0);
-
-  let decoratorExpression =
-    ['computed', 'service', 'controller'].includes(decoratorName) &&
-    decoratorArgs.length === 0
-      ? j.identifier(decoratorName)
-      : j.callExpression(j.identifier(decoratorName), decoratorArgs);
-
-  for (const modifier of instanceProp.modifiers) {
-    assert(modifier.prop);
-    decoratorExpression = j.callExpression(
-      j.memberExpression(decoratorExpression, modifier.prop),
-      modifier.args
-    );
-  }
-
-  if (instanceProp.modifiers.length === 0) {
-    return [j.decorator(decoratorExpression)];
-  }
-
-  // If has modifiers wrap decorators in anonymous call expression
-  // it transforms @computed('').readOnly() => @(computed('').readOnly())
-  return [
-    j.decorator(j.callExpression(j.identifier(''), [decoratorExpression])),
-  ];
-}
-
 /** Create decorators which need arguments */
-function createDecoratorsWithArgs(
-  j: JSCodeshift,
-  identifier: string,
+export function createDecoratorWithArgs(
+  decoratorName: string,
   args: Array<string | number | boolean | RegExp | null>
-): [Decorator] {
-  return [
-    j.decorator(
-      j.callExpression(
-        j.identifier(identifier),
-        args.map((arg) => j.literal(arg))
-      )
-    ),
-  ];
+): Decorator {
+  return j.decorator(
+    j.callExpression(
+      j.identifier(decoratorName),
+      args.map((arg) => j.literal(arg))
+    )
+  );
 }
 
 /** Create `@action` decorator */
 export function buildActionDecorator(): [Decorator] {
-  return [j.decorator(j.identifier('action'))];
+  return [createIdentifierDecorator('action')];
 }
 
 /**
- * Create decorators for props from `classNameBindings` and `attributeBindings`
+ * Create simple decorator with given name
  */
-function createBindingDecorators(
-  j: JSCodeshift,
-  decoratorName: string
-): [Decorator] {
-  return [j.decorator(j.identifier(decoratorName))];
-}
-
-// FIXME: Move in-h0ouse
-/** Handles decorators for instance properties */
-export function createInstancePropDecorators(
-  j: JSCodeshift,
-  instanceProp: EOCallExpressionProp | EOSimpleProp
-): Decorator[] {
-  let decorators: Decorator[] = [];
-  for (const decorator of instanceProp.decoratorNames) {
-    if (decorator === 'className' || decorator === 'attribute') {
-      decorators = [...decorators, ...createBindingDecorators(j, decorator)];
-    } else if (decorator === 'off' || decorator === 'unobserves') {
-      decorators = [
-        ...decorators,
-        ...createDecoratorsWithArgs(
-          j,
-          decorator,
-          defined(instanceProp.decoratorArgs[decorator])
-        ),
-      ];
-    } else if (decorator) {
-      assert(instanceProp.isEOCallExpressionProp);
-      decorators = [
-        ...decorators,
-        ...createCallExpressionDecorators(j, decorator, instanceProp),
-      ];
-    }
-  }
-  return decorators;
+export function createIdentifierDecorator(decoratorName: string): Decorator {
+  return j.decorator(j.identifier(decoratorName));
 }

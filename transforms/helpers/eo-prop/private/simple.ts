@@ -1,6 +1,8 @@
 import { default as j } from 'jscodeshift';
 import type { ClassProperty, Decorator, EOPropertySimple } from '../../ast';
-import { createInstancePropDecorators } from '../../decorator-helper';
+import { createDecoratorWithArgs } from '../../decorator-helper';
+import logger from '../../log-helper';
+import { defined } from '../../util/types';
 import AbstractEOProp from './abstract';
 
 export default class EOSimpleProp extends AbstractEOProp<
@@ -40,15 +42,23 @@ export default class EOSimpleProp extends AbstractEOProp<
     );
   }
 
-  // FIXME: Is this still shared with EOCallExpressionProp?
-  private buildDecorators(): Decorator[] {
-    // FIXME: Clean up; Move in-house?
-    const decorators = createInstancePropDecorators(j, this);
-    const allDecorators = new Set<Decorator>([
-      ...(this.existingDecorators ?? []),
-      ...decorators,
-    ]);
-    return [...allDecorators];
+  protected buildDecorators(): Decorator[] {
+    // FIXME: does this get used by all the sub-types?
+    const decorators: Decorator[] = [];
+    for (const decoratorName of this.decoratorNames) {
+      if (decoratorName === 'off' || decoratorName === 'unobserves') {
+        decorators.push(
+          createDecoratorWithArgs(
+            decoratorName,
+            defined(this.decoratorArgs[decoratorName])
+          )
+        );
+      } else {
+        logger.info(`[${this.name}] Ignored decorator ${decoratorName}`);
+      }
+    }
+
+    return [...(this.existingDecorators ?? []), ...decorators];
   }
 
   protected override get _errors(): string[] {

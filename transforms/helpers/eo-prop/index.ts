@@ -23,7 +23,6 @@ import type EODecoratedProp from './private/call-expression/property';
 export { default as EOActionsProp } from './private/actions';
 export { default as EOFunctionExpressionProp } from './private/function-expression';
 export { default as EOMethodProp } from './private/method';
-export { default as EOSimpleProp } from './private/simple';
 
 // Intentionally not included in EOProp union type.
 export { default as EOClassDecorator } from './private/class-decorator';
