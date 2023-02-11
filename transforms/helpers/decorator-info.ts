@@ -3,7 +3,7 @@ import { METHOD_DECORATORS } from './util/index';
 import type { ImportSpecifier } from './ast';
 
 export interface DecoratorImportInfo {
-  name: 'unobserves' | 'off' | 'className' | 'attribute' | string;
+  name: string;
   importedName?: 'computed' | string;
   isImportedAs?: boolean;
   isMetaDecorator?: boolean;

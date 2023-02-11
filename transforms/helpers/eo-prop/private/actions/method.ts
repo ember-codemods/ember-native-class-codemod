@@ -11,7 +11,6 @@ import EOMethodProp from '../method';
 import type { Action } from './index';
 
 export default class ActionMethod extends EOMethodProp implements Action {
-  // FIXME: Try to reuse EOMethodProp build?
   override build(): ClassMethod {
     return replaceActionSuperExpressions(
       j.classMethod.from({

@@ -12,7 +12,7 @@ export default class EOSimpleProp extends AbstractEOProp<
   override build(): ClassProperty {
     const classProp = j.classProperty.from({
       key: this.key,
-      value: this.shouldSetValue ? this.value : null,
+      value: this.hasDecorators ? null : this.value,
       comments: this.comments,
       computed: this.computed,
     });
@@ -29,17 +29,6 @@ export default class EOSimpleProp extends AbstractEOProp<
 
   get value(): EOPropertySimple['value'] {
     return this._prop.value;
-  }
-
-  // FIXME: Is this still shared with EOCallExpressionProp?
-  private get shouldSetValue(): boolean {
-    // TODO: This is probably where we can remove the = undefined value;
-    return (
-      !this.hasDecorators ||
-      this.decoratorNames.every(
-        (name) => name === 'className' || name === 'attribute'
-      )
-    );
   }
 
   protected buildDecorators(): Decorator[] {
