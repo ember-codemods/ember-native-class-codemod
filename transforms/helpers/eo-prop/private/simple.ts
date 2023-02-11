@@ -2,7 +2,6 @@ import { default as j } from 'jscodeshift';
 import type { ClassProperty, Decorator, EOPropertySimple } from '../../ast';
 import { createDecoratorWithArgs } from '../../decorator-helper';
 import logger from '../../log-helper';
-import { defined } from '../../util/types';
 import AbstractEOProp from './abstract';
 
 export default class EOSimpleProp extends AbstractEOProp<
@@ -33,14 +32,10 @@ export default class EOSimpleProp extends AbstractEOProp<
 
   protected buildDecorators(): Decorator[] {
     const decorators: Decorator[] = [];
-    for (const decoratorName of this.decoratorNames) {
-      if (decoratorName === 'off' || decoratorName === 'unobserves') {
-        decorators.push(
-          createDecoratorWithArgs(
-            decoratorName,
-            defined(this.decoratorArgs[decoratorName])
-          )
-        );
+    for (const decorator of this.decorators) {
+      const decoratorName = decorator.name;
+      if ('args' in decorator) {
+        decorators.push(createDecoratorWithArgs(decoratorName, decorator.args));
       } else {
         logger.info(`[${this.name}] Ignored decorator ${decoratorName}`);
       }

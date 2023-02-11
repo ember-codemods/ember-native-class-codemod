@@ -9,7 +9,9 @@ export interface DecoratorImportInfo {
   isMetaDecorator?: boolean;
   isMethodDecorator?: boolean;
   localName?: string;
+  args?: Array<string | boolean | number | null>;
 }
+
 export type DecoratorImportInfoMap = Map<
   /** local name */ string,
   DecoratorImportInfo

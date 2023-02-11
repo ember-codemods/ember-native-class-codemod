@@ -15,11 +15,6 @@ import {
   allowObjectLiteralDecorator,
 } from '../../util/index';
 
-interface EODecoratorArgs {
-  unobserves?: Array<string | boolean | number | null> | undefined;
-  off?: Array<string | boolean | number | null> | undefined;
-}
-
 type EOPropValue = EOProperty['value'] | EOMethod;
 
 /**
@@ -34,7 +29,6 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
   };
 
   protected decorators: DecoratorImportInfo[] = [];
-  readonly decoratorArgs: EODecoratorArgs = {};
 
   /** Runtime Data */
   readonly runtimeData: RuntimeData;
@@ -47,14 +41,17 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
     if (this.runtimeData.type) {
       const { type, offProperties, unobservedProperties } = this.runtimeData;
 
-      const name = this.name;
-      if (name in unobservedProperties) {
-        this.decorators.push({ name: 'unobserves' });
-        this.decoratorArgs.unobserves = unobservedProperties[name];
+      const unobservedArgs = unobservedProperties[this.name];
+      if (unobservedArgs) {
+        this.decorators.push({
+          name: 'unobserves',
+          args: unobservedArgs,
+        });
       }
-      if (name in offProperties) {
-        this.decorators.push({ name: 'off' });
-        this.decoratorArgs.off = offProperties[name];
+
+      const offArgs = offProperties[this.name];
+      if (offArgs) {
+        this.decorators.push({ name: 'off', args: offArgs });
       }
       this.runtimeType = type;
     }
@@ -124,20 +121,16 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
     return this._prop.decorators ?? null;
   }
 
-  get decoratorNames(): string[] {
-    return this.decorators.map((d) => d.name);
-  }
-
   get hasDecorators(): boolean {
     return this.decorators.length > 0;
   }
 
   get hasUnobservesDecorator(): boolean {
-    return this.decoratorNames.includes('unobserves');
+    return this.decorators.some((d) => d.name === 'unobserves');
   }
 
   get hasOffDecorator(): boolean {
-    return this.decoratorNames.includes('off');
+    return this.decorators.some((d) => d.name === 'off');
   }
 
   get hasMetaDecorator(): boolean {

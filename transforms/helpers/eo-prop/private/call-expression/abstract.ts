@@ -18,7 +18,8 @@ export default abstract class AbstractEOCallExpressionProp<
 > extends AbstractEOProp<EOPropertyWithCallExpression, B> {
   protected buildDecorators(): Decorator[] {
     const decorators: Decorator[] = [];
-    for (const decoratorName of this.decoratorNames) {
+    for (const decorator of this.decorators) {
+      const decoratorName = decorator.name;
       if (this.isVolatileReadOnly) {
         logger.info(`[${this.name}] Ignored decorator ${decoratorName}`);
       } else {
