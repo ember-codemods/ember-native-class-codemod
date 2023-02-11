@@ -1,4 +1,6 @@
-import type { ClassMethod, EOMethod, Identifier } from '../../ast';
+import { default as j } from 'jscodeshift';
+import type { ClassMethod, EOMethod } from '../../ast';
+import { replaceSuperExpressions } from '../../transform-helper';
 import AbstractEOProp from './abstract';
 
 export default class EOMethodProp extends AbstractEOProp<
@@ -6,7 +8,18 @@ export default class EOMethodProp extends AbstractEOProp<
   ClassMethod
 > {
   override build(): ClassMethod {
-    throw new Error('Method not implemented.');
+    return replaceSuperExpressions(
+      j.classMethod.from({
+        kind: this.kind,
+        key: this.key,
+        params: this.params,
+        body: this.body,
+        comments: this.comments ?? null,
+        decorators: this.existingDecorators,
+      }),
+      this,
+      { isAction: false }
+    );
   }
 
   protected override supportsObjectLiteralDecorators = true;
@@ -15,25 +28,8 @@ export default class EOMethodProp extends AbstractEOProp<
     return this._prop;
   }
 
-  // FIXME: are these overrides still necessary?
-  private overriddenKind?: 'init' | 'get' | 'set' | 'method';
-
-  get kind(): 'init' | 'get' | 'set' | 'method' {
-    return this.overriddenKind ?? this.value.kind;
-  }
-
-  set kind(kind: 'init' | 'get' | 'set' | 'method') {
-    this.overriddenKind = kind;
-  }
-
-  private overriddenKey?: Identifier;
-
-  override get key(): Identifier {
-    return this.overriddenKey ?? this._prop.key;
-  }
-
-  override set key(key: Identifier) {
-    this.overriddenKey = key;
+  get kind(): 'get' | 'set' | 'method' {
+    return this.value.kind;
   }
 
   get params(): EOMethod['params'] {

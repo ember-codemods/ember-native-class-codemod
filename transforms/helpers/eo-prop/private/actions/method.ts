@@ -9,7 +9,6 @@ export default class ActionMethod extends EOMethodProp {
   override build(): ClassMethod {
     return replaceSuperExpressions(
       j.classMethod.from({
-        // @ts-expect-error FIXME
         kind: this.kind,
         key: this.key,
         params: this.params,

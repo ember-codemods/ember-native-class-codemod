@@ -6,21 +6,22 @@ import type {
   ClassMethod,
   Collection,
   CommentLine,
-  Decorator,
   ImportDeclaration,
   ImportDefaultSpecifier,
   ImportSpecifier,
   MemberExpression,
 } from './ast';
 import { findPaths, isEOSuperExpression } from './ast';
-import type { EOCallExpressionProp } from './eo-prop/index';
-import type { EOFunctionExpressionProp, EOMethodProp } from './eo-prop/index';
+import type {
+  EOCallExpressionProp,
+  EOFunctionExpressionProp,
+  EOMethodProp,
+} from './eo-prop/index';
 import {
   ACTION_SUPER_EXPRESSION_COMMENT,
   LAYOUT_DECORATOR_LOCAL_NAME,
   LAYOUT_DECORATOR_NAME,
 } from './util/index';
-import { defined } from './util/types';
 
 /** Copy comments `from` => `to` */
 export function withComments<
@@ -111,30 +112,19 @@ export function replaceSuperExpressions(
  */
 export function createMethodProp(
   j: JSCodeshift,
-  functionProp: EOMethodProp | EOFunctionExpressionProp,
-  {
-    isAction = false,
-    decorators = [],
-  }: { isAction?: boolean; decorators?: Decorator[] } = {}
+  functionProp: EOMethodProp | EOFunctionExpressionProp
 ): ClassMethod {
-  const kind =
-    functionProp.kind === 'init' ? 'method' : defined(functionProp.kind);
-
-  const existingDecorators = functionProp.existingDecorators;
-
-  const allDecorators = [...(existingDecorators ?? []), ...decorators];
-
   return replaceSuperExpressions(
     j.classMethod.from({
-      kind,
+      kind: functionProp.kind,
       key: functionProp.key,
       params: functionProp.params,
       body: functionProp.body,
       comments: functionProp.comments ?? null,
-      decorators: allDecorators,
+      decorators: functionProp.existingDecorators,
     }),
     functionProp,
-    { isAction }
+    { isAction: false }
   );
 }
 

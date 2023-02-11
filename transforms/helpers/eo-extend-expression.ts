@@ -134,7 +134,7 @@ export default class EOExtendExpression {
 
     for (const prop of properties) {
       if (prop instanceof EOMethodProp) {
-        classBody.push(createMethodProp(j, prop));
+        classBody.push(prop.build());
       } else if (prop instanceof EOFunctionExpressionProp) {
         classBody.push(createMethodProp(j, prop));
       } else if (prop.isEOCallExpressionProp) {
