@@ -1,11 +1,12 @@
 import { default as j } from 'jscodeshift';
-import type { ClassMethod, EOActionProperty } from '../../../ast';
-import { buildActionDecorator } from '../../../decorator-helper';
+import type * as AST from '../../../ast';
+import { createIdentifierDecorator } from '../../../decorator-helper';
+import { ACTION_DECORATOR_NAME } from '../../../util/index';
 import AbstractEOProp from '../abstract';
 import type { Action } from './index';
 
-export default class ActionProp
-  extends AbstractEOProp<EOActionProperty, ClassMethod>
+export default class EOActionProp
+  extends AbstractEOProp<AST.EOActionProp, AST.ClassMethod>
   implements Action
 {
   readonly isClassDecorator = false as const;
@@ -41,7 +42,7 @@ export default class ActionProp
    * });
    * ```
    */
-  build(): ClassMethod {
+  build(): AST.ClassMethod {
     const body = j.blockStatement([
       j.returnStatement(
         j.callExpression(j.memberExpression(this.value, j.identifier('call')), [
@@ -57,7 +58,7 @@ export default class ActionProp
       params: [],
       body,
       comments: this.comments,
-      decorators: buildActionDecorator(),
+      decorators: [createIdentifierDecorator(ACTION_DECORATOR_NAME)],
     });
   }
 }

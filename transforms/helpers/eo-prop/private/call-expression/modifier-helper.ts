@@ -1,17 +1,17 @@
-import type { EOCallExpression } from '../../../ast';
+import type * as AST from '../../../ast';
 
 export interface CallExpressionModifier {
   prop:
-    | Extract<EOCallExpression['callee'], { property: unknown }>['property']
+    | Extract<AST.EOCallExpression['callee'], { property: unknown }>['property']
     | undefined;
-  args: EOCallExpression['arguments'];
+  args: AST.EOCallExpression['arguments'];
 }
 
 /**
  * Get property modifier from the property callee object
  */
 export function getModifier(
-  calleeObject: EOCallExpression
+  calleeObject: AST.EOCallExpression
 ): CallExpressionModifier {
   return {
     prop:

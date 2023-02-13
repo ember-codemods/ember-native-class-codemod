@@ -1,17 +1,5 @@
 import { default as j } from 'jscodeshift';
-import type {
-  ASTPath,
-  CallExpression,
-  ClassBody,
-  ClassBodyBuilder,
-  ClassDeclaration,
-  Decorator,
-  EOExpression,
-  EOMixin,
-  Identifier,
-  RawEOExtendExpression,
-} from './ast';
-import { isEOExpression, isNode } from './ast';
+import * as AST from './ast';
 import { createIdentifierDecorator } from './decorator-helper';
 import type { DecoratorImportInfoMap } from './decorator-info';
 import type { EOClassDecorator, EOProp } from './eo-prop/index';
@@ -26,13 +14,13 @@ export default class EOExtendExpression {
   private className: string;
   private superClassName: string;
 
-  private expression: EOExpression | null = null;
-  private mixins: EOMixin[];
+  private expression: AST.EOExpression | null = null;
+  private mixins: AST.EOMixin[];
   readonly properties: EOProp[];
   readonly decorators: EOClassDecorator[];
 
   constructor(
-    private path: ASTPath<RawEOExtendExpression>,
+    private path: AST.Path<AST.EOExtendExpression>,
     private filePath: string,
     existingDecoratorImportInfos: DecoratorImportInfoMap,
     private options: Options
@@ -42,9 +30,9 @@ export default class EOExtendExpression {
     this.className = getClassName(path, filePath, options.runtimeData.type);
     this.superClassName = raw.callee.object.name;
 
-    const mixins: EOMixin[] = [];
+    const mixins: AST.EOMixin[] = [];
     for (const arg of raw.arguments) {
-      if (isEOExpression(arg)) {
+      if (AST.isEOExpression(arg)) {
         if (this.expression !== null) {
           this._parseErrors.push(
             this.makeError(
@@ -131,7 +119,7 @@ export default class EOExtendExpression {
     return specs;
   }
 
-  private build(): ClassDeclaration | null {
+  private build(): AST.ClassDeclaration | null {
     const errors = this.validate();
     if (errors.length > 0) {
       const message = errors.join('\n\t');
@@ -155,16 +143,16 @@ export default class EOExtendExpression {
     return classDeclaration;
   }
 
-  private buildClassIdentifier(): Identifier {
+  private buildClassIdentifier(): AST.Identifier {
     const { className, superClassName } = this;
     return j.identifier(
       className === superClassName ? `_${className}` : className
     );
   }
 
-  private buildClassBody(): ClassBody {
+  private buildClassBody(): AST.ClassBody {
     const { properties } = this;
-    let classBody: Parameters<ClassBodyBuilder>[0] = [];
+    let classBody: Parameters<AST.ClassBodyBuilder>[0] = [];
 
     for (const prop of properties) {
       const built = prop.build();
@@ -183,7 +171,7 @@ export default class EOExtendExpression {
    * If there are Mixins, the CallExpression will be a CallExpression with
    * the Mixins included.
    */
-  private buildSuperClassExpression(): CallExpression | Identifier {
+  private buildSuperClassExpression(): AST.CallExpression | AST.Identifier {
     const { superClassName, mixins } = this;
     if (mixins.length > 0) {
       return j.callExpression(
@@ -197,10 +185,10 @@ export default class EOExtendExpression {
     return j.identifier(superClassName);
   }
 
-  private buildClassDecorators(): Decorator[] {
+  private buildClassDecorators(): AST.Decorator[] {
     const { decorators } = this;
     const { classicDecorator } = this.options;
-    const classDecorators: Decorator[] = [];
+    const classDecorators: AST.Decorator[] = [];
 
     if (classicDecorator) {
       classDecorators.push(createIdentifierDecorator('classic'));
@@ -222,7 +210,7 @@ export default class EOExtendExpression {
   private validate(): string[] {
     let errors = this._parseErrors;
 
-    if (isNode(this.path.parentPath?.value, 'MemberExpression')) {
+    if (AST.isNode(this.path.parentPath?.value, 'MemberExpression')) {
       errors.push(
         `class has chained definition (e.g. ${this.superClassName}.extend().reopenClass();`
       );

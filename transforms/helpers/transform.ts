@@ -1,7 +1,7 @@
 import { getTelemetryFor } from 'ember-codemods-telemetry-helpers';
 import type { JSCodeshift } from 'jscodeshift';
 import path from 'path';
-import type { Collection } from './ast';
+import type * as AST from './ast';
 import EOExtendExpression from './eo-extend-expression';
 import {
   createDecoratorImportDeclarations,
@@ -20,7 +20,7 @@ import { isFileOfType, isTestFile } from './validation-helper';
 /** Main entry point for parsing and replacing ember objects */
 export default function maybeTransformEmberObjects(
   j: JSCodeshift,
-  root: Collection,
+  root: AST.Collection,
   filePath: string,
   userOptions: UserOptions
 ): boolean | undefined {
@@ -87,7 +87,7 @@ export default function maybeTransformEmberObjects(
 
 function _maybeTransformEmberObjects(
   j: JSCodeshift,
-  root: Collection,
+  root: AST.Collection,
   filePath: string,
   options: Options
 ): {

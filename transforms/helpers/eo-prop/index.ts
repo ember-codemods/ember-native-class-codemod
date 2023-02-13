@@ -1,12 +1,4 @@
-import type { EOExpressionProp } from '../ast';
-import {
-  isEOMethod,
-  isEOPropertyForActionsObject,
-  isEOPropertyForClassDecorator,
-  isEOPropertySimple,
-  isEOPropertyWithCallExpression,
-  isEOPropertyWithFunctionExpression,
-} from '../ast';
+import * as AST from '../ast';
 import type { DecoratorImportInfoMap } from '../decorator-info';
 import type { Options } from '../options';
 import { assert } from '../util/types';
@@ -17,7 +9,7 @@ import type EOComputedObjectExpressionProp from './private/call-expression/objec
 import type EODecoratedProp from './private/call-expression/property';
 import EOClassDecorator from './private/class-decorator';
 import EOFunctionExpressionProp from './private/function-expression';
-import EOMethodProp from './private/method';
+import EOMethod from './private/method';
 import EOSimpleProp from './private/simple';
 
 // Intentionally not included in EOProp union type.
@@ -30,33 +22,33 @@ export type EOProp =
   | EOComputedObjectExpressionProp
   | EODecoratedProp
   | EOFunctionExpressionProp
-  | EOMethodProp;
+  | EOMethod;
 
 /**
  * Makes an object representing an Ember Object property for the given
  * Property, RuntimeData, and ImportPropDecoratorMap.
  */
 export default function makeEOProp(
-  eoProp: EOExpressionProp,
+  eoProp: AST.EOExpressionProp,
   existingDecoratorImportInfos: DecoratorImportInfoMap,
   options: Options
 ): EOProp | EOClassDecorator {
-  if (isEOPropertyWithCallExpression(eoProp)) {
+  if (AST.isEOCallExpressionProp(eoProp)) {
     return makeEOCallExpressionProp(
       eoProp,
       existingDecoratorImportInfos,
       options
     );
-  } else if (isEOMethod(eoProp)) {
-    return new EOMethodProp(eoProp, options);
-  } else if (isEOPropertyWithFunctionExpression(eoProp)) {
+  } else if (AST.isEOMethod(eoProp)) {
+    return new EOMethod(eoProp, options);
+  } else if (AST.isEOFunctionExpressionProp(eoProp)) {
     return new EOFunctionExpressionProp(eoProp, options);
-  } else if (isEOPropertyForClassDecorator(eoProp)) {
+  } else if (AST.isEOClassDecoratorProp(eoProp)) {
     return new EOClassDecorator(eoProp, options);
-  } else if (isEOPropertyForActionsObject(eoProp)) {
+  } else if (AST.isEOActionsProp(eoProp)) {
     return new EOActionsProp(eoProp, options);
   } else {
-    assert(isEOPropertySimple(eoProp));
+    assert(AST.isEOSimpleProp(eoProp));
     return new EOSimpleProp(eoProp, options);
   }
 }

@@ -1,13 +1,10 @@
-import type { EOPropertyWithCallExpression } from '../../../ast';
-import {
-  isEOCallExpressionInnerCallee,
-  isEOMemberExpressionForModifier,
-} from '../../../ast';
+import * as AST from '../../../ast';
 import type {
   DecoratorImportInfo,
   DecoratorImportInfoMap,
 } from '../../../decorator-info';
 import type { Options } from '../../../options';
+import { COMPUTED_DECORATOR_NAME } from '../../../util/index';
 import { assert, defined } from '../../../util/types';
 import EOComputedFunctionExpressionProp from './function-expression';
 import { getModifier } from './modifier-helper';
@@ -18,7 +15,7 @@ import EODecoratedProp from './property';
  * FIXME
  */
 export function makeEOCallExpressionProp(
-  raw: EOPropertyWithCallExpression,
+  raw: AST.EOCallExpressionProp,
   existingDecoratorImportInfos: DecoratorImportInfoMap,
   options: Options
 ):
@@ -27,7 +24,7 @@ export function makeEOCallExpressionProp(
   | EODecoratedProp {
   let calleeObject = raw.value;
   const modifiers = [getModifier(calleeObject)];
-  while (isEOMemberExpressionForModifier(calleeObject.callee)) {
+  while (AST.isEOMemberExpressionForModifier(calleeObject.callee)) {
     calleeObject = calleeObject.callee.object;
     modifiers.push(getModifier(calleeObject));
   }
@@ -35,7 +32,7 @@ export function makeEOCallExpressionProp(
   modifiers.shift();
 
   assert(
-    isEOCallExpressionInnerCallee(calleeObject),
+    AST.isEOCallExpressionInnerCallee(calleeObject),
     'calleeObject should be isEOCallExpressionInnerCallee'
   );
 
@@ -89,7 +86,7 @@ export function makeEOCallExpressionProp(
 }
 
 function getDecorators(
-  raw: EOPropertyWithCallExpression,
+  raw: AST.EOCallExpressionProp,
   existingDecoratorImportInfos: DecoratorImportInfoMap,
   calleeName: string,
   options: Options
@@ -105,13 +102,13 @@ function getDecorators(
 }
 
 function getKind(
-  raw: EOPropertyWithCallExpression,
+  raw: AST.EOCallExpressionProp,
   decorators: DecoratorImportInfo[]
 ): 'get' | 'method' | undefined {
   let kind: 'get' | 'method' | undefined;
   const method = !!('method' in raw && raw.method);
 
-  if (decorators.some((d) => d.importedName === 'computed')) {
+  if (decorators.some((d) => d.importedName === COMPUTED_DECORATOR_NAME)) {
     kind = 'get';
   }
 

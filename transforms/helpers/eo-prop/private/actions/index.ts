@@ -1,18 +1,17 @@
-import type { ClassMethod, EOPropertyWithActionsObject } from '../../../ast';
-import { isEOActionMethod } from '../../../ast';
+import * as AST from '../../../ast';
 import type { DecoratorImportSpecs } from '../../../parse-helper';
 import { LIFECYCLE_HOOKS } from '../../../util/index';
 import AbstractEOProp from '../abstract';
-import ActionMethod from './method';
-import ActionProp from './property';
+import EOActionMethod from './method';
+import EOActionProp from './property';
 
 export interface Action {
   hasInfiniteLoop: boolean;
 }
 
 export default class EOActionsProp extends AbstractEOProp<
-  EOPropertyWithActionsObject,
-  ClassMethod[]
+  AST.EOActionsProp,
+  AST.ClassMethod[]
 > {
   readonly isClassDecorator = false as const;
 
@@ -45,7 +44,7 @@ export default class EOActionsProp extends AbstractEOProp<
    * }
    * ```
    */
-  build(): ClassMethod[] {
+  build(): AST.ClassMethod[] {
     return this.actions.map((action) => {
       return action.build();
     });
@@ -55,11 +54,11 @@ export default class EOActionsProp extends AbstractEOProp<
     return [...this.lifecycleHookErrors, ...this.infiniteLoopErrors];
   }
 
-  private get actions(): Array<ActionProp | ActionMethod> {
+  private get actions(): Array<EOActionProp | EOActionMethod> {
     return this.value.properties.map((raw) =>
-      isEOActionMethod(raw)
-        ? new ActionMethod(raw, this.options)
-        : new ActionProp(raw, this.options)
+      AST.isEOActionMethod(raw)
+        ? new EOActionMethod(raw, this.options)
+        : new EOActionProp(raw, this.options)
     );
   }
 

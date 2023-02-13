@@ -1,6 +1,6 @@
 import type { Transform } from 'jscodeshift';
 import path from 'path';
-import type { Collection } from '../helpers/ast';
+import type * as AST from '../helpers/ast';
 import getConfig from '../helpers/config';
 import maybeTransformEmberObjects from '../helpers/transform';
 
@@ -14,7 +14,7 @@ const transformer: Transform = function (
     return;
   }
 
-  const root = j(source) as Collection;
+  const root = j(source) as AST.Collection;
   const userOptions = getConfig();
   const replaced = maybeTransformEmberObjects(j, root, filePath, userOptions);
 

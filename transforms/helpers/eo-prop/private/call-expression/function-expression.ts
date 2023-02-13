@@ -1,11 +1,11 @@
 import { default as j } from 'jscodeshift';
-import type { ClassMethod } from '../../../ast';
+import type * as AST from '../../../ast';
 import { replaceComputedSuperExpressions as replaceComputedSuperExpression } from '../../../transform-helper';
 import { assert, defined } from '../../../util/types';
 import AbstractEOCallExpressionProp from './abstract';
 
-export default class EOComputedFunctionExpressionProp extends AbstractEOCallExpressionProp<ClassMethod> {
-  build(): ClassMethod {
+export default class EOComputedFunctionExpressionProp extends AbstractEOCallExpressionProp<AST.ClassMethod> {
+  build(): AST.ClassMethod {
     const args = this.arguments;
     const lastArg = args[args.length - 1];
     assert(

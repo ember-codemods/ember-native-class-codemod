@@ -1,27 +1,26 @@
-import type {
-  Decorator,
-  EOExpressionProp,
-  EOMethod,
-  EOProperty,
-} from '../../ast';
-import { isNode } from '../../ast';
+import * as AST from '../../ast';
 import type { DecoratorImportInfo } from '../../decorator-info';
 import type { Options } from '../../options';
 import type { DecoratorImportSpecs } from '../../parse-helper';
 import type { RuntimeData } from '../../runtime-data';
 import {
   DECORATORS_REQUIRED_PROP_NAMES,
+  OFF_DECORATOR_NAME,
+  UNOBSERVES_DECORATOR_NAME,
   allowObjectLiteralDecorator,
 } from '../../util/index';
 
-type EOPropValue = EOProperty['value'] | EOMethod;
+type EOPropValue = AST.EOProp['value'] | AST.EOMethod;
 
 /**
  * Ember Object Property
  *
  * A wrapper object for ember object properties
  */
-export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
+export default abstract class AbstractEOProp<
+  P extends AST.EOExpressionProp,
+  B
+> {
   abstract readonly isClassDecorator: boolean;
 
   protected abstract readonly value: EOPropValue;
@@ -42,7 +41,7 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
   constructor(
     protected readonly rawProp: P & {
       // ast-types missing these properties that exist on @babel/types
-      decorators?: Decorator[] | null;
+      decorators?: AST.Decorator[] | null;
     },
     protected readonly options: Options
   ) {
@@ -53,14 +52,14 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
       const unobservedArgs = unobservedProperties[this.name];
       if (unobservedArgs) {
         this.decorators.push({
-          name: 'unobserves',
+          name: UNOBSERVES_DECORATOR_NAME,
           args: unobservedArgs,
         });
       }
 
       const offArgs = offProperties[this.name];
       if (offArgs) {
-        this.decorators.push({ name: 'off', args: offArgs });
+        this.decorators.push({ name: OFF_DECORATOR_NAME, args: offArgs });
       }
     }
   }
@@ -102,10 +101,10 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
       }
 
       for (const decorator of this.existingDecorators) {
-        const decoratorName = isNode(decorator.expression, 'Identifier')
+        const decoratorName = AST.isNode(decorator.expression, 'Identifier')
           ? decorator.expression.name
-          : isNode(decorator.expression, 'CallExpression') &&
-            isNode(decorator.expression.callee, 'Identifier')
+          : AST.isNode(decorator.expression, 'CallExpression') &&
+            AST.isNode(decorator.expression.callee, 'Identifier')
           ? decorator.expression.callee.name
           : null;
 
@@ -183,11 +182,11 @@ export default abstract class AbstractEOProp<P extends EOExpressionProp, B> {
   }
 
   private get hasUnobservesDecorator(): boolean {
-    return this.decorators.some((d) => d.name === 'unobserves');
+    return this.decorators.some((d) => d.name === UNOBSERVES_DECORATOR_NAME);
   }
 
   private get hasOffDecorator(): boolean {
-    return this.decorators.some((d) => d.name === 'off');
+    return this.decorators.some((d) => d.name === OFF_DECORATOR_NAME);
   }
 
   private get hasExistingDecorators(): boolean {

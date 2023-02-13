@@ -1,11 +1,11 @@
 import { default as j } from 'jscodeshift';
-import type { ClassMethod, EOPropertyWithFunctionExpression } from '../../ast';
+import type * as AST from '../../ast';
 import { replaceMethodSuperExpression } from '../../transform-helper';
 import AbstractEOProp from './abstract';
 
 export default class EOFunctionExpressionProp extends AbstractEOProp<
-  EOPropertyWithFunctionExpression,
-  ClassMethod
+  AST.EOFunctionExpressionProp,
+  AST.ClassMethod
 > {
   readonly isClassDecorator = false as const;
 
@@ -18,7 +18,7 @@ export default class EOFunctionExpressionProp extends AbstractEOProp<
    *
    * For example { foo: function() { }} --> { foo() { }}
    */
-  build(): ClassMethod {
+  build(): AST.ClassMethod {
     return replaceMethodSuperExpression(
       j.classMethod.from({
         kind: 'method',

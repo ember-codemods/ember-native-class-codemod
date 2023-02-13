@@ -1,16 +1,5 @@
 import type { JSCodeshift } from 'jscodeshift';
-import type {
-  ASTPath,
-  Collection,
-  DecoratorImportDeclaration,
-  ImportDeclaration,
-  ImportSpecifier,
-} from './ast';
-import {
-  findPaths,
-  getFirstPath,
-  makeDecoratorImportDeclarationAssertion,
-} from './ast';
+import * as AST from '../helpers/ast';
 import type { DecoratorImportInfoMap } from './decorator-info';
 import { getDecoratorImportInfo } from './decorator-info';
 import type { Options } from './options';
@@ -22,18 +11,17 @@ import {
   DECORATOR_PATHS,
   DECORATOR_PATH_OVERRIDES,
   EMBER_DECORATOR_SPECIFIERS,
-  getFirstDeclaration,
 } from './util/index';
 import { assert, defined, isString, verified } from './util/types';
 
 /** Returns true of the specifier is a decorator */
 function isSpecifierDecorator(
   specifier: Exclude<
-    ASTPath<ImportDeclaration>['value']['specifiers'],
+    AST.Path<AST.ImportDeclaration>['value']['specifiers'],
     undefined
   >[number],
   importPropDecoratorMap: Record<string, string> | undefined
-): specifier is ImportSpecifier {
+): specifier is AST.ImportSpecifier {
   return (
     !importPropDecoratorMap ||
     (specifier.type === 'ImportSpecifier' &&
@@ -43,8 +31,8 @@ function isSpecifierDecorator(
 
 /** Return the local identifier of import specifier */
 function getSpecifierLocalIdentifier(
-  specifier: ImportSpecifier
-): ImportSpecifier['local'] {
+  specifier: AST.ImportSpecifier
+): AST.ImportSpecifier['local'] {
   if (specifier.local?.name === specifier.imported.name) {
     return null;
   }
@@ -56,9 +44,9 @@ function getSpecifierLocalIdentifier(
  * For example - `observer` in ember need to be transformed to `@observes` in decorators
  */
 function setSpecifierNames(
-  specifier: ImportSpecifier,
+  specifier: AST.ImportSpecifier,
   importPropDecoratorMap: Record<string, string> | undefined
-): ImportSpecifier {
+): AST.ImportSpecifier {
   specifier.local = defined(getSpecifierLocalIdentifier(specifier));
   if (importPropDecoratorMap) {
     const decoratorImportedName = defined(
@@ -75,9 +63,9 @@ function setSpecifierNames(
 /** Get decorated props from `import` statements */
 function getExistingDecoratorImports(
   j: JSCodeshift,
-  root: Collection
-): Array<ASTPath<DecoratorImportDeclaration>> {
-  const imports: Array<ASTPath<DecoratorImportDeclaration>> = [];
+  root: AST.Collection
+): Array<AST.Path<AST.DecoratorImportDeclaration>> {
+  const imports: Array<AST.Path<AST.DecoratorImportDeclaration>> = [];
 
   for (const path in Object.fromEntries(DECORATOR_PATHS)) {
     const decoratorImport = getExistingImportForPath(j, root, path);
@@ -97,14 +85,15 @@ function getExistingDecoratorImports(
  */
 function createNewImportDeclarations(
   j: JSCodeshift,
-  root: Collection,
+  root: AST.Collection,
   decoratorsToImport: string[],
   /** Already imported paths */
   decoratorPathsToIgnore: string[],
   options: Options
 ): void {
-  const firstDeclaration = getFirstDeclaration(j, root);
+  const firstDeclaration = AST.getFirstDeclaration(root);
 
+  // FIXME: Why is this necessary?
   if (options.classicDecorator) {
     firstDeclaration.insertBefore(
       createImportDeclaration(
@@ -127,7 +116,7 @@ function createNewImportDeclarations(
       j,
       edPathNameMap.get(path),
       decoratorsToImport
-    );
+    ).sort((a, b) => a.imported.name.localeCompare(b.imported.name));
 
     if (specifiers.length > 0) {
       firstDeclaration.insertBefore(
@@ -149,12 +138,12 @@ function createNewImportDeclarations(
  */
 function getDecoratorPathSpecifiers(
   j: JSCodeshift,
-  root: Collection,
+  root: AST.Collection,
   decoratorsToImport: string[] = []
-): Record<string, ImportSpecifier[]> {
+): Record<string, AST.ImportSpecifier[]> {
   const edPathNameMap = new Map(EMBER_DECORATOR_SPECIFIERS);
 
-  const decoratorPathSpecifierMap: Record<string, ImportSpecifier[]> = {};
+  const decoratorPathSpecifierMap: Record<string, AST.ImportSpecifier[]> = {};
 
   const existingDecoratorImports = getExistingDecoratorImports(j, root);
 
@@ -238,12 +227,12 @@ function getDecoratorPathSpecifiers(
 /** Get existing import statement matching the import path */
 function getExistingImportForPath(
   j: JSCodeshift,
-  root: Collection,
+  root: AST.Collection,
   importPath: string
-): ASTPath<DecoratorImportDeclaration> | undefined {
-  const assertion = makeDecoratorImportDeclarationAssertion(importPath);
-  const decoratorImports = findPaths(root, j.ImportDeclaration, assertion);
-  return getFirstPath(decoratorImports);
+): AST.Path<AST.DecoratorImportDeclaration> | undefined {
+  const assertion = AST.makeDecoratorImportDeclarationAssertion(importPath);
+  const decoratorImports = AST.findPaths(root, j.ImportDeclaration, assertion);
+  return AST.getFirstPath(decoratorImports);
 }
 
 /**
@@ -256,7 +245,7 @@ function getExistingImportForPath(
  */
 export function createDecoratorImportDeclarations(
   j: JSCodeshift,
-  root: Collection,
+  root: AST.Collection,
   decoratorsToImport: string[],
   options: Options
 ): void {
@@ -267,7 +256,7 @@ export function createDecoratorImportDeclarations(
     decoratorsToImport
   );
 
-  const firstDeclaration = getFirstDeclaration(j, root);
+  const firstDeclaration = AST.getFirstDeclaration(root);
   const decoratorPathsImported = Object.keys(decoratorPathSpecifierMap);
   // Create import statement replacing the existing ones with specifiers importing from ember-decorators namespace
   for (const decoratorPath of decoratorPathsImported) {
@@ -328,7 +317,7 @@ export function createDecoratorImportDeclarations(
  */
 export function getDecoratorImportInfos(
   j: JSCodeshift,
-  root: Collection
+  root: AST.Collection
 ): DecoratorImportInfoMap {
   const existingDecoratorImports = getExistingDecoratorImports(j, root);
   const decoratorImportInfo: DecoratorImportInfoMap = new Map();

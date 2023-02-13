@@ -1,29 +1,18 @@
 import type { JSCodeshift } from 'jscodeshift';
 import { default as j } from 'jscodeshift';
-import type {
-  ASTNode,
-  CallExpression,
-  ClassMethod,
-  Collection,
-  CommentLine,
-  EOSuperExpression,
-  Identifier,
-  ImportDeclaration,
-  ImportDefaultSpecifier,
-  ImportSpecifier,
-  MemberExpression,
-} from './ast';
-import { findPaths, isEOSuperExpression } from './ast';
+import * as AST from '../helpers/ast';
 import {
+  ACTIONS_NAME,
   ACTION_SUPER_EXPRESSION_COMMENT,
   LAYOUT_DECORATOR_LOCAL_NAME,
   LAYOUT_DECORATOR_NAME,
 } from './util/index';
 
 /** Copy comments `from` => `to` */
-export function withComments<
-  T extends Extract<ASTNode, { comments?: unknown }>
->(to: T, from: { comments?: T['comments'] | undefined }): T {
+export function withComments<T extends { comments?: unknown }>(
+  to: T,
+  from: { comments?: T['comments'] | undefined }
+): T {
   if (from.comments) {
     to.comments = from.comments;
   } else {
@@ -36,7 +25,7 @@ export function withComments<
 function createLineComments(
   j: JSCodeshift,
   lines: readonly string[] = []
-): CommentLine[] {
+): AST.CommentLine[] {
   return lines.map((line) => j.commentLine(line));
 }
 
@@ -44,16 +33,16 @@ function createLineComments(
  * Replace instances of `this._super(...arguments)` to `super.methodName(...arguments)`
  */
 function replaceSuperExpressions(
-  classMethod: ClassMethod,
+  classMethod: AST.ClassMethod,
   replaceWithUndefined: boolean,
   buildSuperMethodCall: (
-    superMethodArgs: EOSuperExpression['arguments']
-  ) => CallExpression | MemberExpression
-): ClassMethod {
-  const superExpressionCollection = findPaths(
-    j(classMethod) as Collection,
+    superMethodArgs: AST.EOSuperExpression['arguments']
+  ) => AST.CallExpression | AST.MemberExpression
+): AST.ClassMethod {
+  const superExpressionCollection = AST.findPaths(
+    j(classMethod) as AST.Collection,
     j.CallExpression,
-    isEOSuperExpression
+    AST.isEOSuperExpression
   );
 
   if (superExpressionCollection.length === 0) {
@@ -75,9 +64,9 @@ function replaceSuperExpressions(
 
 /** FIXME */
 export function replaceActionSuperExpressions(
-  classMethod: ClassMethod,
+  classMethod: AST.ClassMethod,
   replaceWithUndefined: boolean
-): ClassMethod {
+): AST.ClassMethod {
   return replaceSuperExpressions(
     classMethod,
     replaceWithUndefined,
@@ -85,7 +74,7 @@ export function replaceActionSuperExpressions(
       const superMethodCall = j.callExpression(
         j.memberExpression(
           j.memberExpression(
-            j.memberExpression(j.super(), j.identifier('actions')),
+            j.memberExpression(j.super(), j.identifier(ACTIONS_NAME)),
             classMethod.key
           ),
           j.identifier('call')
@@ -103,10 +92,10 @@ export function replaceActionSuperExpressions(
 
 /** FIXME */
 export function replaceComputedSuperExpressions(
-  classMethod: ClassMethod,
+  classMethod: AST.ClassMethod,
   replaceWithUndefined: boolean,
-  identifier: Identifier
-): ClassMethod {
+  identifier: AST.Identifier
+): AST.ClassMethod {
   return replaceSuperExpressions(classMethod, replaceWithUndefined, () =>
     j.memberExpression(j.super(), identifier)
   );
@@ -114,9 +103,9 @@ export function replaceComputedSuperExpressions(
 
 /** FIXME */
 export function replaceMethodSuperExpression(
-  classMethod: ClassMethod,
+  classMethod: AST.ClassMethod,
   replaceWithUndefined: boolean
-): ClassMethod {
+): AST.ClassMethod {
   return replaceSuperExpressions(
     classMethod,
     replaceWithUndefined,
@@ -132,9 +121,9 @@ export function replaceMethodSuperExpression(
 /** Create import statement */
 export function createImportDeclaration(
   j: JSCodeshift,
-  specifiers: Array<ImportSpecifier | ImportDefaultSpecifier>,
+  specifiers: Array<AST.ImportSpecifier | AST.ImportDefaultSpecifier>,
   path: string
-): ImportDeclaration {
+): AST.ImportDeclaration {
   return j.importDeclaration(specifiers, j.literal(path));
 }
 
@@ -146,7 +135,7 @@ export function createEmberDecoratorSpecifiers(
   j: JSCodeshift,
   pathSpecifiers: string[] = [],
   decoratorsToImport: string[] = []
-): ImportSpecifier[] {
+): AST.ImportSpecifier[] {
   return pathSpecifiers
     .filter((specifier) => decoratorsToImport.includes(specifier))
     .map((specifier) => {

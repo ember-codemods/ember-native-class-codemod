@@ -1,9 +1,9 @@
 import { default as j } from 'jscodeshift';
-import type { ClassProperty } from '../../../ast';
+import type * as AST from '../../../ast';
 import AbstractEOCallExpressionProp from './abstract';
 
-export default class EODecoratedProp extends AbstractEOCallExpressionProp<ClassProperty> {
-  build(): ClassProperty {
+export default class EODecoratedProp extends AbstractEOCallExpressionProp<AST.ClassProperty> {
+  build(): AST.ClassProperty {
     const classProp = j.classProperty.from({
       key: this.key,
       // TODO: This is probably where we can remove the = undefined value;

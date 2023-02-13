@@ -1,23 +1,19 @@
 import { default as j } from 'jscodeshift';
-import type { ClassMethod, Collection } from '../../../ast';
-import {
-  findPaths,
-  makeEOActionInfiniteCallAssertion,
-  makeEOActionInfiniteLiteralAssertion,
-} from '../../../ast';
-import { buildActionDecorator } from '../../../decorator-helper';
+import * as AST from '../../../ast';
+import { createIdentifierDecorator } from '../../../decorator-helper';
 import { replaceActionSuperExpressions } from '../../../transform-helper';
-import EOMethodProp from '../method';
+import { ACTION_DECORATOR_NAME } from '../../../util/index';
+import EOMethod from '../method';
 import type { Action } from './index';
 
-export default class ActionMethod extends EOMethodProp implements Action {
+export default class EOActionMethod extends EOMethod implements Action {
   get hasInfiniteLoop(): boolean {
     const { name, value } = this;
-    const collection = j(value.body) as Collection;
+    const collection = j(value.body) as AST.Collection;
 
     // Occurrences of this.actionName()
-    const isEOActionInfiniteCall = makeEOActionInfiniteCallAssertion(name);
-    const actionCalls = findPaths(
+    const isEOActionInfiniteCall = AST.makeEOActionInfiniteCallAssertion(name);
+    const actionCalls = AST.findPaths(
       collection,
       j.CallExpression,
       isEOActionInfiniteCall
@@ -25,8 +21,8 @@ export default class ActionMethod extends EOMethodProp implements Action {
 
     // Occurrences of this.get('actionName')() or get(this, 'actionName')()
     const isEOActionInfiniteLiteral =
-      makeEOActionInfiniteLiteralAssertion(name);
-    const actionLiterals = findPaths(
+      AST.makeEOActionInfiniteLiteralAssertion(name);
+    const actionLiterals = AST.findPaths(
       collection,
       j.StringLiteral,
       isEOActionInfiniteLiteral
@@ -35,7 +31,7 @@ export default class ActionMethod extends EOMethodProp implements Action {
     return actionLiterals.length > 0 || actionCalls.length > 0;
   }
 
-  override build(): ClassMethod {
+  override build(): AST.ClassMethod {
     return replaceActionSuperExpressions(
       j.classMethod.from({
         kind: this.kind,
@@ -43,7 +39,7 @@ export default class ActionMethod extends EOMethodProp implements Action {
         params: this.params,
         body: this.body,
         comments: this.comments,
-        decorators: buildActionDecorator(),
+        decorators: [createIdentifierDecorator(ACTION_DECORATOR_NAME)],
       }),
       this.replaceSuperWithUndefined
     );

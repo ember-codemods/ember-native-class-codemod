@@ -1,12 +1,12 @@
 import { default as j } from 'jscodeshift';
-import type { ClassProperty, Decorator, EOPropertySimple } from '../../ast';
+import type * as AST from '../../ast';
 import { createDecoratorWithArgs } from '../../decorator-helper';
 import logger from '../../log-helper';
 import AbstractEOProp from './abstract';
 
 export default class EOSimpleProp extends AbstractEOProp<
-  EOPropertySimple,
-  ClassProperty
+  AST.EOSimpleProp,
+  AST.ClassProperty
 > {
   readonly isClassDecorator = false as const;
 
@@ -14,7 +14,7 @@ export default class EOSimpleProp extends AbstractEOProp<
 
   protected override readonly supportsObjectLiteralDecorators = true;
 
-  build(): ClassProperty {
+  build(): AST.ClassProperty {
     const classProp = j.classProperty.from({
       key: this.key,
       value: this.hasDecorators ? null : this.value,
@@ -52,8 +52,8 @@ export default class EOSimpleProp extends AbstractEOProp<
     return errors;
   }
 
-  private buildDecorators(): Decorator[] {
-    const decorators: Decorator[] = [];
+  private buildDecorators(): AST.Decorator[] {
+    const decorators: AST.Decorator[] = [];
     for (const decorator of this.decorators) {
       const decoratorName = decorator.name;
       if ('args' in decorator) {

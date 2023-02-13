@@ -1,11 +1,11 @@
 import classic from 'ember-classic-decorator';
 
 import {
-  classNames,
   attributeBindings,
   classNameBindings,
-  tagName,
+  classNames,
   layout as templateLayout,
+  tagName,
 } from '@ember-decorators/component';
 
 import { observes as watcher, on } from '@ember-decorators/object';

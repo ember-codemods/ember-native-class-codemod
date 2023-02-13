@@ -1,11 +1,11 @@
 import { default as j } from 'jscodeshift';
-import type { ClassMethod, EOMethod } from '../../ast';
+import type * as AST from '../../ast';
 import { replaceMethodSuperExpression } from '../../transform-helper';
 import AbstractEOProp from './abstract';
 
-export default class EOMethodProp extends AbstractEOProp<
-  EOMethod,
-  ClassMethod
+export default class EOMethod extends AbstractEOProp<
+  AST.EOMethod,
+  AST.ClassMethod
 > {
   readonly isClassDecorator = false as const;
 
@@ -18,7 +18,7 @@ export default class EOMethodProp extends AbstractEOProp<
    *
    * For example { foo() { }} --> { foo() { }}
    */
-  build(): ClassMethod {
+  build(): AST.ClassMethod {
     return replaceMethodSuperExpression(
       j.classMethod.from({
         kind: this.kind,
@@ -36,11 +36,11 @@ export default class EOMethodProp extends AbstractEOProp<
     return this.value.kind;
   }
 
-  protected get params(): EOMethod['params'] {
+  protected get params(): AST.EOMethod['params'] {
     return this.value.params;
   }
 
-  protected get body(): EOMethod['body'] {
+  protected get body(): AST.EOMethod['body'] {
     return this.value.body;
   }
 }

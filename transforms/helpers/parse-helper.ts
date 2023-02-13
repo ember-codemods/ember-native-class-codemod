@@ -2,13 +2,7 @@ import camelCase from 'camelcase';
 import type { JSCodeshift } from 'jscodeshift';
 import { default as j } from 'jscodeshift';
 import path from 'path';
-import type {
-  ASTPath,
-  Collection,
-  RawEOExtendExpression,
-  VariableDeclaration,
-} from './ast';
-import { findPaths, getFirstPath, isEOExtendExpression } from './ast';
+import * as AST from './ast';
 import { capitalizeFirstLetter } from './util/index';
 import { assert, defined, isRecord } from './util/types';
 
@@ -48,22 +42,22 @@ export function mergeDecoratorImportSpecs(
 /** Find the `EmberObject.extend` statements */
 export function getEOExtendExpressionCollection(
   j: JSCodeshift,
-  root: Collection
-): Collection<RawEOExtendExpression> {
-  return findPaths(root, j.CallExpression, isEOExtendExpression).filter(
-    (path: ASTPath) => path.parentPath?.value.type !== 'ClassDeclaration'
+  root: AST.Collection
+): AST.Collection<AST.EOExtendExpression> {
+  return AST.findPaths(root, j.CallExpression, AST.isEOExtendExpression).filter(
+    (path: AST.Path) => path.parentPath?.value.type !== 'ClassDeclaration'
   );
 }
 
 /** Return closest parent var declaration statement */
 function getClosestVariableDeclaration(
   j: JSCodeshift,
-  eoExtendExpressionPath: ASTPath<RawEOExtendExpression>
-): ASTPath<VariableDeclaration> | null {
+  eoExtendExpressionPath: AST.Path<AST.EOExtendExpression>
+): AST.Path<AST.VariableDeclaration> | null {
   const varDeclarations = j(eoExtendExpressionPath).closest(
     j.VariableDeclaration
   );
-  return getFirstPath(varDeclarations) ?? null;
+  return AST.getFirstPath(varDeclarations) ?? null;
 }
 
 /**
@@ -73,8 +67,8 @@ function getClosestVariableDeclaration(
  */
 export function getExpressionToReplace(
   j: JSCodeshift,
-  eoExtendExpressionPath: ASTPath<RawEOExtendExpression>
-): ASTPath<RawEOExtendExpression> | ASTPath<VariableDeclaration> {
+  eoExtendExpressionPath: AST.Path<AST.EOExtendExpression>
+): AST.Path<AST.EOExtendExpression> | AST.Path<AST.VariableDeclaration> {
   const varDeclaration = getClosestVariableDeclaration(
     j,
     eoExtendExpressionPath
@@ -86,8 +80,8 @@ export function getExpressionToReplace(
     parentValue.property['name'] === 'create';
 
   let expressionToReplace:
-    | ASTPath<RawEOExtendExpression>
-    | ASTPath<VariableDeclaration> = eoExtendExpressionPath;
+    | AST.Path<AST.EOExtendExpression>
+    | AST.Path<AST.VariableDeclaration> = eoExtendExpressionPath;
   if (varDeclaration && !isFollowedByCreate) {
     expressionToReplace = varDeclaration;
   }
@@ -96,7 +90,7 @@ export function getExpressionToReplace(
 
 /** Returns name of class to be created */
 export function getClassName(
-  eoExtendExpressionPath: ASTPath<RawEOExtendExpression>,
+  eoExtendExpressionPath: AST.Path<AST.EOExtendExpression>,
   filePath: string,
   type = ''
 ): string {

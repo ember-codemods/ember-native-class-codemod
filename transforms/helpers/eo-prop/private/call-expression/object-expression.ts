@@ -1,14 +1,13 @@
 import { default as j } from 'jscodeshift';
-import type { ClassMethod } from '../../../ast';
-import { isEOMethod } from '../../../ast';
+import * as AST from '../../../ast';
 import { replaceComputedSuperExpressions } from '../../../transform-helper';
 import { assert, defined } from '../../../util/types';
 import AbstractEOCallExpressionProp from './abstract';
 
 export default class EOComputedObjectExpressionProp extends AbstractEOCallExpressionProp<
-  ClassMethod[]
+  AST.ClassMethod[]
 > {
-  build(): ClassMethod[] {
+  build(): AST.ClassMethod[] {
     const args = this.arguments;
     const lastArg = args[args.length - 1];
     assert(
@@ -17,7 +16,7 @@ export default class EOComputedObjectExpressionProp extends AbstractEOCallExpres
     );
     // FIXME: In this case, existing decorators should probably fail validation
     const classMethods = lastArg.properties.map((property) => {
-      assert(isEOMethod(property), 'expected EOMethod');
+      assert(AST.isEOMethod(property), 'expected EOMethod');
       assert(
         (['init', 'get', 'set'] as const).includes(
           property.key.name as 'init' | 'get' | 'set'

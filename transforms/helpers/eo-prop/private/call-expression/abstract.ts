@@ -1,28 +1,23 @@
 import { default as j } from 'jscodeshift';
-import type {
-  ClassMethod,
-  ClassProperty,
-  Decorator,
-  EOCallExpressionInnerCallee,
-  EOPropertyWithCallExpression,
-} from '../../../ast';
+import type * as AST from '../../../ast';
 import type { DecoratorImportInfo } from '../../../decorator-info';
 import logger from '../../../log-helper';
 import type { Options } from '../../../options';
 import { defined } from '../../../util/types';
 import AbstractEOProp from '../abstract';
 import type { CallExpressionModifier } from './modifier-helper';
+import { COMPUTED_DECORATOR_NAME } from '../../../util/index';
 
 export default abstract class AbstractEOCallExpressionProp<
-  B extends ClassProperty | ClassMethod | ClassMethod[]
-> extends AbstractEOProp<EOPropertyWithCallExpression, B> {
+  B extends AST.ClassProperty | AST.ClassMethod | AST.ClassMethod[]
+> extends AbstractEOProp<AST.EOCallExpressionProp, B> {
   readonly isClassDecorator = false as const;
 
   protected readonly value = this.rawProp.value;
 
   constructor(
-    eoProp: EOPropertyWithCallExpression,
-    private calleeObject: EOCallExpressionInnerCallee,
+    eoProp: AST.EOCallExpressionProp,
+    private calleeObject: AST.EOCallExpressionInnerCallee,
     readonly modifiers: CallExpressionModifier[],
     readonly kind: 'get' | 'method' | undefined,
     decoratorsToAdd: DecoratorImportInfo[],
@@ -37,7 +32,7 @@ export default abstract class AbstractEOCallExpressionProp<
     return true;
   }
 
-  protected get arguments(): EOCallExpressionInnerCallee['arguments'] {
+  protected get arguments(): AST.EOCallExpressionInnerCallee['arguments'] {
     return this.calleeObject.arguments;
   }
 
@@ -67,8 +62,8 @@ export default abstract class AbstractEOCallExpressionProp<
     return errors;
   }
 
-  protected buildDecorators(): Decorator[] {
-    const decorators: Decorator[] = [];
+  protected buildDecorators(): AST.Decorator[] {
+    const decorators: AST.Decorator[] = [];
     for (const decorator of this.decorators) {
       const decoratorName = decorator.name;
       if (this.isVolatileReadOnly) {
@@ -119,15 +114,16 @@ export default abstract class AbstractEOCallExpressionProp<
    * Create decorator for computed properties and methods
    * This method handles decorators for `DECORATOR_PROPS` defined in `util.js`
    */
-  private buildDecorator(decoratorName: string): Decorator {
+  private buildDecorator(decoratorName: string): AST.Decorator {
     const decoratorArgs = this.shouldBuildMethods
       ? this.arguments.slice(0, -1)
       : // eslint-disable-next-line unicorn/prefer-spread
         this.arguments.slice(0);
 
     let decoratorExpression =
-      ['computed', 'service', 'controller'].includes(decoratorName) &&
-      decoratorArgs.length === 0
+      [COMPUTED_DECORATOR_NAME, 'service', 'controller'].includes(
+        decoratorName
+      ) && decoratorArgs.length === 0
         ? j.identifier(decoratorName)
         : j.callExpression(j.identifier(decoratorName), decoratorArgs);
 

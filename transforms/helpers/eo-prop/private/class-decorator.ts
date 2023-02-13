@@ -1,15 +1,31 @@
-import type { Decorator, EOPropertyForClassDecorator } from '../../ast';
+import type * as AST from '../../ast';
 import { createClassDecorator } from '../../decorator-helper';
 import type { DecoratorImportSpecs } from '../../parse-helper';
 import {
+  ATTRIBUTE_BINDINGS_DECORATOR_NAME,
+  CLASS_NAMES_DECORATOR_NAME,
+  CLASS_NAME_BINDINGS_DECORATOR_NAME,
   LAYOUT_DECORATOR_LOCAL_NAME,
   LAYOUT_DECORATOR_NAME,
+  TAG_NAME_DECORATOR_NAME,
 } from '../../util/index';
 import AbstractEOProp from './abstract';
 
+/**
+ * Ember Object Class Decorator
+ *
+ * A wrapper object for ember object properties that should be converted into
+ * class decorators, including:
+ * - `@classNames`
+ * - `@attributeBindings`
+ * - `@classNameBindings`
+ * - `@layout`
+ * - `@tagName`
+ * - `@templateLayout`
+ */
 export default class EOClassDecorator extends AbstractEOProp<
-  EOPropertyForClassDecorator,
-  Decorator
+  AST.EOClassDecoratorProp,
+  AST.Decorator
 > {
   readonly isClassDecorator = true as const;
 
@@ -27,7 +43,7 @@ export default class EOClassDecorator extends AbstractEOProp<
     };
   }
 
-  build(): Decorator {
+  build(): AST.Decorator {
     return createClassDecorator(this.classDecoratorName, this.value);
   }
 
@@ -45,19 +61,19 @@ export default class EOClassDecorator extends AbstractEOProp<
   }
 
   private get isTagName(): boolean {
-    return this.name === 'tagName';
+    return this.name === TAG_NAME_DECORATOR_NAME;
   }
 
   private get isClassNames(): boolean {
-    return this.name === 'classNames';
+    return this.name === CLASS_NAMES_DECORATOR_NAME;
   }
 
   private get isClassNameBindings(): boolean {
-    return this.name === 'classNameBindings';
+    return this.name === CLASS_NAME_BINDINGS_DECORATOR_NAME;
   }
 
   private get isAttributeBindings(): boolean {
-    return this.name === 'attributeBindings';
+    return this.name === ATTRIBUTE_BINDINGS_DECORATOR_NAME;
   }
 
   private get classDecoratorName(): string {
