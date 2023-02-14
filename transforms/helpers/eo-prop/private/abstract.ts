@@ -4,7 +4,6 @@ import type { Options } from '../../options';
 import type { RuntimeData } from '../../runtime-data';
 import type { DecoratorImportSpecs } from '../../util/index';
 import {
-  DECORATORS_REQUIRED_PROP_NAMES,
   OFF_DECORATOR_NAME,
   UNOBSERVES_DECORATOR_NAME,
   allowObjectLiteralDecorator,
@@ -127,17 +126,6 @@ export default abstract class AbstractEOProp<
 
     if (!decorators && this.needsDecorators) {
       errors.push(this.makeError("need option '--decorators=true'"));
-    }
-
-    const unsupportedPropNames: readonly string[] = decorators
-      ? []
-      : DECORATORS_REQUIRED_PROP_NAMES;
-    if (unsupportedPropNames.includes(this.name)) {
-      errors.push(
-        this.makeError(
-          `property with name '${this.name}' and type '${this.type}' can not be transformed`
-        )
-      );
     }
 
     errors = [...errors, ...this.typeErrors];

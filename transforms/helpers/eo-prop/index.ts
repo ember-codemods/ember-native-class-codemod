@@ -52,3 +52,15 @@ export default function makeEOProp(
     return new EOSimpleProp(eoProp, options);
   }
 }
+
+/** Type predicate */
+export function isEOProp(p: EOProp | EOClassDecorator): p is EOProp {
+  return !p.isClassDecorator;
+}
+
+/** Type predicate */
+export function isEOClassDecorator(
+  p: EOProp | EOClassDecorator
+): p is EOClassDecorator {
+  return p.isClassDecorator;
+}

@@ -3,7 +3,7 @@ import * as AST from './ast';
 import { createIdentifierDecorator } from './decorator-helper';
 import type { DecoratorImportInfoMap } from './decorator-info';
 import type { EOClassDecorator, EOProp } from './eo-prop/index';
-import makeEOProp from './eo-prop/index';
+import makeEOProp, { isEOClassDecorator, isEOProp } from './eo-prop/index';
 import logger from './log-helper';
 import type { Options } from './options';
 import { getClassName, getExpressionToReplace } from './parse-helper';
@@ -16,8 +16,7 @@ export default class EOExtendExpression {
 
   private expression: AST.EOExpression | null = null;
   private mixins: AST.EOMixin[];
-  readonly properties: EOProp[];
-  readonly decorators: EOClassDecorator[];
+  readonly properties: Array<EOClassDecorator | EOProp>;
 
   constructor(
     private path: AST.Path<AST.EOExtendExpression>,
@@ -48,24 +47,9 @@ export default class EOExtendExpression {
     this.mixins = mixins;
 
     const rawProperties = this.expression?.properties ?? [];
-    const properties: EOProp[] = [];
-    const decorators: EOClassDecorator[] = [];
-
-    for (const property of rawProperties) {
-      const eoProp = makeEOProp(
-        property,
-        existingDecoratorImportInfos,
-        options
-      );
-      if (eoProp.isClassDecorator) {
-        decorators.push(eoProp);
-      } else {
-        properties.push(eoProp);
-      }
-    }
-
-    this.properties = properties;
-    this.decorators = decorators;
+    this.properties = rawProperties.map((raw) =>
+      makeEOProp(raw, existingDecoratorImportInfos, options)
+    );
   }
 
   transform(): boolean {
@@ -97,8 +81,8 @@ export default class EOExtendExpression {
       tagName: false,
       unobserves: false,
     };
-    const allProps = [...this.decorators, ...this.properties];
-    for (const prop of allProps) {
+    const { properties } = this;
+    for (const prop of properties) {
       specs = {
         action: specs.action || prop.decoratorImportSpecs.action,
         classNames: specs.classNames || prop.decoratorImportSpecs.classNames,
@@ -151,10 +135,10 @@ export default class EOExtendExpression {
   }
 
   private buildClassBody(): AST.ClassBody {
-    const { properties } = this;
+    const objectProperties = this.properties.filter(isEOProp);
     let classBody: Parameters<AST.ClassBodyBuilder>[0] = [];
 
-    for (const prop of properties) {
+    for (const prop of objectProperties) {
       const built = prop.build();
       if (Array.isArray(built)) {
         classBody = [...classBody, ...built];
@@ -186,7 +170,7 @@ export default class EOExtendExpression {
   }
 
   private buildClassDecorators(): AST.Decorator[] {
-    const { decorators } = this;
+    const classDecoratorProperties = this.properties.filter(isEOClassDecorator);
     const { classicDecorator } = this.options;
     const classDecorators: AST.Decorator[] = [];
 
@@ -194,8 +178,8 @@ export default class EOExtendExpression {
       classDecorators.push(createIdentifierDecorator('classic'));
     }
 
-    for (const decorator of decorators) {
-      classDecorators.push(decorator.build());
+    for (const prop of classDecoratorProperties) {
+      classDecorators.push(prop.build());
     }
 
     return classDecorators;
@@ -219,6 +203,7 @@ export default class EOExtendExpression {
     for (const prop of this.properties) {
       errors = [...errors, ...prop.errors];
     }
+
     return errors;
   }
 

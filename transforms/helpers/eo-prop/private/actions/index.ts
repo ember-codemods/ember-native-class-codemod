@@ -50,6 +50,11 @@ export default class EOActionsProp extends AbstractEOProp<
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
+  protected override get needsDecorators(): boolean {
+    return true;
+  }
+
   protected override get typeErrors(): string[] {
     return [...this.lifecycleHookErrors, ...this.infiniteLoopErrors];
   }
