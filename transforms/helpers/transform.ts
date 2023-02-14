@@ -1,5 +1,4 @@
 import { getTelemetryFor } from 'ember-codemods-telemetry-helpers';
-import type { JSCodeshift } from 'jscodeshift';
 import path from 'path';
 import type * as AST from './ast';
 import EOExtendExpression from './eo-extend-expression';
@@ -9,17 +8,16 @@ import {
 } from './import-helper';
 import logger from './log-helper';
 import type { Options, UserOptions } from './options';
-import type { DecoratorImportSpecs } from './parse-helper';
 import {
   getEOExtendExpressionCollection,
   mergeDecoratorImportSpecs,
 } from './parse-helper';
 import { RuntimeDataSchema } from './runtime-data';
+import type { DecoratorImportSpecs } from './util/index';
 import { isFileOfType, isTestFile } from './validation-helper';
 
 /** Main entry point for parsing and replacing ember objects */
 export default function maybeTransformEmberObjects(
-  j: JSCodeshift,
   root: AST.Collection,
   filePath: string,
   userOptions: UserOptions
@@ -67,7 +65,6 @@ export default function maybeTransformEmberObjects(
   };
 
   const { transformed, decoratorImportSpecs } = _maybeTransformEmberObjects(
-    j,
     root,
     filePath,
     options
@@ -79,14 +76,13 @@ export default function maybeTransformEmberObjects(
     const decoratorsToImport = Object.keys(decoratorImportSpecs).filter(
       (key) => decoratorImportSpecs[key as keyof DecoratorImportSpecs]
     );
-    createDecoratorImportDeclarations(j, root, decoratorsToImport, options);
+    createDecoratorImportDeclarations(root, decoratorsToImport, options);
     logger.info(`[${filePath}]: SUCCESS`);
   }
   return transformed;
 }
 
 function _maybeTransformEmberObjects(
-  j: JSCodeshift,
   root: AST.Collection,
   filePath: string,
   options: Options
@@ -95,7 +91,7 @@ function _maybeTransformEmberObjects(
   decoratorImportSpecs: DecoratorImportSpecs;
 } {
   // Parse the import statements
-  const existingDecoratorImportInfos = getExistingDecoratorImportInfos(j, root);
+  const existingDecoratorImportInfos = getExistingDecoratorImportInfos(root);
   let transformed = false;
   let decoratorImportSpecs: DecoratorImportSpecs = {
     action: false,
@@ -109,7 +105,7 @@ function _maybeTransformEmberObjects(
     unobserves: false,
   };
 
-  const eoExtendExpressionPaths = getEOExtendExpressionCollection(j, root);
+  const eoExtendExpressionPaths = getEOExtendExpressionCollection(root);
 
   if (eoExtendExpressionPaths.length === 0) {
     logger.warn(

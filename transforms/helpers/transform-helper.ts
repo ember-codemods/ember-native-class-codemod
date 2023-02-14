@@ -1,4 +1,3 @@
-import type { JSCodeshift } from 'jscodeshift';
 import { default as j } from 'jscodeshift';
 import * as AST from '../helpers/ast';
 import {
@@ -22,10 +21,7 @@ export function withComments<T extends { comments?: unknown }>(
 }
 
 /** Creates line comments from passed lines */
-function createLineComments(
-  j: JSCodeshift,
-  lines: readonly string[] = []
-): AST.CommentLine[] {
+function createLineComments(lines: readonly string[] = []): AST.CommentLine[] {
   return lines.map((line) => j.commentLine(line));
 }
 
@@ -82,7 +78,6 @@ export function replaceActionSuperExpressions(
         [j.thisExpression(), ...superMethodArgs]
       );
       superMethodCall.comments = createLineComments(
-        j,
         ACTION_SUPER_EXPRESSION_COMMENT
       );
       return superMethodCall;
@@ -120,7 +115,6 @@ export function replaceMethodSuperExpression(
 
 /** Create import statement */
 export function createImportDeclaration(
-  j: JSCodeshift,
   specifiers: Array<AST.ImportSpecifier | AST.ImportDefaultSpecifier>,
   path: string
 ): AST.ImportDeclaration {
@@ -132,7 +126,6 @@ export function createImportDeclaration(
  * and creates import specifiers for the matching decorators
  */
 export function createEmberDecoratorSpecifiers(
-  j: JSCodeshift,
   pathSpecifiers: string[] = [],
   decoratorsToImport: string[] = []
 ): AST.ImportSpecifier[] {

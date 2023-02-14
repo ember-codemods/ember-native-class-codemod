@@ -1,8 +1,8 @@
 import * as AST from '../../ast';
 import type { DecoratorImportInfo } from '../../decorator-info';
 import type { Options } from '../../options';
-import type { DecoratorImportSpecs } from '../../parse-helper';
 import type { RuntimeData } from '../../runtime-data';
+import type { DecoratorImportSpecs } from '../../util/index';
 import {
   DECORATORS_REQUIRED_PROP_NAMES,
   OFF_DECORATOR_NAME,

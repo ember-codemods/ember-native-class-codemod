@@ -27,6 +27,18 @@ interface DecoratorPathInfo {
   readonly decoratorPath: string;
 }
 
+export interface DecoratorImportSpecs {
+  [ACTION_DECORATOR_NAME]: boolean;
+  [CLASS_NAMES_DECORATOR_NAME]: boolean;
+  [CLASS_NAME_BINDINGS_DECORATOR_NAME]: boolean;
+  [ATTRIBUTE_BINDINGS_DECORATOR_NAME]: boolean;
+  [LAYOUT_DECORATOR_NAME]: boolean;
+  [LAYOUT_DECORATOR_LOCAL_NAME]: boolean;
+  [OFF_DECORATOR_NAME]: boolean;
+  [TAG_NAME_DECORATOR_NAME]: boolean;
+  [UNOBSERVES_DECORATOR_NAME]: boolean;
+}
+
 export const DECORATOR_PATHS: ReadonlyMap<string, DecoratorPathInfo> = new Map([
   [
     '@ember/object',

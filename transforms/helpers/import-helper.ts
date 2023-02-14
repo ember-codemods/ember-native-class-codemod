@@ -1,4 +1,4 @@
-import type { JSCodeshift } from 'jscodeshift';
+import { default as j } from 'jscodeshift';
 import * as AST from '../helpers/ast';
 import type { DecoratorImportInfoMap } from './decorator-info';
 import { getDecoratorImportInfo } from './decorator-info';
@@ -62,13 +62,12 @@ function setSpecifierNames(
 
 /** Get decorated props from `import` statements */
 function getExistingDecoratorImports(
-  j: JSCodeshift,
   root: AST.Collection
 ): Array<AST.Path<AST.DecoratorImportDeclaration>> {
   const imports: Array<AST.Path<AST.DecoratorImportDeclaration>> = [];
 
   for (const path in Object.fromEntries(DECORATOR_PATHS)) {
-    const decoratorImport = getExistingImportForPath(j, root, path);
+    const decoratorImport = getExistingImportForPath(root, path);
     if (decoratorImport) {
       imports.push(decoratorImport);
     }
@@ -84,7 +83,6 @@ function getExistingDecoratorImports(
  * `@ember-decorators/component`
  */
 function createNewImportDeclarations(
-  j: JSCodeshift,
   root: AST.Collection,
   decoratorsToImport: string[],
   /** Already imported paths */
@@ -93,11 +91,9 @@ function createNewImportDeclarations(
 ): void {
   const firstDeclaration = AST.getFirstDeclaration(root);
 
-  // FIXME: Why is this necessary?
   if (options.classicDecorator) {
     firstDeclaration.insertBefore(
       createImportDeclaration(
-        j,
         [j.importDefaultSpecifier(j.identifier('classic'))],
         'ember-classic-decorator'
       )
@@ -113,15 +109,12 @@ function createNewImportDeclarations(
 
   for (const path of paths) {
     const specifiers = createEmberDecoratorSpecifiers(
-      j,
       edPathNameMap.get(path),
       decoratorsToImport
     ).sort((a, b) => a.imported.name.localeCompare(b.imported.name));
 
     if (specifiers.length > 0) {
-      firstDeclaration.insertBefore(
-        createImportDeclaration(j, specifiers, path)
-      );
+      firstDeclaration.insertBefore(createImportDeclaration(specifiers, path));
     }
   }
 }
@@ -137,7 +130,6 @@ function createNewImportDeclarations(
  * ```
  */
 function getDecoratorPathSpecifiers(
-  j: JSCodeshift,
   root: AST.Collection,
   decoratorsToImport: string[] = []
 ): Record<string, AST.ImportSpecifier[]> {
@@ -145,7 +137,7 @@ function getDecoratorPathSpecifiers(
 
   const decoratorPathSpecifierMap: Record<string, AST.ImportSpecifier[]> = {};
 
-  const existingDecoratorImports = getExistingDecoratorImports(j, root);
+  const existingDecoratorImports = getExistingDecoratorImports(root);
 
   // Iterate over the existing imports
   // Extract and process the specifiers
@@ -166,7 +158,6 @@ function getDecoratorPathSpecifiers(
     // Create decorator specifiers for which no existing specifiers present in the current path
     // e.g. `actions` need not to be imported but `@action` need to be imported from `@ember-decorators/object`
     const decoratedSpecifiers = createEmberDecoratorSpecifiers(
-      j,
       decoratorsForPath,
       decoratorsToImport
     );
@@ -226,7 +217,6 @@ function getDecoratorPathSpecifiers(
 
 /** Get existing import statement matching the import path */
 function getExistingImportForPath(
-  j: JSCodeshift,
   root: AST.Collection,
   importPath: string
 ): AST.Path<AST.DecoratorImportDeclaration> | undefined {
@@ -244,14 +234,12 @@ function getExistingImportForPath(
  * 3. Insert the new imports for which no existing imports found
  */
 export function createDecoratorImportDeclarations(
-  j: JSCodeshift,
   root: AST.Collection,
   decoratorsToImport: string[],
   options: Options
 ): void {
   // Iterate through existing imports, extract the already imported specifiers
   const decoratorPathSpecifierMap = getDecoratorPathSpecifiers(
-    j,
     root,
     decoratorsToImport
   );
@@ -261,7 +249,7 @@ export function createDecoratorImportDeclarations(
   // Create import statement replacing the existing ones with specifiers importing from ember-decorators namespace
   for (const decoratorPath of decoratorPathsImported) {
     const specifiers = defined(decoratorPathSpecifierMap[decoratorPath]);
-    const existingImport = getExistingImportForPath(j, root, decoratorPath);
+    const existingImport = getExistingImportForPath(root, decoratorPath);
     if (existingImport) {
       const existingSpecifiers = existingImport.value.specifiers;
       if (existingSpecifiers) {
@@ -272,14 +260,13 @@ export function createDecoratorImportDeclarations(
       }
     } else {
       firstDeclaration.insertBefore(
-        createImportDeclaration(j, specifiers, decoratorPath)
+        createImportDeclaration(specifiers, decoratorPath)
       );
     }
   }
 
   // Create new import declarations
   createNewImportDeclarations(
-    j,
     root,
     decoratorsToImport,
     decoratorPathsImported,
@@ -316,10 +303,9 @@ export function createDecoratorImportDeclarations(
  * ```
  */
 export function getDecoratorImportInfos(
-  j: JSCodeshift,
   root: AST.Collection
 ): DecoratorImportInfoMap {
-  const existingDecoratorImports = getExistingDecoratorImports(j, root);
+  const existingDecoratorImports = getExistingDecoratorImports(root);
   const decoratorImportInfo: DecoratorImportInfoMap = new Map();
 
   for (const decoratorImport of existingDecoratorImports) {

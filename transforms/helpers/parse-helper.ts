@@ -1,22 +1,10 @@
 import camelCase from 'camelcase';
-import type { JSCodeshift } from 'jscodeshift';
 import { default as j } from 'jscodeshift';
 import path from 'path';
 import * as AST from './ast';
+import type { DecoratorImportSpecs } from './util/index';
 import { capitalizeFirstLetter } from './util/index';
 import { assert, defined, isRecord } from './util/types';
-
-export interface DecoratorImportSpecs {
-  action: boolean;
-  classNames: boolean;
-  classNameBindings: boolean;
-  attributeBindings: boolean;
-  layout: boolean;
-  templateLayout: boolean;
-  off: boolean;
-  tagName: boolean;
-  unobserves: boolean;
-}
 
 /**
  * Get the map of decorators to import other than the computed props, services etc
@@ -41,7 +29,6 @@ export function mergeDecoratorImportSpecs(
 
 /** Find the `EmberObject.extend` statements */
 export function getEOExtendExpressionCollection(
-  j: JSCodeshift,
   root: AST.Collection
 ): AST.Collection<AST.EOExtendExpression> {
   return AST.findPaths(root, j.CallExpression, AST.isEOExtendExpression).filter(
@@ -51,7 +38,6 @@ export function getEOExtendExpressionCollection(
 
 /** Return closest parent var declaration statement */
 function getClosestVariableDeclaration(
-  j: JSCodeshift,
   eoExtendExpressionPath: AST.Path<AST.EOExtendExpression>
 ): AST.Path<AST.VariableDeclaration> | null {
   const varDeclarations = j(eoExtendExpressionPath).closest(
@@ -66,13 +52,9 @@ function getClosestVariableDeclaration(
  * It returns either VariableDeclaration or the CallExpression depending on how the object is created
  */
 export function getExpressionToReplace(
-  j: JSCodeshift,
   eoExtendExpressionPath: AST.Path<AST.EOExtendExpression>
 ): AST.Path<AST.EOExtendExpression> | AST.Path<AST.VariableDeclaration> {
-  const varDeclaration = getClosestVariableDeclaration(
-    j,
-    eoExtendExpressionPath
-  );
+  const varDeclaration = getClosestVariableDeclaration(eoExtendExpressionPath);
   const parentValue = eoExtendExpressionPath.parentPath?.value;
   const isFollowedByCreate =
     isRecord(parentValue) &&
@@ -94,10 +76,7 @@ export function getClassName(
   filePath: string,
   type = ''
 ): string {
-  const varDeclaration = getClosestVariableDeclaration(
-    j,
-    eoExtendExpressionPath
-  );
+  const varDeclaration = getClosestVariableDeclaration(eoExtendExpressionPath);
   if (varDeclaration) {
     const firstDeclarator = defined(varDeclaration.value.declarations[0]);
     assert(

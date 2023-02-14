@@ -1,6 +1,6 @@
 import type * as AST from '../../ast';
 import { createClassDecorator } from '../../decorator-helper';
-import type { DecoratorImportSpecs } from '../../parse-helper';
+import type { DecoratorImportSpecs } from '../../util/index';
 import {
   ATTRIBUTE_BINDINGS_DECORATOR_NAME,
   CLASS_NAMES_DECORATOR_NAME,

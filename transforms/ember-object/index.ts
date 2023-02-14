@@ -16,7 +16,7 @@ const transformer: Transform = function (
 
   const root = j(source) as AST.Collection;
   const userOptions = getConfig();
-  const replaced = maybeTransformEmberObjects(j, root, filePath, userOptions);
+  const replaced = maybeTransformEmberObjects(root, filePath, userOptions);
 
   if (replaced) {
     source = root.toSource({

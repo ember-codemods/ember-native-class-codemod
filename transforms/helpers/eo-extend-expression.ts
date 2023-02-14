@@ -6,9 +6,9 @@ import type { EOClassDecorator, EOProp } from './eo-prop/index';
 import makeEOProp from './eo-prop/index';
 import logger from './log-helper';
 import type { Options } from './options';
-import type { DecoratorImportSpecs } from './parse-helper';
 import { getClassName, getExpressionToReplace } from './parse-helper';
 import { withComments } from './transform-helper';
+import type { DecoratorImportSpecs } from './util/index';
 
 export default class EOExtendExpression {
   private className: string;
@@ -71,7 +71,7 @@ export default class EOExtendExpression {
   transform(): boolean {
     const es6ClassDeclaration = this.build();
     if (es6ClassDeclaration) {
-      const expressionToReplace = getExpressionToReplace(j, this.path);
+      const expressionToReplace = getExpressionToReplace(this.path);
       j(expressionToReplace).replaceWith(
         withComments(es6ClassDeclaration, expressionToReplace.value)
       );

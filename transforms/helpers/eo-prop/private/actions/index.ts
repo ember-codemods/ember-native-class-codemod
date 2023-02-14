@@ -1,5 +1,5 @@
 import * as AST from '../../../ast';
-import type { DecoratorImportSpecs } from '../../../parse-helper';
+import type { DecoratorImportSpecs } from '../../../util/index';
 import { LIFECYCLE_HOOKS } from '../../../util/index';
 import AbstractEOProp from '../abstract';
 import EOActionMethod from './method';
