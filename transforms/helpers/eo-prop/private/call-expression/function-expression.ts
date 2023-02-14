@@ -4,6 +4,38 @@ import { replaceComputedSuperExpressions as replaceComputedSuperExpression } fro
 import { assert, defined } from '../../../util/types';
 import AbstractEOCallExpressionProp from './abstract';
 
+/**
+ * Ember Object Computed Function Expression Property
+ *
+ * A wrapper object for Ember Object properties with `FunctionExpression` values
+ * for computed properties (including computed macros) to be transformed into
+ * `ClassMethod`s with their appropriate decorators (and any modifiers).
+ *
+ * @example
+ *
+ * ```
+ * const MyObject = EmberObject.extend({
+ *   firstName: 'Krystan',
+ *   lastName: 'HuffMenne',
+ *   fName1: alias('firstName'),
+ *   fName2: alias('firstName').readOnly(),
+ *   fullName: computed('firstName', 'lastName', function() {
+ *     return `${firstName} ${lastName}`;
+ *   }),
+ *   // FIXME: Getter/setter version
+ * });
+ * ```
+ *
+ * transforms into:
+ *
+ * ```
+ * class MyObject extends EmberObject {
+ *   FIXME: Fill in
+ * }
+ * ```
+ *
+ * @see EOMethod
+ */
 export default class EOComputedFunctionExpressionProp extends AbstractEOCallExpressionProp<AST.ClassMethod> {
   build(): AST.ClassMethod {
     const args = this.arguments;

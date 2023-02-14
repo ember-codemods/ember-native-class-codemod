@@ -3,6 +3,38 @@ import type * as AST from '../../ast';
 import { replaceMethodSuperExpression } from '../../transform-helper';
 import AbstractEOProp from './abstract';
 
+/**
+ * Ember Object Method
+ *
+ * A wrapper object for Ember Object methods (including getters and setters) to
+ * be transformed into `ClassMethod`s.
+ *
+ * @example
+ *
+ * ```
+ * const MyObject = EmberObject.extend({
+ *   get myGetter() {},
+ *
+ *   myMethod() {
+ *     this._super(...arguments);
+ *   }
+ * });
+ * ```
+ *
+ * transforms into:
+ *
+ * ```
+ * class MyObject extends EmberObject {
+ *   get myGetter() {}
+ *
+ *   myMethod() {
+ *     super.myMethod(...arguments);
+ *   }
+ * }
+ * ```
+ *
+ * @see EOFunctionExpressionProp
+ */
 export default class EOMethod extends AbstractEOProp<
   AST.EOMethod,
   AST.ClassMethod
@@ -13,11 +45,6 @@ export default class EOMethod extends AbstractEOProp<
 
   protected override readonly supportsObjectLiteralDecorators = true;
 
-  /**
-   * Transform object method to class method
-   *
-   * For example { foo() { }} --> { foo() { }}
-   */
   build(): AST.ClassMethod {
     return replaceMethodSuperExpression(
       j.classMethod.from({

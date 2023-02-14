@@ -8,6 +8,15 @@ import AbstractEOProp from '../abstract';
 import type { CallExpressionModifier } from './modifier-helper';
 import { COMPUTED_DECORATOR_NAME } from '../../../util/index';
 
+/**
+ * Ember Object Call Expression Property
+ *
+ * A wrapper object for Ember Object properties with `CallExpression` values
+ * to be transformed the appropriate AST node (or array thereof) to be added to
+ * the parent `EOExtendExpression`'s `ClassBody`.
+ *
+ * See each subclass for more details.
+ */
 export default abstract class AbstractEOCallExpressionProp<
   B extends AST.ClassProperty | AST.ClassMethod | AST.ClassMethod[]
 > extends AbstractEOProp<AST.EOCallExpressionProp, B> {

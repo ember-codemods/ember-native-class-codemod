@@ -14,14 +14,26 @@ import AbstractEOProp from './abstract';
 /**
  * Ember Object Class Decorator
  *
- * A wrapper object for ember object properties that should be converted into
- * class decorators, including:
- * - `@classNames`
- * - `@attributeBindings`
- * - `@classNameBindings`
- * - `@layout`
- * - `@tagName`
- * - `@templateLayout`
+ * A wrapper object for Ember Object properties that should be converted into
+ * class decorators. See `CLASS_DECORATOR_NAMES` for the list of handled
+ * decorator properties.
+ *
+ * @example
+ *
+ * ```
+ * const MyObject = EmberObject.extend({
+ *   tagName: '',
+ *   classNames: ['my-object'],
+ * });
+ * ```
+ *
+ * transforms into:
+ *
+ * ```
+ * @tagName('')
+ * @classNames('my-object')
+ * class MyObject extends EmberObject {
+ * }
  */
 export default class EOClassDecorator extends AbstractEOProp<
   AST.EOClassDecoratorProp,

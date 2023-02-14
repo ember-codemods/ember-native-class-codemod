@@ -14,7 +14,11 @@ type EOPropValue = AST.EOProp['value'] | AST.EOMethod;
 /**
  * Ember Object Property
  *
- * A wrapper object for ember object properties
+ * A wrapper object for Ember Object properties and methods.
+ *
+ * Each subclass is required to implement a `build` method that returns the
+ * appropriate AST node (or array thereof) to be added to the parent
+ * `EOExtendExpression`'s `ClassBody`.
  */
 export default abstract class AbstractEOProp<
   P extends AST.EOExpressionProp,

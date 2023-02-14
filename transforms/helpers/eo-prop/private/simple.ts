@@ -4,6 +4,31 @@ import { createDecoratorWithArgs } from '../../decorator-helper';
 import logger from '../../log-helper';
 import AbstractEOProp from './abstract';
 
+/**
+ * Ember Object Simple Property
+ *
+ * A wrapper object for Ember Object properties not captured by the other
+ * `EOProp`/`EOClassDecorator` classes to be transformed into
+ * `ClassProperties`s.
+ *
+ * @example
+ *
+ * ```
+ * const MyObject = EmberObject.extend({
+ *   myMethod: () => {}
+ * });
+ * ```
+ *
+ * transforms into:
+ *
+ * ```
+ * class MyObject extends EmberObject {
+ *   myMethod() {}
+ * }
+ * ```
+ *
+ * @see EOMethod
+ */
 export default class EOSimpleProp extends AbstractEOProp<
   AST.EOSimpleProp,
   AST.ClassProperty
