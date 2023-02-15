@@ -30,97 +30,97 @@ class Foo extends EmberObject {
   // @ember/object/computed
 
   @alias('foo')
-  hasAlias = undefined;
+  hasAlias;
 
   @and('foo', 'bar')
-  hasAnd = undefined;
+  hasAnd;
 
   @bool('foo')
-  hasBool = undefined;
+  hasBool;
 
   @collect('foo', 'bar')
-  hasCollect = undefined;
+  hasCollect;
 
   @deprecatingAlias('foo')
-  hasDeprecatingAlias = undefined;
+  hasDeprecatingAlias;
 
   @empty('foo')
-  hasEmpty = undefined;
+  hasEmpty;
 
   @equal('foo', 'bar')
-  hasEqual = undefined;
+  hasEqual;
 
   @filterBy('foo', 'bar')
-  hasFilterBy = undefined;
+  hasFilterBy;
 
   @gt('foo', 'bar')
-  hasGt = undefined;
+  hasGt;
 
   @gte('foo', 'bar')
-  hasGte = undefined;
+  hasGte;
 
   @intersect('foo', 'bar')
-  hasIntersect = undefined;
+  hasIntersect;
 
   @lt('foo', 'bar')
-  hasLt = undefined;
+  hasLt;
 
   @lte('foo', 'bar')
-  hasLte = undefined;
+  hasLte;
 
   @mapBy('foo', 'bar')
-  hasMapBy = undefined;
+  hasMapBy;
 
   @match('foo', /bar/)
-  hasMatch = undefined;
+  hasMatch;
 
   @max('foo', 'bar')
-  hasMax = undefined;
+  hasMax;
 
   @min('foo', 'bar')
-  hasMin = undefined;
+  hasMin;
 
   @none('foo')
-  hasNone = undefined;
+  hasNone;
 
   @not('foo')
-  hasNot = undefined;
+  hasNot;
 
   @notEmpty('foo')
-  hasNotEmpty = undefined;
+  hasNotEmpty;
 
   @oneWay('foo')
-  hasOneWay = undefined;
+  hasOneWay;
 
   @or('foo', 'bar')
-  hasOr = undefined;
+  hasOr;
 
   @readOnly('foo')
-  hasReadOnly = undefined;
+  hasReadOnly;
 
   @reads('foo')
-  hasReads = undefined;
+  hasReads;
 
   @setDiff('foo', 'bar')
-  hasSetDiff = undefined;
+  hasSetDiff;
 
   @sum('foo', 'bar')
-  hasSum = undefined;
+  hasSum;
 
   @union('foo', 'bar')
-  hasUnion = undefined;
+  hasUnion;
 
   @uniq('foo')
-  hasUniq = undefined;
+  hasUniq;
 
   @uniqBy('foo', 'bar')
-  hasUniqBy = undefined;
+  hasUniqBy;
 
   @filter('foo', function(foo, index, array) { return false })
-  hasFilter = undefined;
+  hasFilter;
 
   @map('foo', function(foo, index, array) { return 'bar' })
-  hasMap = undefined;
+  hasMap;
 
   @sort('foo', function(a, b) {
     if (a.priority > b.priority) {
@@ -131,7 +131,7 @@ class Foo extends EmberObject {
 
     return 0;
   })
-  hasSort = undefined;
+  hasSort;
 
   // @glimmer/tracking
 

@@ -70,7 +70,11 @@ export function isNode<T extends ASTNode['type'] = ASTNode['type']>(
   );
 }
 
-function isIdent(u: unknown, ...names: string[]): u is Identifier {
+/**
+ * Type predicate that checks if the value is an Identifier
+ * (matching one of the given names, if provided).
+ */
+export function isIdent(u: unknown, ...names: string[]): u is Identifier {
   return isNode(u, 'Identifier') && names.includes(u.name);
 }
 

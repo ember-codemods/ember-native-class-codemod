@@ -1,5 +1,5 @@
 import { default as j } from 'jscodeshift';
-import type * as AST from '../../ast';
+import * as AST from '../../ast';
 import { createDecoratorWithArgs } from '../../decorator-helper';
 import logger from '../../log-helper';
 import AbstractEOProp from './abstract';
@@ -50,7 +50,10 @@ export default class EOSimpleProp extends AbstractEOProp<
   build(): AST.ClassProperty {
     const classProp = j.classProperty.from({
       key: this.key,
-      value: this.hasDecorators ? null : this.value,
+      value:
+        this.hasDecorators || AST.isIdent(this.value, 'undefined')
+          ? null
+          : this.value,
       comments: this.comments,
       computed: this.rawProp.computed ?? false,
     });

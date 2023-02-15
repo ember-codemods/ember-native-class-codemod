@@ -49,8 +49,7 @@ export default class EOComputedProp extends AbstractEOComputedProp<AST.ClassProp
   build(): AST.ClassProperty {
     const classProp = j.classProperty.from({
       key: this.key,
-      // TODO: This how we can remove the `= undefined` value;
-      value: this.hasDecorators ? null : this.value,
+      value: null,
       comments: this.comments,
       computed: this.rawProp.computed ?? false,
     });
