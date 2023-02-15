@@ -1,6 +1,9 @@
 import { default as j } from 'jscodeshift';
 import type * as AST from '../../../ast';
-import { replaceGetterSetterSuperExpressions } from '../../../transform-helper';
+import {
+  replaceGetterSetterSuperExpressions,
+  replaceMethodSuperExpressions,
+} from '../../../transform-helper';
 import { assert, defined } from '../../../util/types';
 import AbstractEOComputedProp from './abstract';
 
@@ -69,8 +72,7 @@ export default class EOComputedFunctionExpressionProp extends AbstractEOComputed
       lastArg && lastArg.type === 'FunctionExpression',
       'expected lastArg to be a FunctionExpression'
     );
-    // FIXME: Is this correct? Maybe should handle kind === 'method' with replaceMethodSuperExpression ??
-    return replaceGetterSetterSuperExpressions(
+    return this.replaceSuperExpression(
       j.classMethod.from({
         kind: defined(this.kind),
         key: this.key,
@@ -82,5 +84,15 @@ export default class EOComputedFunctionExpressionProp extends AbstractEOComputed
       this.replaceSuperWithUndefined,
       this.key
     );
+  }
+
+  private get replaceSuperExpression(): (
+    classMethod: AST.ClassMethod,
+    replaceWithUndefined: boolean,
+    identifier: AST.Identifier
+  ) => AST.ClassMethod {
+    return this.kind === 'method'
+      ? replaceMethodSuperExpressions
+      : replaceGetterSetterSuperExpressions;
   }
 }

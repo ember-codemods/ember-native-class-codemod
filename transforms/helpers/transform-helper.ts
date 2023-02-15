@@ -129,7 +129,7 @@ export function replaceGetterSetterSuperExpressions(
  * super.methodName(...arguments);
  * ```
  */
-export function replaceMethodSuperExpression(
+export function replaceMethodSuperExpressions(
   classMethod: AST.ClassMethod,
   replaceWithUndefined: boolean
 ): AST.ClassMethod {

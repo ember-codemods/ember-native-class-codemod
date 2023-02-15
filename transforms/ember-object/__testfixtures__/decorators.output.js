@@ -46,6 +46,11 @@ class Foo1 extends EmberObject {
     return 'observed';
   }
 
+  @watcher('xyz')
+  observedProp2() {
+    return super.observedProp2(...arguments);
+  }
+
   @on('click')
   event() {
     return 'abc';

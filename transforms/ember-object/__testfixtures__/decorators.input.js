@@ -26,6 +26,9 @@ const Foo1 = EmberObject.extend({
   observedProp: watcher('xyz', function() {
     return 'observed';
   }),
+  observedProp2: watcher('xyz', function() {
+    return this._super(...arguments);
+  }),
   event: on('click', function() {
     return 'abc';
   }),

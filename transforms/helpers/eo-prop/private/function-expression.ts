@@ -1,6 +1,6 @@
 import { default as j } from 'jscodeshift';
 import type * as AST from '../../ast';
-import { replaceMethodSuperExpression } from '../../transform-helper';
+import { replaceMethodSuperExpressions } from '../../transform-helper';
 import AbstractEOProp from './abstract';
 
 /**
@@ -42,7 +42,7 @@ export default class EOFunctionExpressionProp extends AbstractEOProp<
   protected override readonly supportsObjectLiteralDecorators = true;
 
   build(): AST.ClassMethod {
-    return replaceMethodSuperExpression(
+    return replaceMethodSuperExpressions(
       j.classMethod.from({
         kind: 'method',
         key: this.key,
