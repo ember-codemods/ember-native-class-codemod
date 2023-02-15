@@ -4,7 +4,5 @@ import EmberObject from '@ember/object';
 @classic
 class Foo extends EmberObject {
   @userAdded
-  toggleShowing() {
-    set(this, 'isShowing', !this.isShowing);
-  }
+  whatever;
 }

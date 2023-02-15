@@ -12,3 +12,8 @@ const Foo2 = EmberObject.extend({
 const Foo3 = EmberObject.extend({
   @tracked arr: [1, 2, 3],
 });
+
+// Do not function expression if not on allowlist
+const Foo4 = EmberObject.extend({
+  @userAdded methodish: () => {},
+});

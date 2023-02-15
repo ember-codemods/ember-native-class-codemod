@@ -45,7 +45,8 @@ export default class EOSimpleProp extends AbstractEOProp<
 
   protected readonly value = this.rawProp.value;
 
-  protected override readonly supportsObjectLiteralDecorators = true;
+  protected override readonly objectLiteralDecoratorSupport =
+    'withVerification' as const;
 
   build(): AST.ClassProperty {
     const classProp = j.classProperty.from({

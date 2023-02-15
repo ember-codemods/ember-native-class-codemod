@@ -38,8 +38,14 @@ export default abstract class AbstractEOProp<
 
   protected readonly runtimeData: RuntimeData;
 
-  /** Override to `true` if the property type supports object literal decorators. */
-  protected readonly supportsObjectLiteralDecorators: boolean = false;
+  /**
+   * Override to `true` if the property type supports object literal decorators
+   * or to `'withVerification'` if the property type supports object literal
+   * decorators as long as they are on the allow-list.
+   */
+  protected readonly objectLiteralDecoratorSupport:
+    | boolean
+    | 'withVerification' = false;
 
   constructor(
     protected readonly rawProp: P & {
@@ -95,7 +101,7 @@ export default abstract class AbstractEOProp<
     const { decorators, objectLiteralDecorators } = this.options;
 
     if (this.existingDecorators) {
-      if (!this.supportsObjectLiteralDecorators) {
+      if (!this.objectLiteralDecoratorSupport) {
         errors.push(
           this.makeError(
             'can only transform object literal decorators on methods or properties with literal values (string, number, boolean, null, undefined)'
@@ -116,12 +122,12 @@ export default abstract class AbstractEOProp<
             this.makeError('decorator expression type not supported')
           );
         } else if (
-          // TODO: Don't check this for EOMethodProp
+          this.objectLiteralDecoratorSupport === 'withVerification' &&
           !allowObjectLiteralDecorator(decoratorName, objectLiteralDecorators)
         ) {
           errors.push(
             this.makeError(
-              "decorator '@${decoratorName}' not included in ALLOWED_OBJECT_LITERAL_DECORATORS or option '--objectLiteralDecorators'"
+              `decorator '@${decoratorName}' not included in ALLOWED_OBJECT_LITERAL_DECORATORS or option '--objectLiteralDecorators'`
             )
           );
         }

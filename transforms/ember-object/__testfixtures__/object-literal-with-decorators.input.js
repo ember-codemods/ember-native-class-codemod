@@ -97,4 +97,9 @@ const Foo = EmberObject.extend({
   bar() {
     // Executes whenever barEvent is emitted
   },
+
+  @userAdded
+  yolo() {
+    // methods always pass through decorators, even if not on allow-list
+  }
 });

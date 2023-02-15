@@ -43,7 +43,7 @@ export default class EOMethod extends AbstractEOProp<
 
   protected readonly value = this.rawProp;
 
-  protected override readonly supportsObjectLiteralDecorators = true;
+  protected override readonly objectLiteralDecoratorSupport = true;
 
   build(): AST.ClassMethod {
     return replaceMethodSuperExpressions(
