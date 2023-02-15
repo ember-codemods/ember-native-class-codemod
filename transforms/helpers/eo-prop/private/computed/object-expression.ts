@@ -60,18 +60,12 @@ export default class EOComputedObjectExpressionProp extends AbstractEOComputedPr
       lastArg && lastArg.type === 'ObjectExpression',
       'expected lastArg to be a ObjectExpression'
     );
-    // FIXME: In this case, existing decorators should probably fail validation
     const classMethods = lastArg.properties.map((property) => {
       assert(AST.isEOMethod(property), 'expected EOMethod');
-      // FIXME: Is `init` valid here? Seems wrong.
       assert(
-        (['init', 'get', 'set'] as const).includes(
-          property.key.name as 'init' | 'get' | 'set'
-        )
+        (['get', 'set'] as const).includes(property.key.name as 'get' | 'set')
       );
-      const rawKind = property.key.name as 'init' | 'get' | 'set';
-      const kind = rawKind === 'init' ? 'method' : rawKind;
-
+      const kind = property.key.name as 'get' | 'set';
       const key = this.key;
 
       const params = [...property.params];
