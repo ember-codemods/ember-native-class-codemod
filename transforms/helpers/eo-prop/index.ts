@@ -3,11 +3,12 @@ import type { DecoratorImportInfoMap } from '../decorator-info';
 import type { Options } from '../options';
 import { assert } from '../util/types';
 import EOActionsProp from './private/actions';
-import type EOComputedFunctionExpressionProp from './private/computed/function-expression';
+import EOClassDecorator from './private/class-decorator';
+import type EOComputedFunctionExpressionGetter from './private/computed/function-expression-getter';
+import type EOComputedFunctionExpressionMethod from './private/computed/function-expression-method';
 import { makeEOComputedProp } from './private/computed/index';
 import type EOComputedObjectExpressionProp from './private/computed/object-expression';
 import type EOComputedProp from './private/computed/property';
-import EOClassDecorator from './private/class-decorator';
 import EOFunctionExpressionProp from './private/function-expression';
 import EOMethod from './private/method';
 import EOSimpleProp from './private/simple';
@@ -18,7 +19,8 @@ export type { default as EOClassDecorator } from './private/class-decorator';
 export type EOProp =
   | EOActionsProp
   | EOSimpleProp
-  | EOComputedFunctionExpressionProp
+  | EOComputedFunctionExpressionGetter
+  | EOComputedFunctionExpressionMethod
   | EOComputedObjectExpressionProp
   | EOComputedProp
   | EOFunctionExpressionProp

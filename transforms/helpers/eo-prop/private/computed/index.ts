@@ -5,7 +5,8 @@ import type {
 } from '../../../decorator-info';
 import type { Options } from '../../../options';
 import { assert } from '../../../util/types';
-import EOComputedFunctionExpressionProp from './function-expression';
+import EOComputedFunctionExpressionGetter from './function-expression-getter';
+import EOComputedFunctionExpressionMethod from './function-expression-method';
 import { getModifier } from './modifier-helper';
 import EOComputedObjectExpressionProp from './object-expression';
 import EOComputedProp from './property';
@@ -18,7 +19,8 @@ export function makeEOComputedProp(
   existingDecoratorImportInfos: DecoratorImportInfoMap,
   options: Options
 ):
-  | EOComputedFunctionExpressionProp
+  | EOComputedFunctionExpressionGetter
+  | EOComputedFunctionExpressionMethod
   | EOComputedObjectExpressionProp
   | EOComputedProp {
   let calleeObject = raw.value;
@@ -48,30 +50,33 @@ export function makeEOComputedProp(
 
   const args = calleeObject.arguments;
   const lastArg = args[args.length - 1];
-  if ((kind === 'method' || kind === 'get') && lastArg) {
-    if (lastArg.type === 'FunctionExpression') {
-      return new EOComputedFunctionExpressionProp(
-        raw,
-        calleeObject,
-        modifiers,
-        kind,
-        decorators,
-        options
-      );
-    } else if (lastArg.type === 'ObjectExpression') {
-      return new EOComputedObjectExpressionProp(
-        raw,
-        calleeObject,
-        modifiers,
-        kind,
-        decorators,
-        options
-      );
-    } else {
-      throw new Error(
-        'Expected last argument in call expression to be a FunctionExpression or ObjectExpression'
-      );
-    }
+  if (kind === 'method' && lastArg?.type === 'FunctionExpression') {
+    return new EOComputedFunctionExpressionMethod(
+      raw,
+      calleeObject,
+      modifiers,
+      kind,
+      decorators,
+      options
+    );
+  } else if (kind === 'get' && lastArg?.type === 'FunctionExpression') {
+    return new EOComputedFunctionExpressionGetter(
+      raw,
+      calleeObject,
+      modifiers,
+      kind,
+      decorators,
+      options
+    );
+  } else if (kind === 'get' && lastArg?.type === 'ObjectExpression') {
+    return new EOComputedObjectExpressionProp(
+      raw,
+      calleeObject,
+      modifiers,
+      kind,
+      decorators,
+      options
+    );
   }
 
   return new EOComputedProp(

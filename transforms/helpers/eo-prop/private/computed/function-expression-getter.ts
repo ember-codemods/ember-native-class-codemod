@@ -1,10 +1,7 @@
 import { default as j } from 'jscodeshift';
 import type * as AST from '../../../ast';
-import {
-  replaceGetterSetterSuperExpressions,
-  replaceMethodSuperExpressions,
-} from '../../../transform-helper';
-import { assert, defined } from '../../../util/types';
+import { replaceGetterSetterSuperExpressions } from '../../../transform-helper';
+import { assert } from '../../../util/types';
 import AbstractEOComputedProp from './abstract';
 
 /**
@@ -64,7 +61,7 @@ import AbstractEOComputedProp from './abstract';
  * Notably, if the modifiers `volatile` and `readOnly` are used in conjunction,
  * a non-computed getter will be returned.
  */
-export default class EOComputedFunctionExpressionProp extends AbstractEOComputedProp<AST.ClassMethod> {
+export default class EOComputedFunctionExpressionGetter extends AbstractEOComputedProp<AST.ClassMethod> {
   build(): AST.ClassMethod {
     const args = this.arguments;
     const lastArg = args[args.length - 1];
@@ -72,9 +69,9 @@ export default class EOComputedFunctionExpressionProp extends AbstractEOComputed
       lastArg && lastArg.type === 'FunctionExpression',
       'expected lastArg to be a FunctionExpression'
     );
-    return this.replaceSuperExpression(
+    return replaceGetterSetterSuperExpressions(
       j.classMethod.from({
-        kind: defined(this.kind),
+        kind: 'get',
         key: this.key,
         params: lastArg.params,
         body: lastArg.body,
@@ -84,15 +81,5 @@ export default class EOComputedFunctionExpressionProp extends AbstractEOComputed
       this.replaceSuperWithUndefined,
       this.key
     );
-  }
-
-  private get replaceSuperExpression(): (
-    classMethod: AST.ClassMethod,
-    replaceWithUndefined: boolean,
-    identifier: AST.Identifier
-  ) => AST.ClassMethod {
-    return this.kind === 'method'
-      ? replaceMethodSuperExpressions
-      : replaceGetterSetterSuperExpressions;
   }
 }
