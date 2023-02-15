@@ -74,6 +74,9 @@ function isIdent(u: unknown, ...names: string[]): u is Identifier {
   return isNode(u, 'Identifier') && names.includes(u.name);
 }
 
+/**
+ * A CallExpression following the `EmberObject.extend(Mixin, {})` pattern.
+ */
 export interface EOExtendExpression extends CallExpression {
   callee: EOExtendExpressionCallee;
   arguments: EOExtendArg[];
@@ -124,6 +127,10 @@ function isEOExtendExpressionCalleeProperty(
   return isIdent(u, 'extend');
 }
 
+/**
+ * The ObjectExpression argument from the `EmberObject.extend(Mixin, {})`
+ * pattern.
+ */
 export interface EOExpression extends ObjectExpression {
   properties: EOExpressionProp[];
 }
@@ -146,7 +153,7 @@ function isEOMixin(u: unknown): u is EOMixin {
   return isNode(u, 'Identifier');
 }
 
-/** A top-level instance property in an Ember Object's ObjectExpression */
+/** A top-level instance property in an EOExpression */
 export interface EOProp extends ObjectProperty {
   key: Identifier;
 }
@@ -155,7 +162,7 @@ function isEOProp(u: unknown): u is EOProp {
   return isNode(u, 'ObjectProperty') && isNode(u.key, 'Identifier');
 }
 
-/** A top-level instance property in an Ember Object's ObjectExpression */
+/** A top-level instance method in an EOExpression */
 export interface EOMethod extends ObjectMethod {
   key: Identifier;
 }
@@ -164,6 +171,10 @@ export function isEOMethod(u: unknown): u is EOMethod {
   return isNode(u, 'ObjectMethod') && isNode(u.key, 'Identifier');
 }
 
+/**
+ * A top-level instance property in an EOExpression where the value is a
+ * `FunctionExpression`.
+ */
 export interface EOFunctionExpressionProp extends EOProp {
   value: FunctionExpression;
 }
@@ -174,15 +185,22 @@ export function isEOFunctionExpressionProp(
   return isEOProp(u) && isNode(u.value, 'FunctionExpression');
 }
 
-export interface EOCallExpressionProp extends EOProp {
+/**
+ * A top-level instance property in an EOExpression where the value is a
+ * `CallExpression`. These represent computed properties.
+ */
+export interface EOComputedProp extends EOProp {
   value: EOCallExpression;
 }
 
-export function isEOCallExpressionProp(u: unknown): u is EOCallExpressionProp {
+export function isEOCallExpressionProp(u: unknown): u is EOComputedProp {
   return isEOProp(u) && isEOCallExpression(u.value);
 }
 
-/** A CallExpression value for an EOProperty */
+/**
+ * A top-level instance property in an EOExpression where the value is a
+ * `CallExpression`.
+ */
 export interface EOCallExpression extends CallExpression {
   callee: EOCallExpressionCallee;
 }
@@ -217,7 +235,10 @@ export function isEOCallExpressionInnerCallee(
   return isNode(u, 'CallExpression') && isNode(u.callee, 'Identifier');
 }
 
-/** An EOProperty that should be transformed into a class decorator */
+/**
+ * A top-level instance property in an EOExpression that should be transformed
+ * into a class decorator.
+ */
 export interface EOClassDecoratorProp extends EOProp {
   value: EOClassDecoratorValue;
   key: EOClassDecoratorKey;
@@ -245,6 +266,10 @@ function isEOClassDecoratorKey(u: unknown): u is EOClassDecoratorKey {
   return isIdent(u, ...CLASS_DECORATOR_NAMES);
 }
 
+/**
+ * A top-level instance property in an EOExpression representing the `actions`
+ * object.
+ */
 export interface EOActionsProp extends EOProp {
   value: EOActionsObjectExpression;
   key: EOActionsObjectKey;
@@ -274,12 +299,19 @@ function isEOAction(u: unknown): u is EOAction {
   return isEOActionMethod(u) || isEOActionProp(u);
 }
 
+/**
+ * An instance property in an EOActionsProp representing a method-style action.
+ */
 type EOActionMethod = EOMethod;
 
 export function isEOActionMethod(u: unknown): u is EOActionMethod {
   return isEOMethod(u);
 }
 
+/**
+ * An instance property in an EOActionsProp representing an identifier-style
+ * action.
+ */
 export interface EOActionProp extends EOProp {
   value: Identifier;
 }
@@ -296,6 +328,10 @@ function isEOActionsObjectKey(u: unknown): u is EOActionsObjectKey {
   return isIdent(u, ACTIONS_NAME);
 }
 
+/**
+ * A top-level instance property in an EOExpression representing a simple
+ * Property (typically a primitive).
+ */
 export interface EOSimpleProp extends EOProp {
   value: Exclude<
     EOProp['value'],
@@ -323,7 +359,11 @@ interface EOActionInfiniteCall extends CallExpression {
   callee: EOActionInfiniteCallCallee;
 }
 
-export function makeEOActionInfiniteCallAssertion(
+/**
+ * Makes a type predicate to check for an action that would call itself once
+ * transformed, resulting in an infinite loop.
+ */
+export function makeEOActionInfiniteCallPredicate(
   name: string
 ): (u: unknown) => u is EOActionInfiniteCall {
   return function isEOActionInfiniteCallForName(
@@ -363,7 +403,11 @@ interface EOActionInfiniteLiteral extends StringLiteral {
   value: string;
 }
 
-export function makeEOActionInfiniteLiteralAssertion(
+/**
+ * Makes a type predicate to check for an action that would call itself once
+ * transformed, resulting in an infinite loop.
+ */
+export function makeEOActionInfiniteLiteralPredicate(
   name: string
 ): (u: unknown) => u is EOActionInfiniteLiteral {
   return function isEOActionInfiniteLiteralForName(
@@ -400,7 +444,10 @@ export interface DecoratorImportDeclaration extends ImportDeclaration {
   source: StringLiteral;
 }
 
-export function makeDecoratorImportDeclarationAssertion(
+/**
+ * Makes a type predicate to find an import declaration with the given name.
+ */
+export function makeDecoratorImportDeclarationPredicate(
   path: string
 ): (u: unknown) => u is DecoratorImportDeclaration {
   return function isDecoratorImportDeclarationForPath(

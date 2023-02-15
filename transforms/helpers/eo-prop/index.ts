@@ -3,10 +3,10 @@ import type { DecoratorImportInfoMap } from '../decorator-info';
 import type { Options } from '../options';
 import { assert } from '../util/types';
 import EOActionsProp from './private/actions';
-import type EOComputedFunctionExpressionProp from './private/call-expression/function-expression';
-import { makeEOCallExpressionProp } from './private/call-expression/index';
-import type EOComputedObjectExpressionProp from './private/call-expression/object-expression';
-import type EODecoratedProp from './private/call-expression/property';
+import type EOComputedFunctionExpressionProp from './private/computed/function-expression';
+import { makeEOComputedProp } from './private/computed/index';
+import type EOComputedObjectExpressionProp from './private/computed/object-expression';
+import type EOComputedProp from './private/computed/property';
 import EOClassDecorator from './private/class-decorator';
 import EOFunctionExpressionProp from './private/function-expression';
 import EOMethod from './private/method';
@@ -20,13 +20,12 @@ export type EOProp =
   | EOSimpleProp
   | EOComputedFunctionExpressionProp
   | EOComputedObjectExpressionProp
-  | EODecoratedProp
+  | EOComputedProp
   | EOFunctionExpressionProp
   | EOMethod;
 
 /**
- * Makes an object representing an Ember Object property for the given
- * Property, RuntimeData, and ImportPropDecoratorMap.
+ * Makes an object representing an Ember Object property.
  */
 export default function makeEOProp(
   eoProp: AST.EOExpressionProp,
@@ -34,11 +33,7 @@ export default function makeEOProp(
   options: Options
 ): EOProp | EOClassDecorator {
   if (AST.isEOCallExpressionProp(eoProp)) {
-    return makeEOCallExpressionProp(
-      eoProp,
-      existingDecoratorImportInfos,
-      options
-    );
+    return makeEOComputedProp(eoProp, existingDecoratorImportInfos, options);
   } else if (AST.isEOMethod(eoProp)) {
     return new EOMethod(eoProp, options);
   } else if (AST.isEOFunctionExpressionProp(eoProp)) {

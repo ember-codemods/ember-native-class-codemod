@@ -15,7 +15,12 @@ import AbstractEOProp from './abstract';
  *
  * ```
  * const MyObject = EmberObject.extend({
- *   myMethod: () => {}
+ *   prop: 'defaultValue',
+ *   boolProp: true,
+ *   numProp: 123,
+ *   [MY_VAL]: 'val',
+ *   queryParams: {},
+ *   someVal,
  * });
  * ```
  *
@@ -23,11 +28,14 @@ import AbstractEOProp from './abstract';
  *
  * ```
  * class MyObject extends EmberObject {
- *   myMethod() {}
+ *   prop = 'defaultValue';
+ *   boolProp = true;
+ *   numProp = 123;
+ *   [MY_VAL] = 'val';
+ *   queryParams = {};
+ *   someVal = someVal;
  * }
  * ```
- *
- * @see EOMethod
  */
 export default class EOSimpleProp extends AbstractEOProp<
   AST.EOSimpleProp,

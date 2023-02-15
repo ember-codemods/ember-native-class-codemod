@@ -15,7 +15,7 @@ export function createClassDecorator(
   );
 }
 
-/** Create decorators which need arguments */
+/** Create decorators which need arguments. */
 export function createDecoratorWithArgs(
   decoratorName: string,
   args: Array<string | number | boolean | RegExp | null>
@@ -28,9 +28,7 @@ export function createDecoratorWithArgs(
   );
 }
 
-/**
- * Create simple decorator with given name
- */
+/** Create simple decorator with given name. */
 export function createIdentifierDecorator(
   decoratorName: string
 ): AST.Decorator {

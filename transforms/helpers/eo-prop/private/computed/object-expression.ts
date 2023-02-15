@@ -1,10 +1,56 @@
 import { default as j } from 'jscodeshift';
 import * as AST from '../../../ast';
-import { replaceComputedSuperExpressions } from '../../../transform-helper';
+import { replaceGetterSetterSuperExpressions } from '../../../transform-helper';
 import { assert, defined } from '../../../util/types';
-import AbstractEOCallExpressionProp from './abstract';
+import AbstractEOComputedProp from './abstract';
 
-export default class EOComputedObjectExpressionProp extends AbstractEOCallExpressionProp<
+/**
+ * Ember Object Computed Object Expression Property
+ *
+ * A wrapper object for Ember Object properties where the value is a
+ * `CallExpression` with an `ObjectExpression` as its last argument.
+ *
+ * These represent computed properties (including computed macros) to be
+ * transformed into `ClassMethod` getters and/or setters with their appropriate
+ * decorators (and any modifiers).
+ *
+ * @example
+ *
+ * ```
+ * const MyObject = EmberObject.extend({
+ *   firstName: 'Krystan',  // EOSimpleProp
+ *   lastName: 'HuffMenne', // EOSimpleProp
+ *
+ *   fullName: computed('firstName', 'lastName', {
+ *     get(key) {
+ *       return `${this.get('firstName')} ${this.get('lastName')}`;
+ *     },
+ *     set(key, value) {
+ *       //...
+ *     }
+ *   })
+ * });
+ * ```
+ *
+ * transforms into:
+ *
+ * ```
+ * class MyObject extends EmberObject {
+ *   firstName = 'Krystan';  // EOSimpleProp
+ *   lastName = 'HuffMenne'; // EOSimpleProp
+ *
+ *   \@computed('firstName', 'lastName')
+ *   get fullName() {
+ *     return `${this.get('firstName')} ${this.get('lastName')}`;
+ *   }
+ *
+ *   set fullName() {
+ *     // ...
+ *   }
+ * }
+ * ```
+ */
+export default class EOComputedObjectExpressionProp extends AbstractEOComputedProp<
   AST.ClassMethod[]
 > {
   build(): AST.ClassMethod[] {
@@ -17,6 +63,7 @@ export default class EOComputedObjectExpressionProp extends AbstractEOCallExpres
     // FIXME: In this case, existing decorators should probably fail validation
     const classMethods = lastArg.properties.map((property) => {
       assert(AST.isEOMethod(property), 'expected EOMethod');
+      // FIXME: Is `init` valid here? Seems wrong.
       assert(
         (['init', 'get', 'set'] as const).includes(
           property.key.name as 'init' | 'get' | 'set'
@@ -30,7 +77,7 @@ export default class EOComputedObjectExpressionProp extends AbstractEOCallExpres
       const params = [...property.params];
       params.shift();
 
-      return replaceComputedSuperExpressions(
+      return replaceGetterSetterSuperExpressions(
         j.classMethod.from({
           kind,
           key,

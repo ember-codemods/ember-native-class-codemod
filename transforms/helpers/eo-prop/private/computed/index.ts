@@ -4,24 +4,23 @@ import type {
   DecoratorImportInfoMap,
 } from '../../../decorator-info';
 import type { Options } from '../../../options';
-import { COMPUTED_DECORATOR_NAME } from '../../../util/index';
-import { assert, defined } from '../../../util/types';
+import { assert } from '../../../util/types';
 import EOComputedFunctionExpressionProp from './function-expression';
 import { getModifier } from './modifier-helper';
 import EOComputedObjectExpressionProp from './object-expression';
-import EODecoratedProp from './property';
+import EOComputedProp from './property';
 
 /**
- * FIXME
+ * Makes an object representing an Ember Object computed property.
  */
-export function makeEOCallExpressionProp(
-  raw: AST.EOCallExpressionProp,
+export function makeEOComputedProp(
+  raw: AST.EOComputedProp,
   existingDecoratorImportInfos: DecoratorImportInfoMap,
   options: Options
 ):
   | EOComputedFunctionExpressionProp
   | EOComputedObjectExpressionProp
-  | EODecoratedProp {
+  | EOComputedProp {
   let calleeObject = raw.value;
   const modifiers = [getModifier(calleeObject)];
   while (AST.isEOMemberExpressionForModifier(calleeObject.callee)) {
@@ -48,8 +47,8 @@ export function makeEOCallExpressionProp(
   const kind = getKind(raw, decorators);
 
   const args = calleeObject.arguments;
-  if ((kind === 'method' || kind === 'get') && args.length > 0) {
-    const lastArg = defined(args[args.length - 1]);
+  const lastArg = args[args.length - 1];
+  if ((kind === 'method' || kind === 'get') && lastArg) {
     if (lastArg.type === 'FunctionExpression') {
       return new EOComputedFunctionExpressionProp(
         raw,
@@ -75,7 +74,7 @@ export function makeEOCallExpressionProp(
     }
   }
 
-  return new EODecoratedProp(
+  return new EOComputedProp(
     raw,
     calleeObject,
     modifiers,
@@ -86,7 +85,7 @@ export function makeEOCallExpressionProp(
 }
 
 function getDecorators(
-  raw: AST.EOCallExpressionProp,
+  raw: AST.EOComputedProp,
   existingDecoratorImportInfos: DecoratorImportInfoMap,
   calleeName: string,
   options: Options
@@ -102,18 +101,19 @@ function getDecorators(
 }
 
 function getKind(
-  raw: AST.EOCallExpressionProp,
+  raw: AST.EOComputedProp,
   decorators: DecoratorImportInfo[]
 ): 'get' | 'method' | undefined {
   let kind: 'get' | 'method' | undefined;
   const method = !!('method' in raw && raw.method);
 
-  if (decorators.some((d) => d.importedName === COMPUTED_DECORATOR_NAME)) {
+  if (decorators.some((d) => d.isComputedDecorator)) {
     kind = 'get';
   }
 
   if (method || decorators.some((d) => d.isMethodDecorator)) {
     kind = 'method';
   }
+
   return kind;
 }

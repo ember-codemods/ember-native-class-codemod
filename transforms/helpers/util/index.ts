@@ -122,7 +122,7 @@ export const ACTION_SUPER_EXPRESSION_COMMENT = [
   " class's actions to be safe. This should be refactored to call a normal method",
   ' on the parent class. If the parent class has not been converted to native',
   ' classes, it may need to be refactored as well. See',
-  ' https: //github.com/scalvert/ember-native-class-codemod/blob/master/README.md',
+  ' https://github.com/scalvert/ember-native-class-codemod/blob/master/README.md',
   ' for more details.',
 ];
 
@@ -268,11 +268,6 @@ const ALLOWED_OBJECT_LITERAL_DECORATORS = new Set([
   OBSERVES_DECORATOR_NAME,
   ON_DECORATOR_NAME,
 ]);
-
-export const DECORATORS_REQUIRED_PROP_NAMES = [
-  ACTIONS_NAME,
-  LAYOUT_DECORATOR_NAME,
-] as const;
 
 /**
  * Allows transformation of decorators in EmberObject's object-literal argument

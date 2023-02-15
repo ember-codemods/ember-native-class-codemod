@@ -220,7 +220,7 @@ function getExistingImportForPath(
   root: AST.Collection,
   importPath: string
 ): AST.Path<AST.DecoratorImportDeclaration> | undefined {
-  const assertion = AST.makeDecoratorImportDeclarationAssertion(importPath);
+  const assertion = AST.makeDecoratorImportDeclarationPredicate(importPath);
   const decoratorImports = AST.findPaths(root, j.ImportDeclaration, assertion);
   return AST.getFirstPath(decoratorImports);
 }

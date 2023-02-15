@@ -9,6 +9,44 @@ export interface Action {
   hasInfiniteLoop: boolean;
 }
 
+/**
+ * Ember Object Actions Property
+ *
+ * A wrapper object for Ember Object `actions` object properties to be
+ * transformed into a series of `ClassMethod`s with the `@action` decorator.
+ *
+ * Each action on the object is represented either by an `EOActionMethod` or
+ * `EOActionProp`.
+ *
+ * @example
+ *
+ * ```
+ * import someActionUtil from 'some/action/util';
+ *
+ * const MyObject = EmberObject.extend({
+ *   actions: {
+ *     someActionUtil,
+ *     bar() {},
+ *   }
+ * });
+ * ```
+ *
+ * transforms into:
+ *
+ * ```
+ * import someActionUtil from 'some/action/util';
+ *
+ * class MyObject extends EmberObject {
+ *   @action
+ *   someActionUtil() {
+ *     return someActionUtil.call(this, ...arguments);
+ *   }
+ *
+ *   @action
+ *   bar() {}
+ * }
+ * ```
+ */
 export default class EOActionsProp extends AbstractEOProp<
   AST.EOActionsProp,
   AST.ClassMethod[]
@@ -24,26 +62,6 @@ export default class EOActionsProp extends AbstractEOProp<
     };
   }
 
-  /**
-   * FIXME: Verify docs
-   *
-   * Create action decorators
-   * ```
-   * Converts
-   * {
-   *  actions: {
-   *    foo() {}
-   *  }
-   * }
-   * ```
-   * to
-   * ```
-   * {
-   *  @action
-   *  foo(){ }
-   * }
-   * ```
-   */
   build(): AST.ClassMethod[] {
     return this.actions.map((action) => {
       return action.build();

@@ -17,15 +17,15 @@ import { COMPUTED_DECORATOR_NAME } from '../../../util/index';
  *
  * See each subclass for more details.
  */
-export default abstract class AbstractEOCallExpressionProp<
+export default abstract class AbstractEOComputedProp<
   B extends AST.ClassProperty | AST.ClassMethod | AST.ClassMethod[]
-> extends AbstractEOProp<AST.EOCallExpressionProp, B> {
+> extends AbstractEOProp<AST.EOComputedProp, B> {
   readonly isClassDecorator = false as const;
 
   protected readonly value = this.rawProp.value;
 
   constructor(
-    eoProp: AST.EOCallExpressionProp,
+    eoProp: AST.EOComputedProp,
     private calleeObject: AST.EOCallExpressionInnerCallee,
     readonly modifiers: CallExpressionModifier[],
     readonly kind: 'get' | 'method' | undefined,

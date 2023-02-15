@@ -5,6 +5,39 @@ import { ACTION_DECORATOR_NAME } from '../../../util/index';
 import AbstractEOProp from '../abstract';
 import type { Action } from './index';
 
+/**
+ * Ember Object Action Property
+ *
+ * A wrapper object for an Identifier property of an Ember Object `actions`
+ * object property.
+ *
+ * It will be transformed into a `ClassMethod` with the `@action` decorator.
+ *
+ * @example
+ *
+ * ```
+ * import someActionUtil from 'some/action/util';
+ *
+ * const MyObject = EmberObject.extend({
+ *   actions: {
+ *     someActionUtil
+ *   }
+ * });
+ * ```
+ *
+ * transforms into:
+ *
+ * ```
+ * import someActionUtil from 'some/action/util';
+ *
+ * class MyObject extends EmberObject {
+ *   @action
+ *   someActionUtil() {
+ *     return someActionUtil.call(this, ...arguments);
+ *   }
+ * }
+ * ```
+ */
 export default class EOActionProp
   extends AbstractEOProp<AST.EOActionProp, AST.ClassMethod>
   implements Action
@@ -15,33 +48,6 @@ export default class EOActionProp
 
   protected readonly value = this.rawProp.value;
 
-  /**
-   * Actions with identifier converted to method definition
-   *
-   * For example in case of following action
-   * ```
-   * import someActionUtil from 'some/action/util';
-   *
-   * const Foo = Component.extend({
-   *   actions: {
-   *     someActionUtil
-   *   }
-   * });
-   * ```
-   *
-   * will be transformed to:
-   *
-   * ```
-   * import someActionUtil from 'some/action/util';
-   *
-   * const Foo = Component.extend({
-   *   @action
-   *   someActionUtil() {
-   *     return someActionUtil.call(this, ...arguments);
-   *   }
-   * });
-   * ```
-   */
   build(): AST.ClassMethod {
     const body = j.blockStatement([
       j.returnStatement(
