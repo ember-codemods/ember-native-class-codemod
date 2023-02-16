@@ -4,23 +4,28 @@ import { createIdentifierDecorator } from './decorator-helper';
 import type { DecoratorImportInfoMap } from './decorator-info';
 import type { EOClassDecorator, EOProp } from './eo-prop/index';
 import makeEOProp, { isEOClassDecorator, isEOProp } from './eo-prop/index';
-import logger from './log-helper';
 import type { Options } from './options';
 import { getClassName, getExpressionToReplace } from './parse-helper';
 import { withComments } from './transform-helper';
 import type { DecoratorImportSpecs } from './util/index';
 
+export interface TransformResult {
+  className: string;
+  success: boolean;
+  errors: readonly string[];
+}
+
 export default class EOExtendExpression {
   private className: string;
   private superClassName: string;
-
+  private properties: Array<EOClassDecorator | EOProp>;
   private expression: AST.EOExpression | null = null;
   private mixins: AST.EOMixin[];
-  readonly properties: Array<EOClassDecorator | EOProp>;
+  private errors: readonly string[] = [];
 
   constructor(
     private path: AST.Path<AST.EOExtendExpression>,
-    private filePath: string,
+    filePath: string,
     existingDecoratorImportInfos: DecoratorImportInfoMap,
     private options: Options
   ) {
@@ -52,17 +57,25 @@ export default class EOExtendExpression {
     );
   }
 
-  transform(): boolean {
+  transform(): TransformResult {
+    const result: TransformResult = {
+      className: this.className,
+      success: false,
+      errors: [],
+    };
+
     const es6ClassDeclaration = this.build();
     if (es6ClassDeclaration) {
       const expressionToReplace = getExpressionToReplace(this.path);
       j(expressionToReplace).replaceWith(
         withComments(es6ClassDeclaration, expressionToReplace.value)
       );
-      return true;
+      result.success = true;
     } else {
-      return false;
+      result.errors = this.errors;
     }
+
+    return result;
   }
 
   /**
@@ -106,10 +119,6 @@ export default class EOExtendExpression {
   private build(): AST.ClassDeclaration | null {
     const errors = this.validate();
     if (errors.length > 0) {
-      const message = errors.join('\n\t');
-      logger.error(
-        `[${this.filePath}]: FAILURE \nValidation errors for class '${this.className}': \n\t${message}`
-      );
       return null;
     }
 
@@ -204,7 +213,7 @@ export default class EOExtendExpression {
       errors = [...errors, ...prop.errors];
     }
 
-    return errors;
+    return (this.errors = errors);
   }
 
   private makeError(message: string): string {

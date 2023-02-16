@@ -25,6 +25,8 @@ export const UserOptionsSchema = z.object({
   classFields: z.boolean(),
   /** Enable/disable adding the [`@classic` decorator](https://github.com/pzuraq/ember-classic-decorator), which helps with transitioning Ember Octane */
   classicDecorator: z.boolean(),
+  /** If `false`, the entire file will fail validation if any EmberObject within it fails validation. */
+  partialTransforms: z.boolean(),
   /** Whether to use double or single quotes by default for new statements that are added during the codemod. */
   quote: z.union([z.literal('single'), z.literal('double')]),
   quotes: z.union([z.literal('single'), z.literal('double')]).optional(),
@@ -91,5 +93,6 @@ export const DEFAULT_OPTIONS: UserOptions = {
   classFields: true,
   classicDecorator: true,
   quote: 'single',
+  partialTransforms: true,
   ignoreLeakingState: ['queryParams'],
 };

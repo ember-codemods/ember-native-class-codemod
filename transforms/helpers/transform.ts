@@ -1,6 +1,7 @@
 import { getTelemetryFor } from 'ember-codemods-telemetry-helpers';
 import path from 'path';
 import type * as AST from './ast';
+import type { TransformResult } from './eo-extend-expression';
 import EOExtendExpression from './eo-extend-expression';
 import {
   createDecoratorImportDeclarations,
@@ -64,21 +65,39 @@ export default function maybeTransformEmberObjects(
     runtimeData,
   };
 
-  const { transformed, decoratorImportSpecs } = _maybeTransformEmberObjects(
+  const { results, decoratorImportSpecs } = _maybeTransformEmberObjects(
     root,
     filePath,
     options
   );
 
-  // Need to find another way, as there might be a case where
-  // one object from a file is transformed and other is not
-  if (transformed) {
-    const decoratorsToImport = Object.keys(decoratorImportSpecs).filter(
-      (key) => decoratorImportSpecs[key as keyof DecoratorImportSpecs]
-    );
-    createDecoratorImportDeclarations(root, decoratorsToImport, options);
-    logger.info(`[${filePath}]: SUCCESS`);
+  let transformed = results.length > 0 && results.every((r) => r.success);
+
+  for (const result of results) {
+    if (result.success) {
+      if (options.partialTransforms) {
+        transformed = true;
+        logger.info(
+          `[${filePath}]: SUCCESS: Transformed class '${result.className}' with no errors`
+        );
+      } else {
+        logger.error(
+          `[${filePath}]: FAILURE \nCould not transform class '${result.className}'. Need option '--partial-transforms=true'`
+        );
+      }
+    } else {
+      const message = result.errors.join('\n\t');
+      logger.error(
+        `[${filePath}]: FAILURE \nValidation errors for class '${result.className}': \n\t${message}`
+      );
+    }
   }
+
+  const decoratorsToImport = Object.keys(decoratorImportSpecs).filter(
+    (key) => decoratorImportSpecs[key as keyof DecoratorImportSpecs]
+  );
+  createDecoratorImportDeclarations(root, decoratorsToImport, options);
+
   return transformed;
 }
 
@@ -87,12 +106,12 @@ function _maybeTransformEmberObjects(
   filePath: string,
   options: Options
 ): {
-  transformed: boolean;
+  results: TransformResult[];
   decoratorImportSpecs: DecoratorImportSpecs;
 } {
   // Parse the import statements
   const existingDecoratorImportInfos = getExistingDecoratorImportInfos(root);
-  let transformed = false;
+  const results: TransformResult[] = [];
   let decoratorImportSpecs: DecoratorImportSpecs = {
     action: false,
     classNames: false,
@@ -122,13 +141,16 @@ function _maybeTransformEmberObjects(
       options
     );
 
-    transformed = extendExpression.transform();
+    const result = extendExpression.transform();
+    results.push(result);
 
-    decoratorImportSpecs = mergeDecoratorImportSpecs(
-      extendExpression.decoratorImportSpecs,
-      decoratorImportSpecs
-    );
+    if (result.success) {
+      decoratorImportSpecs = mergeDecoratorImportSpecs(
+        extendExpression.decoratorImportSpecs,
+        decoratorImportSpecs
+      );
+    }
   });
 
-  return { transformed, decoratorImportSpecs };
+  return { results, decoratorImportSpecs };
 }
