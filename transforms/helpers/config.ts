@@ -1,7 +1,14 @@
 import { getOptions } from 'codemod-cli';
 import { cosmiconfigSync } from 'cosmiconfig';
+import { deepmergeCustom } from 'deepmerge-ts';
 import type { PartialUserOptions, UserOptions } from './options';
 import { DEFAULT_OPTIONS, UserOptionsSchema, parseConfig } from './options';
+
+export const mergeConfig = deepmergeCustom({
+  mergeArrays: (values, _utils, _meta) => {
+    return values[values.length - 1]; // overwrite with the last provided array
+  },
+});
 
 /**
  * Returns a UserOptions object merging options from three sources:
@@ -10,12 +17,11 @@ import { DEFAULT_OPTIONS, UserOptionsSchema, parseConfig } from './options';
  * - ENV variables (which overrides the above)
  */
 export default function getConfig(dir = process.cwd()): UserOptions {
-  const config = {
-    ...DEFAULT_OPTIONS,
-    ...getFileConfig(dir),
-    ...getCliConfig(),
-  };
-
+  const config = mergeConfig(
+    DEFAULT_OPTIONS,
+    getFileConfig(dir),
+    getCliConfig()
+  );
   return UserOptionsSchema.parse(config);
 }
 

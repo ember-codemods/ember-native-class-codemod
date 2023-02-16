@@ -98,7 +98,7 @@ export default abstract class AbstractEOProp<
   get errors(): string[] {
     let errors: string[] = [];
 
-    const { decorators, objectLiteralDecorators } = this.options;
+    const { decorators } = this.options;
 
     if (this.existingDecorators) {
       if (!this.objectLiteralDecoratorSupport) {
@@ -123,7 +123,10 @@ export default abstract class AbstractEOProp<
           );
         } else if (
           this.objectLiteralDecoratorSupport === 'withVerification' &&
-          !allowObjectLiteralDecorator(decoratorName, objectLiteralDecorators)
+          !allowObjectLiteralDecorator(
+            decoratorName,
+            decorators ? decorators.inObjectLiterals : []
+          )
         ) {
           errors.push(
             this.makeError(

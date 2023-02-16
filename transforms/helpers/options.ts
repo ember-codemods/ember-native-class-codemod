@@ -3,9 +3,24 @@ import { z } from 'zod';
 import logger from './log-helper';
 import type { RuntimeData } from './runtime-data';
 
+const DEFAULT_DECORATOR_CONFIG = {
+  inObjectLiterals: [],
+};
+
+const DecoratorOptionsSchema = z
+  .object({
+    /** Allow-list for decorators currently applied to object literal properties that can be safely applied to class properties. */
+    inObjectLiterals: z.preprocess((arg: unknown) => {
+      return typeof arg === 'string' ? arg.split(/\s*,\s*/) : arg;
+    }, z.array(z.string())),
+  })
+  .partial();
+
 export const UserOptionsSchema = z.object({
-  /** Enable/disable transformation using decorators */
-  decorators: z.boolean(),
+  /** Enable/disable transformation using decorators, or pass in DecoratorOptions */
+  decorators: z.preprocess((arg: unknown) => {
+    return arg === true ? DEFAULT_DECORATOR_CONFIG : arg;
+  }, z.union([DecoratorOptionsSchema, z.literal(false)])),
   /** Enable/disable transformation using class fields */
   classFields: z.boolean(),
   /** Enable/disable adding the [`@classic` decorator](https://github.com/pzuraq/ember-classic-decorator), which helps with transitioning Ember Octane */
@@ -13,6 +28,11 @@ export const UserOptionsSchema = z.object({
   /** Whether to use double or single quotes by default for new statements that are added during the codemod. */
   quote: z.union([z.literal('single'), z.literal('double')]),
   quotes: z.union([z.literal('single'), z.literal('double')]).optional(),
+  /**
+   * Allow-list for ObjectExpression or ArrayExpression properties to ignore
+   * issues detailed in eslint-plugin-ember/avoid-leaking-state-in-ember-objects.
+   */
+  ignoreLeakingState: z.array(z.string()),
   /** Apply transformation to only passed type. */
   type: z
     .union([
@@ -22,10 +42,6 @@ export const UserOptionsSchema = z.object({
       z.literal('controllers'),
     ])
     .optional(),
-  /** Allow-list for decorators currently applied to object literal properties that can be safely applied to class properties. */
-  objectLiteralDecorators: z.preprocess((arg: unknown) => {
-    return typeof arg === 'string' ? arg.split(/\s*,\s*/) : arg;
-  }, z.array(z.string()).optional()),
 });
 
 export type UserOptions = z.infer<typeof UserOptionsSchema>;
@@ -58,14 +74,9 @@ export function parseConfig(source: string, raw: unknown): PartialUserOptions {
 
 function logConfigError(
   source: string,
-  { errors }: ZodError<PartialUserOptions>
+  { message }: ZodError<PartialUserOptions>
 ): void {
-  for (const error of errors) {
-    const key = error.path.join('.');
-    logger.error(
-      `[${source}]: CONFIG ERROR key="${key}" message="${error.message}"`
-    );
-  }
+  logger.error(`[${source}]: CONFIG ERROR: \n\t${message}`);
 }
 
 interface PrivateOptions {
@@ -76,8 +87,9 @@ interface PrivateOptions {
 export type Options = UserOptions & PrivateOptions;
 
 export const DEFAULT_OPTIONS: UserOptions = {
-  decorators: true,
+  decorators: DEFAULT_DECORATOR_CONFIG,
   classFields: true,
   classicDecorator: true,
   quote: 'single',
+  ignoreLeakingState: ['queryParams'],
 };

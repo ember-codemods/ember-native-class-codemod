@@ -1,5 +1,7 @@
 module.exports = {
   classFields: false,
   quote: 'double',
-  objectLiteralDecorators: ['cjsDecOne', 'cjsDecTwo']
+  decorators: {
+    inObjectLiterals: ['cjsDecOne', 'cjsDecTwo']
+  }
 };

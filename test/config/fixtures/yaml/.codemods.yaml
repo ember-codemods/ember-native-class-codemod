@@ -1,5 +1,6 @@
 classFields: false
 quote: 'double'
-objectLiteralDecorators:
-  - yamlDecOne
-  - yamlDecTwo
+decorators:
+  inObjectLiterals:
+    - yamlDecOne
+    - yamlDecTwo

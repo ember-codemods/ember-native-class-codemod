@@ -77,7 +77,7 @@ export default class EOSimpleProp extends AbstractEOProp<
 
     if (
       (this.type === 'ObjectExpression' || this.type === 'ArrayExpression') &&
-      this.name !== 'queryParams'
+      !this.options.ignoreLeakingState.includes(this.name)
     ) {
       errors.push(
         this.makeError(

@@ -1,3 +1,5 @@
 {
-  "objectLiteralDecorators": ["userAdded"]
+  "decorators": {
+    "inObjectLiterals": ["userAdded"]
+  }
 }
