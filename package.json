@@ -43,7 +43,6 @@
     "lint:prettier:fix": "prettier --write .",
     "lint:ts": "tsc --noEmit",
     "test": "yarn build && codemod-cli test && node ./test/run-test.js && yarn clean",
-    "fixme": "rm codemods.log && yarn build && codemod-cli test; yarn clean",
     "update-docs": "codemod-cli update-docs"
   },
   "dependencies": {

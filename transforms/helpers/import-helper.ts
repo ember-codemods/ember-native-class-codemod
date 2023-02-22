@@ -252,12 +252,14 @@ export function createDecoratorImportDeclarations(
     const existingImport = getExistingImportForPath(root, decoratorPath);
     if (existingImport) {
       const existingSpecifiers = existingImport.value.specifiers;
-      if (existingSpecifiers) {
-        existingImport.value.specifiers = [
-          ...existingSpecifiers,
-          ...specifiers,
-        ];
-      }
+      existingImport.value.specifiers = [
+        ...(existingSpecifiers ?? []),
+        ...specifiers,
+      ].filter(
+        (current, i, array) =>
+          // Ensure unique specifiers
+          array.findIndex((s) => s.local?.name === current.local?.name) === i
+      );
     } else {
       firstDeclaration.insertBefore(
         createImportDeclaration(specifiers, decoratorPath)
