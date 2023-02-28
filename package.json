@@ -55,7 +55,7 @@
     "minimatch": "^7.3.0",
     "walk-sync": "^3.0.0",
     "winston": "^3.8.2",
-    "zod": "^3.20.2"
+    "zod": "^3.20.6"
   },
   "devDependencies": {
     "@babel/core": "^7.21.0",
