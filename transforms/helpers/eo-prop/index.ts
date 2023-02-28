@@ -1,60 +1,63 @@
-import type { EOProperty } from '../ast';
-import {
-  isEOPropertyForActionsObject,
-  isEOPropertyForClassDecorator,
-  isEOPropertySimple,
-  isEOPropertyWithCallExpression,
-  isEOPropertyWithFunctionExpression,
-} from '../ast';
+import * as AST from '../ast';
 import type { DecoratorImportInfoMap } from '../decorator-info';
-import type { RuntimeData } from '../runtime-data';
+import type { Options } from '../options';
 import { assert } from '../util/types';
-import EOActionsObjectProp from './private/actions-object';
-import EOCallExpressionProp from './private/call-expression';
-import EOClassDecoratorProp from './private/class-decorator';
+import EOActionsProp from './private/actions';
+import EOClassDecorator from './private/class-decorator';
+import type EOComputedFunctionExpressionGetter from './private/computed/function-expression-getter';
+import type EOComputedFunctionExpressionMethod from './private/computed/function-expression-method';
+import { makeEOComputedProp } from './private/computed/index';
+import type EOComputedObjectExpressionProp from './private/computed/object-expression';
+import type EOComputedProp from './private/computed/property';
 import EOFunctionExpressionProp from './private/function-expression';
+import EOMethod from './private/method';
 import EOSimpleProp from './private/simple';
 
-export { default as EOActionsObjectProp } from './private/actions-object';
-export { default as EOCallExpressionProp } from './private/call-expression';
-export { default as EOClassDecoratorProp } from './private/class-decorator';
-export { default as EOFunctionExpressionProp } from './private/function-expression';
-export { default as EOSimpleProp } from './private/simple';
+// Intentionally not included in EOProp union type.
+export type { default as EOClassDecorator } from './private/class-decorator';
 
 export type EOProp =
-  | EOActionsObjectProp
+  | EOActionsProp
   | EOSimpleProp
-  | EOCallExpressionProp
-  | EOClassDecoratorProp
-  | EOFunctionExpressionProp;
-
-export interface EOProps {
-  instanceProps: EOProp[];
-}
+  | EOComputedFunctionExpressionGetter
+  | EOComputedFunctionExpressionMethod
+  | EOComputedObjectExpressionProp
+  | EOComputedProp
+  | EOFunctionExpressionProp
+  | EOMethod;
 
 /**
- * Makes an object representing an Ember Object property for the given
- * Property, RuntimeData, and ImportPropDecoratorMap.
+ * Makes an object representing an Ember Object property.
  */
 export default function makeEOProp(
-  eoProp: EOProperty,
-  runtimeData: RuntimeData | undefined,
-  existingDecoratorImportInfos: DecoratorImportInfoMap
-): EOProp {
-  if (isEOPropertyWithCallExpression(eoProp)) {
-    return new EOCallExpressionProp(
-      eoProp,
-      runtimeData,
-      existingDecoratorImportInfos
-    );
-  } else if (isEOPropertyWithFunctionExpression(eoProp)) {
-    return new EOFunctionExpressionProp(eoProp, runtimeData);
-  } else if (isEOPropertyForClassDecorator(eoProp)) {
-    return new EOClassDecoratorProp(eoProp, runtimeData);
-  } else if (isEOPropertyForActionsObject(eoProp)) {
-    return new EOActionsObjectProp(eoProp, runtimeData);
+  eoProp: AST.EOExpressionProp,
+  existingDecoratorImportInfos: DecoratorImportInfoMap,
+  options: Options
+): EOProp | EOClassDecorator {
+  if (AST.isEOCallExpressionProp(eoProp)) {
+    return makeEOComputedProp(eoProp, existingDecoratorImportInfos, options);
+  } else if (AST.isEOMethod(eoProp)) {
+    return new EOMethod(eoProp, options);
+  } else if (AST.isEOFunctionExpressionProp(eoProp)) {
+    return new EOFunctionExpressionProp(eoProp, options);
+  } else if (AST.isEOClassDecoratorProp(eoProp)) {
+    return new EOClassDecorator(eoProp, options);
+  } else if (AST.isEOActionsProp(eoProp)) {
+    return new EOActionsProp(eoProp, options);
   } else {
-    assert(isEOPropertySimple(eoProp));
-    return new EOSimpleProp(eoProp, runtimeData);
+    assert(AST.isEOSimpleProp(eoProp));
+    return new EOSimpleProp(eoProp, options);
   }
+}
+
+/** Type predicate */
+export function isEOProp(p: EOProp | EOClassDecorator): p is EOProp {
+  return !p.isClassDecorator;
+}
+
+/** Type predicate */
+export function isEOClassDecorator(
+  p: EOProp | EOClassDecorator
+): p is EOClassDecorator {
+  return p.isClassDecorator;
 }

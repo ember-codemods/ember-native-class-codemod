@@ -1,12 +1,94 @@
-import type { EOPropertyForClassDecorator } from '../../ast';
+import type * as AST from '../../ast';
+import { createClassDecorator } from '../../decorator-helper';
+import type { DecoratorImportSpecs } from '../../util/index';
 import {
+  ATTRIBUTE_BINDINGS_DECORATOR_NAME,
+  CLASS_NAMES_DECORATOR_NAME,
+  CLASS_NAME_BINDINGS_DECORATOR_NAME,
   LAYOUT_DECORATOR_LOCAL_NAME,
   LAYOUT_DECORATOR_NAME,
+  TAG_NAME_DECORATOR_NAME,
 } from '../../util/index';
 import AbstractEOProp from './abstract';
 
-export default class EOClassDecoratorProp extends AbstractEOProp<EOPropertyForClassDecorator> {
-  get classDecoratorName(): string {
+/**
+ * Ember Object Class Decorator
+ *
+ * A wrapper object for Ember Object properties that should be converted into
+ * class decorators. See `CLASS_DECORATOR_NAMES` for the list of handled
+ * decorator properties.
+ *
+ * @example
+ *
+ * ```
+ * const MyObject = EmberObject.extend({
+ *   tagName: '',
+ *   classNames: ['my-object'],
+ * });
+ * ```
+ *
+ * transforms into:
+ *
+ * ```
+ * @tagName('')
+ * @classNames('my-object')
+ * class MyObject extends EmberObject {
+ * }
+ */
+export default class EOClassDecorator extends AbstractEOProp<
+  AST.EOClassDecoratorProp,
+  AST.Decorator
+> {
+  readonly isClassDecorator = true as const;
+
+  protected readonly value = this.rawProp.value;
+
+  override get decoratorImportSpecs(): DecoratorImportSpecs {
+    return {
+      ...super.decoratorImportSpecs,
+      classNames: this.isClassNames,
+      classNameBindings: this.isClassNameBindings,
+      attributeBindings: this.isAttributeBindings,
+      layout: this.isLayoutDecorator,
+      templateLayout: this.isTemplateLayoutDecorator,
+      tagName: this.isTagName,
+    };
+  }
+
+  build(): AST.Decorator {
+    return createClassDecorator(this.classDecoratorName, this.value);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
+  protected override get needsDecorators(): true {
+    return true;
+  }
+
+  private get isLayoutDecorator(): boolean {
+    return this.classDecoratorName === LAYOUT_DECORATOR_NAME;
+  }
+
+  private get isTemplateLayoutDecorator(): boolean {
+    return this.classDecoratorName === LAYOUT_DECORATOR_LOCAL_NAME;
+  }
+
+  private get isTagName(): boolean {
+    return this.name === TAG_NAME_DECORATOR_NAME;
+  }
+
+  private get isClassNames(): boolean {
+    return this.name === CLASS_NAMES_DECORATOR_NAME;
+  }
+
+  private get isClassNameBindings(): boolean {
+    return this.name === CLASS_NAME_BINDINGS_DECORATOR_NAME;
+  }
+
+  private get isAttributeBindings(): boolean {
+    return this.name === ATTRIBUTE_BINDINGS_DECORATOR_NAME;
+  }
+
+  private get classDecoratorName(): string {
     if (
       this.name === LAYOUT_DECORATOR_NAME &&
       'name' in this.value && // e.g. CallExpression doesn't have `name`
@@ -15,29 +97,5 @@ export default class EOClassDecoratorProp extends AbstractEOProp<EOPropertyForCl
       return LAYOUT_DECORATOR_LOCAL_NAME;
     }
     return this.name;
-  }
-
-  get isLayoutDecorator(): boolean {
-    return this.classDecoratorName === LAYOUT_DECORATOR_NAME;
-  }
-
-  get isTemplateLayoutDecorator(): boolean {
-    return this.classDecoratorName === LAYOUT_DECORATOR_LOCAL_NAME;
-  }
-
-  get isTagName(): boolean {
-    return this.name === 'tagName';
-  }
-
-  get isClassNames(): boolean {
-    return this.name === 'classNames';
-  }
-
-  get isClassNameBindings(): boolean {
-    return this.name === 'classNameBindings';
-  }
-
-  get isAttributeBindings(): boolean {
-    return this.name === 'attributeBindings';
   }
 }

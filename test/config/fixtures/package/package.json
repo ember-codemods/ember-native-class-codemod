@@ -1,0 +1,9 @@
+{
+  "codemods": {
+    "classFields": false,
+    "quote": "double",
+    "decorators": {
+      "inObjectLiterals": ["packageDecOne", "packageDecTwo"]
+    }
+  }
+}

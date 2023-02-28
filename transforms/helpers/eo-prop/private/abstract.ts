@@ -1,127 +1,198 @@
-import type { EOProperty } from '../../ast';
+import * as AST from '../../ast';
 import type { DecoratorImportInfo } from '../../decorator-info';
+import type { Options } from '../../options';
 import type { RuntimeData } from '../../runtime-data';
+import type { DecoratorImportSpecs } from '../../util/index';
+import {
+  OFF_DECORATOR_NAME,
+  UNOBSERVES_DECORATOR_NAME,
+  allowObjectLiteralDecorator,
+} from '../../util/index';
 
-interface EODecoratorArgs {
-  unobserves?: Array<string | boolean | number | null> | undefined;
-  off?: Array<string | boolean | number | null> | undefined;
-}
+type EOPropValue = AST.EOProp['value'] | AST.EOMethod;
 
 /**
  * Ember Object Property
  *
- * A wrapper object for ember object properties
+ * A wrapper object for Ember Object properties and methods.
+ *
+ * Each subclass is required to implement a `build` method that returns the
+ * appropriate AST node (or array thereof) to be added to the parent
+ * `EOExtendExpression`'s `ClassBody`.
  */
 export default abstract class AbstractEOProp<
-  P extends EOProperty = EOProperty
+  P extends AST.EOExpressionProp,
+  B
 > {
-  readonly _prop: P;
+  abstract readonly isClassDecorator: boolean;
 
-  protected readonly decorators: DecoratorImportInfo[] = [];
-  readonly decoratorArgs: EODecoratorArgs = {};
+  protected abstract readonly value: EOPropValue;
 
-  /** Runtime Data */
-  readonly isComputed: boolean | undefined;
-  readonly isOverridden: boolean | undefined;
-  private readonly runtimeType: string | undefined;
+  protected readonly key = this.rawProp.key;
 
-  constructor(eoProp: P, runtimeData: RuntimeData | undefined) {
-    this._prop = eoProp;
+  protected readonly comments = this.rawProp.comments ?? null;
 
-    if (runtimeData?.type) {
-      const {
-        type,
-        computedProperties = [],
-        offProperties = {},
-        overriddenProperties = [],
-        unobservedProperties = {},
-      } = runtimeData;
+  protected readonly existingDecorators = this.rawProp.decorators ?? null;
 
-      const name = this.name;
-      if (name in unobservedProperties) {
-        this.decorators.push({ name: 'unobserves' });
-        this.decoratorArgs.unobserves = unobservedProperties[name];
+  protected decorators: DecoratorImportInfo[] = [];
+
+  protected readonly runtimeData: RuntimeData;
+
+  /**
+   * Override to `true` if the property type supports object literal decorators
+   * or to `'withVerification'` if the property type supports object literal
+   * decorators as long as they are on the allow-list.
+   */
+  protected readonly objectLiteralDecoratorSupport:
+    | boolean
+    | 'withVerification' = false;
+
+  constructor(
+    protected readonly rawProp: P & {
+      // ast-types missing these properties that exist on @babel/types
+      decorators?: AST.Decorator[] | null;
+    },
+    protected readonly options: Options
+  ) {
+    this.runtimeData = options.runtimeData;
+    if (this.runtimeData.type) {
+      const { offProperties, unobservedProperties } = this.runtimeData;
+
+      const unobservedArgs = unobservedProperties[this.name];
+      if (unobservedArgs) {
+        this.decorators.push({
+          name: UNOBSERVES_DECORATOR_NAME,
+          args: unobservedArgs,
+        });
       }
-      if (name in offProperties) {
-        this.decorators.push({ name: 'off' });
-        this.decoratorArgs.off = offProperties[name];
+
+      const offArgs = offProperties[this.name];
+      if (offArgs) {
+        this.decorators.push({ name: OFF_DECORATOR_NAME, args: offArgs });
       }
-      if (computedProperties.includes(name)) {
-        this.isComputed = true;
-      }
-      this.isOverridden = overriddenProperties.includes(name);
-      this.runtimeType = type;
     }
-  }
-
-  get value(): P['value'] {
-    return this._prop.value;
-  }
-
-  get key(): P['key'] {
-    return this._prop.key;
   }
 
   get name(): string {
-    return this._prop.key.name;
+    return this.key.name;
   }
 
-  get type(): P['value']['type'] {
-    return this._prop.value.type;
+  /**
+   * Get the map of decorators to import other than the computed props, services etc
+   * which already have imports in the code
+   */
+  get decoratorImportSpecs(): DecoratorImportSpecs {
+    return {
+      action: false,
+      classNames: false,
+      classNameBindings: false,
+      attributeBindings: false,
+      layout: false,
+      templateLayout: false,
+      off: this.hasOffDecorator,
+      tagName: false,
+      unobserves: this.hasUnobservesDecorator,
+    };
   }
 
-  get comments(): P['comments'] {
-    return this._prop.comments;
-  }
+  get errors(): string[] {
+    let errors: string[] = [];
 
-  get computed(): boolean {
-    return this._prop.computed ?? false;
-  }
+    const { decorators } = this.options;
 
-  get kind(): 'init' | 'get' | 'set' | 'method' | undefined {
-    let kind: 'init' | 'get' | 'set' | 'method' = this._prop.kind;
-    const method = this._prop.method ?? false;
+    if (this.existingDecorators) {
+      if (!this.objectLiteralDecoratorSupport) {
+        errors.push(
+          this.makeError(
+            'can only transform object literal decorators on methods or properties with literal values (string, number, boolean, null, undefined)'
+          )
+        );
+      }
 
-    if (
-      kind === 'init' &&
-      this.hasDecorators &&
-      this.decorators.some((d) => d.importedName === 'computed')
-    ) {
-      kind = 'get';
+      for (const decorator of this.existingDecorators) {
+        const decoratorName = AST.isNode(decorator.expression, 'Identifier')
+          ? decorator.expression.name
+          : AST.isNode(decorator.expression, 'CallExpression') &&
+            AST.isNode(decorator.expression.callee, 'Identifier')
+          ? decorator.expression.callee.name
+          : null;
+
+        if (!decoratorName) {
+          errors.push(
+            this.makeError('decorator expression type not supported')
+          );
+        } else if (
+          this.objectLiteralDecoratorSupport === 'withVerification' &&
+          !allowObjectLiteralDecorator(
+            decoratorName,
+            decorators ? decorators.inObjectLiterals : []
+          )
+        ) {
+          errors.push(
+            this.makeError(
+              `decorator '@${decoratorName}' not included in ALLOWED_OBJECT_LITERAL_DECORATORS or option '--objectLiteralDecorators'`
+            )
+          );
+        }
+      }
     }
 
-    if (method || this.hasMethodDecorator) {
-      kind = 'method';
+    if (!decorators && this.needsDecorators) {
+      errors.push(this.makeError("need option '--decorators=true'"));
     }
 
-    return kind;
+    errors = [...errors, ...this.typeErrors];
+
+    return errors;
   }
 
-  get hasRuntimeData(): boolean {
-    return !!this.runtimeType;
+  /** Returns the appropriate ClassBody member for the property type. */
+  abstract build(): B;
+
+  protected makeError(message: string): string {
+    return `[${this.name}]: Transform not supported - ${message}`;
   }
 
-  get decoratorNames(): string[] {
-    return this.decorators.map((d) => d.name);
+  /** Override to add errors specific to the property type. */
+  protected get typeErrors(): string[] {
+    return [];
   }
 
-  get hasDecorators(): boolean {
+  protected get type(): EOPropValue['type'] {
+    return this.value.type;
+  }
+
+  protected get isOverridden(): boolean {
+    return this.runtimeData.overriddenProperties.includes(this.name);
+  }
+
+  protected get replaceSuperWithUndefined(): boolean {
+    return this.hasRuntimeData && !this.isOverridden;
+  }
+
+  private get hasRuntimeData(): boolean {
+    return !!this.runtimeData.type;
+  }
+
+  protected get hasDecorators(): boolean {
     return this.decorators.length > 0;
   }
 
-  get hasUnobservesDecorator(): boolean {
-    return this.decoratorNames.includes('unobserves');
+  protected get needsDecorators(): boolean {
+    return this.hasExistingDecorators || this.hasDecorators;
   }
 
-  get hasOffDecorator(): boolean {
-    return this.decoratorNames.includes('off');
+  private get hasUnobservesDecorator(): boolean {
+    return this.decorators.some((d) => d.name === UNOBSERVES_DECORATOR_NAME);
   }
 
-  private get hasMethodDecorator(): boolean {
-    return this.decorators.some((d) => d.isMethodDecorator);
+  private get hasOffDecorator(): boolean {
+    return this.decorators.some((d) => d.name === OFF_DECORATOR_NAME);
   }
 
-  get hasMetaDecorator(): boolean {
-    return this.decorators.some((d) => d.isMetaDecorator);
+  private get hasExistingDecorators(): boolean {
+    return (
+      this.existingDecorators !== null && this.existingDecorators.length > 0
+    );
   }
 }

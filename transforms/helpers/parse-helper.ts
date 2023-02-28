@@ -1,124 +1,49 @@
 import camelCase from 'camelcase';
-import type { JSCodeshift } from 'jscodeshift';
+import { default as j } from 'jscodeshift';
 import path from 'path';
-import type {
-  ASTPath,
-  Collection,
-  EOExpression,
-  EOExtendExpression,
-  EOMixin,
-  VariableDeclaration,
-} from './ast';
-import {
-  findPaths,
-  getFirstPath,
-  isEOExpression,
-  isEOExtendExpression,
-  isEOMixin,
-} from './ast';
-import type { DecoratorImportInfoMap } from './decorator-info';
-import type { EOProp, EOProps } from './eo-prop/index';
-import makeEOProp, {
-  EOActionsObjectProp,
-  EOClassDecoratorProp,
-} from './eo-prop/index';
-import type { RuntimeData } from './runtime-data';
+import * as AST from './ast';
+import type { DecoratorImportSpecs } from './util/index';
 import { capitalizeFirstLetter } from './util/index';
-import { assert, defined, isRecord, verified } from './util/types';
-
-/**
- * Return the map of instance props and functions from Ember Object
- *
- * For example
- * const myObj = EmberObject.extend({ key: value });
- * will be parsed as:
- * {
- *   instanceProps: [ Property({key: value}) ]
- *  }
- */
-export function getEOProps(
-  eoExpression: EOExpression | null,
-  existingDecoratorImportInfos: DecoratorImportInfoMap,
-  runtimeData: RuntimeData
-): EOProps {
-  const properties = eoExpression?.properties ?? [];
-
-  return {
-    instanceProps: properties.map((property) =>
-      makeEOProp(property, runtimeData, existingDecoratorImportInfos)
-    ),
-  };
-}
-
-export interface DecoratorImportSpecs {
-  action: boolean;
-  classNames: boolean;
-  classNameBindings: boolean;
-  attributeBindings: boolean;
-  layout: boolean;
-  templateLayout: boolean;
-  off: boolean;
-  tagName: boolean;
-  unobserves: boolean;
-}
+import { assert, defined, isRecord } from './util/types';
 
 /**
  * Get the map of decorators to import other than the computed props, services etc
  * which already have imports in the code
  */
-export function getDecoratorsToImportSpecs(
-  instanceProps: EOProp[],
-  existingSpecs: DecoratorImportSpecs
+export function mergeDecoratorImportSpecs(
+  newSpecs: DecoratorImportSpecs,
+  existing: DecoratorImportSpecs
 ): DecoratorImportSpecs {
-  let specs = existingSpecs;
-  for (const prop of instanceProps) {
-    specs = {
-      action: specs.action || prop instanceof EOActionsObjectProp,
-      classNames:
-        specs.classNames ||
-        (prop instanceof EOClassDecoratorProp && prop.isClassNames),
-      classNameBindings:
-        specs.classNameBindings ||
-        (prop instanceof EOClassDecoratorProp && prop.isClassNameBindings),
-      attributeBindings:
-        specs.attributeBindings ||
-        (prop instanceof EOClassDecoratorProp && prop.isAttributeBindings),
-      layout:
-        specs.layout ||
-        (prop instanceof EOClassDecoratorProp && prop.isLayoutDecorator),
-      templateLayout:
-        specs.templateLayout ||
-        (prop instanceof EOClassDecoratorProp &&
-          prop.isTemplateLayoutDecorator),
-      off: specs.off || prop.hasOffDecorator,
-      tagName:
-        specs.tagName ||
-        (prop instanceof EOClassDecoratorProp && prop.isTagName),
-      unobserves: specs.unobserves || prop.hasUnobservesDecorator,
-    };
-  }
-  return specs;
+  return {
+    action: existing.action || newSpecs.action,
+    classNames: existing.classNames || newSpecs.classNames,
+    classNameBindings: existing.classNameBindings || newSpecs.classNameBindings,
+    attributeBindings: existing.attributeBindings || newSpecs.attributeBindings,
+    layout: existing.layout || newSpecs.layout,
+    templateLayout: existing.templateLayout || newSpecs.templateLayout,
+    off: existing.off || newSpecs.off,
+    tagName: existing.tagName || newSpecs.tagName,
+    unobserves: existing.unobserves || newSpecs.unobserves,
+  };
 }
 
 /** Find the `EmberObject.extend` statements */
-export function getEmberObjectExtendExpressionCollection(
-  j: JSCodeshift,
-  root: Collection
-): Collection<EOExtendExpression> {
-  return findPaths(root, j.CallExpression, isEOExtendExpression).filter(
-    (path: ASTPath) => path.parentPath?.value.type !== 'ClassDeclaration'
+export function getEOExtendExpressionCollection(
+  root: AST.Collection
+): AST.Collection<AST.EOExtendExpression> {
+  return AST.findPaths(root, j.CallExpression, AST.isEOExtendExpression).filter(
+    (path: AST.Path) => path.parentPath?.value.type !== 'ClassDeclaration'
   );
 }
 
 /** Return closest parent var declaration statement */
-export function getClosestVariableDeclaration(
-  j: JSCodeshift,
-  eoExtendExpressionPath: ASTPath<EOExtendExpression>
-): ASTPath<VariableDeclaration> | null {
+function getClosestVariableDeclaration(
+  eoExtendExpressionPath: AST.Path<AST.EOExtendExpression>
+): AST.Path<AST.VariableDeclaration> | null {
   const varDeclarations = j(eoExtendExpressionPath).closest(
     j.VariableDeclaration
   );
-  return getFirstPath(varDeclarations) ?? null;
+  return AST.getFirstPath(varDeclarations) ?? null;
 }
 
 /**
@@ -127,13 +52,9 @@ export function getClosestVariableDeclaration(
  * It returns either VariableDeclaration or the CallExpression depending on how the object is created
  */
 export function getExpressionToReplace(
-  j: JSCodeshift,
-  eoExtendExpressionPath: ASTPath<EOExtendExpression>
-): ASTPath<EOExtendExpression> | ASTPath<VariableDeclaration> {
-  const varDeclaration = getClosestVariableDeclaration(
-    j,
-    eoExtendExpressionPath
-  );
+  eoExtendExpressionPath: AST.Path<AST.EOExtendExpression>
+): AST.Path<AST.EOExtendExpression> | AST.Path<AST.VariableDeclaration> {
+  const varDeclaration = getClosestVariableDeclaration(eoExtendExpressionPath);
   const parentValue = eoExtendExpressionPath.parentPath?.value;
   const isFollowedByCreate =
     isRecord(parentValue) &&
@@ -141,8 +62,8 @@ export function getExpressionToReplace(
     parentValue.property['name'] === 'create';
 
   let expressionToReplace:
-    | ASTPath<EOExtendExpression>
-    | ASTPath<VariableDeclaration> = eoExtendExpressionPath;
+    | AST.Path<AST.EOExtendExpression>
+    | AST.Path<AST.VariableDeclaration> = eoExtendExpressionPath;
   if (varDeclaration && !isFollowedByCreate) {
     expressionToReplace = varDeclaration;
   }
@@ -151,15 +72,11 @@ export function getExpressionToReplace(
 
 /** Returns name of class to be created */
 export function getClassName(
-  j: JSCodeshift,
-  eoExtendExpressionPath: ASTPath<EOExtendExpression>,
+  eoExtendExpressionPath: AST.Path<AST.EOExtendExpression>,
   filePath: string,
   type = ''
 ): string {
-  const varDeclaration = getClosestVariableDeclaration(
-    j,
-    eoExtendExpressionPath
-  );
+  const varDeclaration = getClosestVariableDeclaration(eoExtendExpressionPath);
   if (varDeclaration) {
     const firstDeclarator = defined(varDeclaration.value.declarations[0]);
     assert(
@@ -192,29 +109,4 @@ export function getClassName(
   }
 
   return className;
-}
-
-interface EOCallExpressionProps {
-  eoExpression: EOExpression | null;
-  mixins: EOMixin[];
-}
-
-/**
- * Parse ember object call expression, returns EmberObjectExpression and list of mixins
- */
-export function parseEmberObjectExtendExpression(
-  eoExtendExpression: EOExtendExpression
-): EOCallExpressionProps {
-  const props: EOCallExpressionProps = {
-    eoExpression: null,
-    mixins: [],
-  };
-  for (const arg of eoExtendExpression.arguments) {
-    if (isEOExpression(arg)) {
-      props.eoExpression = arg;
-    } else {
-      props.mixins.push(verified(arg, isEOMixin));
-    }
-  }
-  return props;
 }

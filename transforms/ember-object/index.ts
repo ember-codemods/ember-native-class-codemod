@@ -1,10 +1,8 @@
-import { getOptions } from 'codemod-cli';
 import type { Transform } from 'jscodeshift';
 import path from 'path';
-import type { UserOptions } from '../helpers/options';
-import { DEFAULT_OPTIONS } from '../helpers/options';
+import type * as AST from '../helpers/ast';
+import getConfig from '../helpers/config';
 import maybeTransformEmberObjects from '../helpers/transform';
-import { isRecord, verified } from '../helpers/util/types';
 
 const transformer: Transform = function (
   { source, path: filePath },
@@ -16,12 +14,9 @@ const transformer: Transform = function (
     return;
   }
 
-  const userOptions: UserOptions = {
-    ...DEFAULT_OPTIONS,
-    ...verified<Partial<UserOptions>>(getOptions(), isRecord),
-  };
-  const root = j(source);
-  const replaced = maybeTransformEmberObjects(j, root, filePath, userOptions);
+  const root = j(source) as AST.Collection;
+  const userOptions = getConfig();
+  const replaced = maybeTransformEmberObjects(root, filePath, userOptions);
 
   if (replaced) {
     source = root.toSource({
@@ -35,4 +30,4 @@ const transformer: Transform = function (
 export default transformer;
 
 // Set the parser, needed for supporting decorators
-export const parser = 'flow';
+export { default as parser } from '../helpers/parse';

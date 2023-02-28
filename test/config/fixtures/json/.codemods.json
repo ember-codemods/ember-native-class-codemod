@@ -1,0 +1,7 @@
+{
+  "classFields": false,
+  "quote": "double",
+  "decorators": {
+    "inObjectLiterals": ["jsonDecOne", "jsonDecTwo"]
+  }
+}

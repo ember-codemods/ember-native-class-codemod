@@ -1,18 +1,12 @@
-import { isRecord } from './util/types';
+import { z } from 'zod';
 
-export interface RuntimeData {
-  type?: string;
-  computedProperties?: string[];
-  offProperties?: Record<string, Array<string | boolean | number | null>>;
-  overriddenActions?: string[];
-  overriddenProperties?: string[];
-  unobservedProperties?: Record<
-    string,
-    Array<string | boolean | number | null>
-  >;
-}
+export const RuntimeDataSchema = z.object({
+  type: z.string().optional(),
+  computedProperties: z.array(z.string()).default([]),
+  offProperties: z.record(z.array(z.string())).default({}),
+  overriddenActions: z.array(z.string()).default([]),
+  overriddenProperties: z.array(z.string()).default([]),
+  unobservedProperties: z.record(z.array(z.string())).default({}),
+});
 
-/** Type predicate */
-export function isRuntimeData(v: unknown): v is RuntimeData | undefined {
-  return v === undefined || isRecord(v);
-}
+export type RuntimeData = z.infer<typeof RuntimeDataSchema>;

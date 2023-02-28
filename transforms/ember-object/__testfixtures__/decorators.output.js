@@ -1,11 +1,11 @@
 import classic from 'ember-classic-decorator';
 
 import {
-  classNames,
   attributeBindings,
   classNameBindings,
-  tagName,
+  classNames,
   layout as templateLayout,
+  tagName,
 } from '@ember-decorators/component';
 
 import { observes as watcher, on } from '@ember-decorators/object';
@@ -32,7 +32,7 @@ import NUMERIC_CONSTANT from 'constants/numbers';
 @classic
 @tagName('div')
 @classNames('test-class', 'custom-class')
-class Foo extends EmberObject {
+class Foo1 extends EmberObject {
   a = '';
 
   @service('store')
@@ -44,6 +44,11 @@ class Foo extends EmberObject {
   @watcher('xyz')
   observedProp() {
     return 'observed';
+  }
+
+  @watcher('xyz')
+  observedProp2() {
+    return super.observedProp2(...arguments);
   }
 
   @on('click')
@@ -78,7 +83,7 @@ class Foo extends EmberObject {
     // class's actions to be safe. This should be refactored to call a normal method
     // on the parent class. If the parent class has not been converted to native
     // classes, it may need to be refactored as well. See
-    // https: //github.com/scalvert/ember-native-class-codemod/blob/master/README.md
+    // https://github.com/scalvert/ember-native-class-codemod/blob/master/README.md
     // for more details.
     super.actions.baz.call(this, ...arguments);
   }
@@ -102,7 +107,7 @@ class comp extends EmberObject {
 }
 
 @classic
-class Foo extends EmberObject {
+class Foo2 extends EmberObject {
   firstName = null;
   lastName = null;
 
@@ -205,4 +210,4 @@ class Foo extends EmberObject {
 
 @classic
 @templateLayout(layout)
-class Foo extends EmberObject {}
+class Foo3 extends EmberObject {}

@@ -1,31 +1,25 @@
 import { getTelemetryFor } from 'ember-codemods-telemetry-helpers';
-import type { JSCodeshift } from 'jscodeshift';
 import path from 'path';
-import type { ASTPath, Collection, EOExtendExpression } from './ast';
-import { isNode } from './ast';
+import type * as AST from './ast';
+import type { TransformResult } from './eo-extend-expression';
+import EOExtendExpression from './eo-extend-expression';
 import {
   createDecoratorImportDeclarations,
   getDecoratorImportInfos as getExistingDecoratorImportInfos,
 } from './import-helper';
 import logger from './log-helper';
 import type { Options, UserOptions } from './options';
-import type { DecoratorImportSpecs } from './parse-helper';
 import {
-  getClassName,
-  getDecoratorsToImportSpecs,
-  getEmberObjectExtendExpressionCollection as getEOExtendExpressionCollection,
-  getEOProps,
-  getExpressionToReplace,
-  parseEmberObjectExtendExpression as parseEOExtendExpression,
+  getEOExtendExpressionCollection,
+  mergeDecoratorImportSpecs,
 } from './parse-helper';
-import { isRuntimeData } from './runtime-data';
-import { createClass, withComments } from './transform-helper';
-import { hasValidProps, isFileOfType, isTestFile } from './validation-helper';
+import { RuntimeDataSchema } from './runtime-data';
+import type { DecoratorImportSpecs } from './util/index';
+import { isFileOfType, isTestFile } from './validation-helper';
 
 /** Main entry point for parsing and replacing ember objects */
 export default function maybeTransformEmberObjects(
-  j: JSCodeshift,
-  root: Collection,
+  root: AST.Collection,
   filePath: string,
   userOptions: UserOptions
 ): boolean | undefined {
@@ -41,10 +35,27 @@ export default function maybeTransformEmberObjects(
     return;
   }
 
-  const runtimeData = getTelemetryFor(path.resolve(filePath));
-  if (!runtimeData || !isRuntimeData(runtimeData)) {
+  const rawTelemetry = getTelemetryFor(path.resolve(filePath));
+  if (!rawTelemetry) {
     logger.warn(
-      `[${filePath}]: SKIPPED: Could not find runtime data NO_RUNTIME_DATA`
+      `[${filePath}]: SKIPPED \nCould not find runtime data NO_RUNTIME_DATA`
+    );
+    return;
+  }
+
+  let runtimeData;
+  const result = RuntimeDataSchema.safeParse(rawTelemetry);
+  if (result.success) {
+    runtimeData = result.data;
+  } else {
+    const { errors } = result.error;
+    const messages = errors.map((error) => {
+      return `[${error.path.join('.')}]: ${error.message}`;
+    });
+    logger.warn(
+      `[${filePath}]: SKIPPED \nCould not parse runtime data: \n\t${messages.join(
+        '\n\t'
+      )}`
     );
     return;
   }
@@ -54,37 +65,53 @@ export default function maybeTransformEmberObjects(
     runtimeData,
   };
 
-  const { transformed, decoratorImportSpecs } = _maybeTransformEmberObjects(
-    j,
+  const { results, decoratorImportSpecs } = _maybeTransformEmberObjects(
     root,
     filePath,
     options
   );
 
-  // Need to find another way, as there might be a case where
-  // one object from a file is transformed and other is not
-  if (transformed) {
-    const decoratorsToImport = Object.keys(decoratorImportSpecs).filter(
-      (key) => decoratorImportSpecs[key as keyof DecoratorImportSpecs]
-    );
-    createDecoratorImportDeclarations(j, root, decoratorsToImport, options);
-    logger.info(`[${filePath}]: SUCCESS`);
+  let transformed = results.length > 0 && results.every((r) => r.success);
+
+  for (const result of results) {
+    if (result.success) {
+      if (options.partialTransforms) {
+        transformed = true;
+        logger.info(
+          `[${filePath}]: SUCCESS: Transformed class '${result.className}' with no errors`
+        );
+      } else {
+        logger.error(
+          `[${filePath}]: FAILURE \nCould not transform class '${result.className}'. Need option '--partial-transforms=true'`
+        );
+      }
+    } else {
+      const message = result.errors.join('\n\t');
+      logger.error(
+        `[${filePath}]: FAILURE \nValidation errors for class '${result.className}': \n\t${message}`
+      );
+    }
   }
+
+  const decoratorsToImport = Object.keys(decoratorImportSpecs).filter(
+    (key) => decoratorImportSpecs[key as keyof DecoratorImportSpecs]
+  );
+  createDecoratorImportDeclarations(root, decoratorsToImport, options);
+
   return transformed;
 }
 
 function _maybeTransformEmberObjects(
-  j: JSCodeshift,
-  root: Collection,
+  root: AST.Collection,
   filePath: string,
   options: Options
 ): {
-  transformed: boolean;
+  results: TransformResult[];
   decoratorImportSpecs: DecoratorImportSpecs;
 } {
   // Parse the import statements
-  const existingDecoratorImportInfos = getExistingDecoratorImportInfos(j, root);
-  let transformed = false;
+  const existingDecoratorImportInfos = getExistingDecoratorImportInfos(root);
+  const results: TransformResult[] = [];
   let decoratorImportSpecs: DecoratorImportSpecs = {
     action: false,
     classNames: false,
@@ -97,77 +124,33 @@ function _maybeTransformEmberObjects(
     unobserves: false,
   };
 
+  const eoExtendExpressionPaths = getEOExtendExpressionCollection(root);
+
+  if (eoExtendExpressionPaths.length === 0) {
+    logger.warn(
+      `[${filePath}]: SKIPPED: Did not find any 'EmberObject.extend()' expressions`
+    );
+  }
+
   // eslint-disable-next-line unicorn/no-array-for-each
-  getEOExtendExpressionCollection(j, root).forEach(
-    (eoExtendExpressionPath: ASTPath<EOExtendExpression>) => {
-      const { eoExpression, mixins } = parseEOExtendExpression(
-        eoExtendExpressionPath.value
-      );
+  eoExtendExpressionPaths.forEach((eoExtendExpressionPath) => {
+    const extendExpression = new EOExtendExpression(
+      eoExtendExpressionPath,
+      filePath,
+      existingDecoratorImportInfos,
+      options
+    );
 
-      const eoProps = getEOProps(
-        eoExpression,
-        existingDecoratorImportInfos,
-        options.runtimeData
-      );
+    const result = extendExpression.transform();
+    results.push(result);
 
-      const errors = hasValidProps(j, eoProps, options);
-
-      if (
-        isNode(eoExtendExpressionPath.parentPath?.value, 'MemberExpression')
-      ) {
-        errors.push(
-          'class has chained definition (e.g. EmberObject.extend().reopenClass();'
-        );
-      }
-
-      if (errors.length > 0) {
-        logger.error(
-          `[${filePath}]: FAILURE \nValidation errors: \n\t${errors.join(
-            '\n\t'
-          )}`
-        );
-        return;
-      }
-
-      let className = getClassName(
-        j,
-        eoExtendExpressionPath,
-        filePath,
-        options.runtimeData.type
-      );
-
-      const callee = eoExtendExpressionPath.value.callee;
-      const superClassName = callee.object.name;
-
-      if (className === superClassName) {
-        className = `_${className}`;
-      }
-
-      const es6ClassDeclaration = createClass(
-        j,
-        className,
-        eoProps,
-        superClassName,
-        mixins,
-        options
-      );
-
-      const expressionToReplace = getExpressionToReplace(
-        j,
-        eoExtendExpressionPath
-      );
-      j(expressionToReplace).replaceWith(
-        withComments(es6ClassDeclaration, expressionToReplace.value)
-      );
-
-      transformed = true;
-
-      decoratorImportSpecs = getDecoratorsToImportSpecs(
-        eoProps.instanceProps,
+    if (result.success) {
+      decoratorImportSpecs = mergeDecoratorImportSpecs(
+        extendExpression.decoratorImportSpecs,
         decoratorImportSpecs
       );
     }
-  );
+  });
 
-  return { transformed, decoratorImportSpecs };
+  return { results, decoratorImportSpecs };
 }

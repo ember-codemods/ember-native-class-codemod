@@ -1,15 +1,18 @@
 import { assert } from './util/types';
-import { METHOD_DECORATORS } from './util/index';
-import type { ImportSpecifier } from './ast';
+import { COMPUTED_DECORATOR_NAME, METHOD_DECORATORS } from './util/index';
+import type * as AST from '../helpers/ast';
 
 export interface DecoratorImportInfo {
-  name: 'unobserves' | 'off' | 'className' | 'attribute' | string;
-  importedName?: 'computed' | string;
+  name: string;
+  importedName?: string;
   isImportedAs?: boolean;
+  isComputedDecorator?: boolean;
   isMetaDecorator?: boolean;
   isMethodDecorator?: boolean;
   localName?: string;
+  args?: Array<string | boolean | number | null>;
 }
+
 export type DecoratorImportInfoMap = Map<
   /** local name */ string,
   DecoratorImportInfo
@@ -20,7 +23,7 @@ export type DecoratorImportInfoMap = Map<
  * `DECORATOR_PATHS` config (defined util.js)
  */
 export function getDecoratorImportInfo(
-  specifier: ImportSpecifier,
+  specifier: AST.ImportSpecifier,
   importPropDecoratorMap: Record<string, string> | undefined
 ): DecoratorImportInfo {
   const localName = specifier.local?.name;
@@ -38,10 +41,12 @@ export function getDecoratorImportInfo(
   }
 
   const isMethodDecorator = METHOD_DECORATORS.has(importedName);
+  const isComputedDecorator = COMPUTED_DECORATOR_NAME === importedName;
   return {
     name,
     importedName,
     isImportedAs,
+    isComputedDecorator,
     isMetaDecorator,
     isMethodDecorator,
     localName,
