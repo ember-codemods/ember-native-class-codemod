@@ -1,6 +1,5 @@
 # ember-object
 
-
 ## Usage
 
 ```
@@ -15,26 +14,28 @@ ember-native-class-codemod ember-object path/of/files/ or/some**/*glob.js
 ## Input / Output
 
 <!--FIXTURES_TOC_START-->
-* [action-invalid](#action-invalid)
-* [basic](#basic)
-* [chained-class-definition](#chained-class-definition)
-* [class-fields](#class-fields)
-* [class-reopen](#class-reopen)
-* [decorators-invalid](#decorators-invalid)
-* [decorators](#decorators)
-* [default-export](#default-export)
-* [double-quotes](#double-quotes)
-* [ember-concurrency](#ember-concurrency)
-* [import](#import)
-* [injecting-service](#injecting-service)
-* [runtime](#runtime)
+
+- [action-invalid](#action-invalid)
+- [basic](#basic)
+- [chained-class-definition](#chained-class-definition)
+- [class-fields](#class-fields)
+- [class-reopen](#class-reopen)
+- [decorators-invalid](#decorators-invalid)
+- [decorators](#decorators)
+- [default-export](#default-export)
+- [double-quotes](#double-quotes)
+- [ember-concurrency](#ember-concurrency)
+- [import](#import)
+- [injecting-service](#injecting-service)
+- [runtime](#runtime)
 <!--FIXTURES_TOC_END-->
 
-<!--FIXTURES_CONTENT_START-->
----
+## <!--FIXTURES_CONTENT_START-->
+
 <a id="action-invalid">**action-invalid**</a>
 
 **Input** (<small>[action-invalid.input.js](transforms/ember-object/__testfixtures__/action-invalid.input.js)</small>):
+
 ```js
 const Foo = EmberObject.extend({
   actions: {
@@ -80,10 +81,10 @@ const Foo = EmberObject.extend({
     },
   },
 });
-
 ```
 
 **Output** (<small>[action-invalid.output.js](transforms/ember-object/__testfixtures__/action-invalid.output.js)</small>):
+
 ```js
 const Foo = EmberObject.extend({
   actions: {
@@ -129,12 +130,14 @@ const Foo = EmberObject.extend({
     },
   },
 });
-
 ```
+
 ---
+
 <a id="basic">**basic**</a>
 
 **Input** (<small>[basic.input.js](transforms/ember-object/__testfixtures__/basic.input.js)</small>):
+
 ```js
 /**
  * Program comments
@@ -157,7 +160,7 @@ const Foo = Test.extend(MyMixin, {
     // do things
   },
 
-  otherMethod: function() {},
+  otherMethod: function () {},
 
   get accessor() {
     return this._value;
@@ -173,10 +176,10 @@ const Foo = Test.extend(MyMixin, {
 });
 
 const Foo = EmberObject.extend(MixinA, MixinB);
-
 ```
 
 **Output** (<small>[basic.output.js](transforms/ember-object/__testfixtures__/basic.output.js)</small>):
+
 ```js
 import classic from 'ember-classic-decorator';
 
@@ -220,30 +223,34 @@ class Foo extends Test.extend(MyMixin) {
 
 @classic
 class Foo extends EmberObject.extend(MixinA, MixinB) {}
-
 ```
+
 ---
+
 <a id="chained-class-definition">**chained-class-definition**</a>
 
 **Input** (<small>[chained-class-definition.input.js](transforms/ember-object/__testfixtures__/chained-class-definition.input.js)</small>):
+
 ```js
 import EmberObject from '@ember/object';
 
 export default EmberObject.extend({}).reopenClass({});
-
 ```
 
 **Output** (<small>[chained-class-definition.output.js](transforms/ember-object/__testfixtures__/chained-class-definition.output.js)</small>):
+
 ```js
 import EmberObject from '@ember/object';
 
 export default EmberObject.extend({}).reopenClass({});
-
 ```
+
 ---
+
 <a id="class-fields">**class-fields**</a>
 
 **Input** (<small>[class-fields.input.js](transforms/ember-object/__testfixtures__/class-fields.input.js)</small>):
+
 ```js
 /**
  * Program comments
@@ -256,7 +263,7 @@ const Foo = Test.extend({
     // do things
   },
 
-  otherMethod: function() {},
+  otherMethod: function () {},
 
   get accessor() {
     return this._value;
@@ -270,10 +277,10 @@ const Foo = Test.extend({
     this._super(...arguments);
   },
 });
-
 ```
 
 **Output** (<small>[class-fields.output.js](transforms/ember-object/__testfixtures__/class-fields.output.js)</small>):
+
 ```js
 import classic from 'ember-classic-decorator';
 
@@ -303,12 +310,14 @@ class Foo extends Test {
     super.anotherMethod(...arguments);
   }
 }
-
 ```
+
 ---
+
 <a id="class-reopen">**class-reopen**</a>
 
 **Input** (<small>[class-reopen.input.js](transforms/ember-object/__testfixtures__/class-reopen.input.js)</small>):
+
 ```js
 import EmberObject from '@ember/object';
 
@@ -317,10 +326,10 @@ const Foo = EmberObject.extend({});
 Foo.reopenClass({});
 
 export default Foo;
-
 ```
 
 **Output** (<small>[class-reopen.output.js](transforms/ember-object/__testfixtures__/class-reopen.output.js)</small>):
+
 ```js
 import classic from 'ember-classic-decorator';
 import EmberObject from '@ember/object';
@@ -331,12 +340,14 @@ class Foo extends EmberObject {}
 Foo.reopenClass({});
 
 export default Foo;
-
 ```
+
 ---
+
 <a id="decorators-invalid">**decorators-invalid**</a>
 
 **Input** (<small>[decorators-invalid.input.js](transforms/ember-object/__testfixtures__/decorators-invalid.input.js)</small>):
+
 ```js
 // Do not transform
 const Foo = EmberObject.extend({
@@ -354,7 +365,7 @@ const Foo = EmberObject.extend({
   firstName: '',
   lastName: '',
 
-  fName2: computed('firstName', 'lastName', function() {
+  fName2: computed('firstName', 'lastName', function () {
     return true;
   })
     .property('baz')
@@ -370,14 +381,14 @@ const Foo = EmberObject.extend({
 
 // Do not transform as computed prop has `property`
 const Foo = EmberObject.extend({
-  fName2: computed('firstName', 'lastName', function() {
+  fName2: computed('firstName', 'lastName', function () {
     return true;
   }).property('baz'),
 });
 
 // Do not transform as computed prop has `meta`
 const Foo = EmberObject.extend({
-  fName2: computed('firstName', 'lastName', function() {
+  fName2: computed('firstName', 'lastName', function () {
     return true;
   }).meta({ type: 'Property' }),
 });
@@ -390,10 +401,10 @@ const Foo = EmberObject.extend({
     },
   },
 });
-
 ```
 
 **Output** (<small>[decorators-invalid.output.js](transforms/ember-object/__testfixtures__/decorators-invalid.output.js)</small>):
+
 ```js
 // Do not transform
 const Foo = EmberObject.extend({
@@ -411,7 +422,7 @@ const Foo = EmberObject.extend({
   firstName: '',
   lastName: '',
 
-  fName2: computed('firstName', 'lastName', function() {
+  fName2: computed('firstName', 'lastName', function () {
     return true;
   })
     .property('baz')
@@ -427,14 +438,14 @@ const Foo = EmberObject.extend({
 
 // Do not transform as computed prop has `property`
 const Foo = EmberObject.extend({
-  fName2: computed('firstName', 'lastName', function() {
+  fName2: computed('firstName', 'lastName', function () {
     return true;
   }).property('baz'),
 });
 
 // Do not transform as computed prop has `meta`
 const Foo = EmberObject.extend({
-  fName2: computed('firstName', 'lastName', function() {
+  fName2: computed('firstName', 'lastName', function () {
     return true;
   }).meta({ type: 'Property' }),
 });
@@ -447,12 +458,14 @@ const Foo = EmberObject.extend({
     },
   },
 });
-
 ```
+
 ---
+
 <a id="decorators">**decorators**</a>
 
 **Input** (<small>[decorators.input.js](transforms/ember-object/__testfixtures__/decorators.input.js)</small>):
+
 ```js
 import {
   alias,
@@ -479,16 +492,16 @@ const Foo = EmberObject.extend({
   a: '',
   b: service('store'),
   myController: controller('abc'),
-  observedProp: watcher('xyz', function() {
+  observedProp: watcher('xyz', function () {
     return 'observed';
   }),
-  event: on('click', function() {
+  event: on('click', function () {
     return 'abc';
   }),
-  excitingChores: computedMap('chores', function(chore, index) {
+  excitingChores: computedMap('chores', function (chore, index) {
     return chore.toUpperCase() + '!';
   }),
-  remainingChores: filter('chores', function(chore, index, array) {
+  remainingChores: filter('chores', function (chore, index, array) {
     return !chore.done;
   }),
 
@@ -507,7 +520,7 @@ const Foo = EmberObject.extend({
 
 var comp = EmberObject.extend({
   classNameBindings: ['isEnabled:enabled:disabled', 'a:b:c', 'c:d'],
-  isEnabled: computed('a', 'c', function() {
+  isEnabled: computed('a', 'c', function () {
     return false;
   }),
   a: true,
@@ -538,7 +551,7 @@ const Foo = EmberObject.extend({
   /**
   Computed description
   */
-  description: computed('fullName', 'age', 'country', function() {
+  description: computed('fullName', 'age', 'country', function () {
     const desc = this._super(...arguments);
     if (desc) {
       return desc;
@@ -561,14 +574,14 @@ const Foo = EmberObject.extend({
   /**
    * Fname2
    */
-  fName2: computed('firstName', 'lastName', function() {
+  fName2: computed('firstName', 'lastName', function () {
     return true;
   }).readOnly(),
 
   /**
    * Fname3
    */
-  fName3: computed('firstName', 'lastName', function() {
+  fName3: computed('firstName', 'lastName', function () {
     return true;
   }).volatile(),
 
@@ -610,10 +623,10 @@ const Foo = EmberObject.extend({
 const Foo = EmberObject.extend({
   layout,
 });
-
 ```
 
 **Output** (<small>[decorators.output.js](transforms/ember-object/__testfixtures__/decorators.output.js)</small>):
+
 ```js
 import classic from 'ember-classic-decorator';
 
@@ -668,12 +681,12 @@ class Foo extends EmberObject {
     return 'abc';
   }
 
-  @computedMap('chores', function(chore, index) {
+  @computedMap('chores', function (chore, index) {
     return chore.toUpperCase() + '!';
   })
   excitingChores;
 
-  @filter('chores', function(chore, index, array) {
+  @filter('chores', function (chore, index, array) {
     return !chore.done;
   })
   remainingChores;
@@ -823,28 +836,32 @@ class Foo extends EmberObject {
 @classic
 @templateLayout(layout)
 class Foo extends EmberObject {}
-
 ```
+
 ---
+
 <a id="default-export">**default-export**</a>
 
 **Input** (<small>[default-export.input.js](transforms/ember-object/__testfixtures__/default-export.input.js)</small>):
+
 ```js
 export default EmberObject.extend({});
-
 ```
 
 **Output** (<small>[default-export.output.js](transforms/ember-object/__testfixtures__/default-export.output.js)</small>):
+
 ```js
 import classic from 'ember-classic-decorator';
 @classic
 export default class DefaultExport extends EmberObject {}
-
 ```
+
 ---
+
 <a id="double-quotes">**double-quotes**</a>
 
 **Input** (<small>[double-quotes.input.js](transforms/ember-object/__testfixtures__/double-quotes.input.js)</small>):
+
 ```js
 /**
  * Program comments
@@ -853,10 +870,10 @@ const Foo = Test.extend(MyMixin, {
   /**
    * Property comments
    */
-  prop: "defaultValue",
+  prop: 'defaultValue',
   boolProp: true,
   numProp: 123,
-  [MY_VAL]: "val",
+  [MY_VAL]: 'val',
   queryParams: {},
   someVal,
 
@@ -867,7 +884,7 @@ const Foo = Test.extend(MyMixin, {
     // do things
   },
 
-  otherMethod: function() {},
+  otherMethod: function () {},
 
   get accessor() {
     return this._value;
@@ -883,12 +900,12 @@ const Foo = Test.extend(MyMixin, {
 });
 
 const Foo = EmberObject.extend(MixinA, MixinB);
-
 ```
 
 **Output** (<small>[double-quotes.output.js](transforms/ember-object/__testfixtures__/double-quotes.output.js)</small>):
+
 ```js
-import classic from "ember-classic-decorator";
+import classic from 'ember-classic-decorator';
 
 /**
  * Program comments
@@ -898,11 +915,11 @@ class Foo extends Test.extend(MyMixin) {
   /**
    * Property comments
    */
-  prop = "defaultValue";
+  prop = 'defaultValue';
 
   boolProp = true;
   numProp = 123;
-  [MY_VAL] = "val";
+  [MY_VAL] = 'val';
   queryParams = {};
   someVal = someVal;
 
@@ -930,28 +947,30 @@ class Foo extends Test.extend(MyMixin) {
 
 @classic
 class Foo extends EmberObject.extend(MixinA, MixinB) {}
-
 ```
+
 ---
+
 <a id="ember-concurrency">**ember-concurrency**</a>
 
 **Input** (<small>[ember-concurrency.input.js](transforms/ember-object/__testfixtures__/ember-concurrency.input.js)</small>):
+
 ```js
 import Component from '@ember/component';
 import { task } from 'ember-concurrency';
 
 export default Component.extend({
-  fetchAlerts: task(function*() {
+  fetchAlerts: task(function* () {
     let alerts = yield this.store.query('alert', {
-      filter: { id: this.get('alert.id') }
+      filter: { id: this.get('alert.id') },
     });
     return alerts.sortBy('createdAt').reverse();
   }).drop(),
 });
-
 ```
 
 **Output** (<small>[ember-concurrency.output.js](transforms/ember-object/__testfixtures__/ember-concurrency.output.js)</small>):
+
 ```js
 import classic from 'ember-classic-decorator';
 import Component from '@ember/component';
@@ -959,20 +978,22 @@ import { task } from 'ember-concurrency';
 
 @classic
 export default class EmberConcurrency extends Component {
-  @(task(function*() {
+  @(task(function* () {
     let alerts = yield this.store.query('alert', {
-      filter: { id: this.get('alert.id') }
+      filter: { id: this.get('alert.id') },
     });
     return alerts.sortBy('createdAt').reverse();
   }).drop())
   fetchAlerts;
 }
-
 ```
+
 ---
+
 <a id="import">**import**</a>
 
 **Input** (<small>[import.input.js](transforms/ember-object/__testfixtures__/import.input.js)</small>):
+
 ```js
 import Service from '@ember/service';
 import Controller from '@ember/controller';
@@ -981,16 +1002,16 @@ import Evented, { on } from '@ember/object/evented';
 const ser = Service.extend({});
 const ctrl = Controller.extend({});
 const evt = Service.extend(Evented, {
-  e: on('click', function() {
+  e: on('click', function () {
     return 'e';
   }),
 });
 
 export { ser, ctrl, evt };
-
 ```
 
 **Output** (<small>[import.output.js](transforms/ember-object/__testfixtures__/import.output.js)</small>):
+
 ```js
 import classic from 'ember-classic-decorator';
 import { on } from '@ember-decorators/object';
@@ -1013,12 +1034,14 @@ class evt extends Service.extend(Evented) {
 }
 
 export { ser, ctrl, evt };
-
 ```
+
 ---
+
 <a id="injecting-service">**injecting-service**</a>
 
 **Input** (<small>[injecting-service.input.js](transforms/ember-object/__testfixtures__/injecting-service.input.js)</small>):
+
 ```js
 import Service, { service as injectService } from '@ember/service';
 
@@ -1026,10 +1049,10 @@ export default Service.extend({
   something: injectService(),
   otherThing: injectService('some-thing'),
 });
-
 ```
 
 **Output** (<small>[injecting-service.output.js](transforms/ember-object/__testfixtures__/injecting-service.output.js)</small>):
+
 ```js
 import classic from 'ember-classic-decorator';
 import Service, { service as injectService } from '@ember/service';
@@ -1042,12 +1065,14 @@ export default class InjectingServiceService extends Service {
   @injectService('some-thing')
   otherThing;
 }
-
 ```
+
 ---
+
 <a id="runtime">**runtime**</a>
 
 **Input** (<small>[runtime.input.js](transforms/ember-object/__testfixtures__/runtime.input.js)</small>):
+
 ```js
 import Runtime from 'common/runtime';
 import { alias } from '@ember/object/computed';
@@ -1073,7 +1098,7 @@ export default Runtime.extend(MyMixin, {
   unobservedProp: null,
   offProp: null,
 
-  numPlusOne: computed('numProp', function() {
+  numPlusOne: computed('numProp', function () {
     return this.get('numProp') + 1;
   }),
 
@@ -1083,7 +1108,7 @@ export default Runtime.extend(MyMixin, {
 
   anotherMacro: customMacroWithInput({
     foo: 123,
-    bar: 'baz'
+    bar: 'baz',
   }),
 
   /**
@@ -1093,7 +1118,7 @@ export default Runtime.extend(MyMixin, {
     // do things
   },
 
-  otherMethod: function() {},
+  otherMethod: function () {},
 
   get accessor() {
     return this._value;
@@ -1121,10 +1146,10 @@ export default Runtime.extend(MyMixin, {
     },
   },
 });
-
 ```
 
 **Output** (<small>[runtime.output.js](transforms/ember-object/__testfixtures__/runtime.output.js)</small>):
+
 ```js
 import classic from 'ember-classic-decorator';
 import { off, unobserves } from '@ember-decorators/object';
@@ -1173,7 +1198,7 @@ export default class _Runtime extends Runtime.extend(MyMixin) {
 
   @customMacroWithInput({
     foo: 123,
-    bar: 'baz'
+    bar: 'baz',
   })
   anotherMacro;
 
@@ -1218,6 +1243,6 @@ export default class _Runtime extends Runtime.extend(MyMixin) {
     super.actions.overriddenActionMethod.call(this, ...arguments) && this.boolProp;
   }
 }
-
 ```
+
 <!--FIXTURES_CONTENT_END-->

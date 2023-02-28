@@ -31,12 +31,23 @@
   ],
   "scripts": {
     "release": "release-it",
-    "lint:js": "eslint .",
-    "test": "codemod-cli test && node ./test/run-test.js",
+    "prepare": "yarn build",
+    "postpublish": "yarn clean",
+    "build": "tsc",
+    "clean": "tsc --build --clean",
+    "lint": "concurrently \"npm:lint:*(!fix)\" --names \"lint:\"",
+    "lint:fix": "concurrently \"npm:lint:*:fix\" --names \"fix:\"",
+    "lint:js": "eslint . --cache",
+    "lint:js:fix": "eslint . --fix",
+    "lint:prettier": "prettier --check .",
+    "lint:prettier:fix": "prettier --write .",
+    "lint:ts": "tsc --noEmit",
+    "test": "yarn build && codemod-cli test && node ./test/run-test.js && yarn clean",
     "update-docs": "codemod-cli update-docs"
   },
   "dependencies": {
-    "codemod-cli": "^2.0.0",
+    "camelcase": "^6.3.0",
+    "codemod-cli": "^3.2.0",
     "ember-codemods-telemetry-helpers": "^3.0.0",
     "fs-extra": "^8.0.1",
     "git-repo-info": "^2.1.0",
@@ -47,17 +58,29 @@
     "winston": "^3.2.1"
   },
   "devDependencies": {
-    "eslint": "^6.0.0",
-    "eslint-config-prettier": "^6.0.0",
-    "eslint-plugin-prettier": "^3.1.0",
+    "@babel/core": "^7.20.12",
+    "@babel/eslint-parser": "^7.19.1",
+    "@babel/preset-env": "^7.20.2",
+    "@tsconfig/node12": "^1.0.11",
+    "@types/jscodeshift": "^0.11.6",
+    "@typescript-eslint/eslint-plugin": "^5.48.1",
+    "@typescript-eslint/parser": "^5.48.1",
+    "concurrently": "^7.6.0",
+    "eslint": "^8.31.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-eslint-comments": "^3.2.0",
+    "eslint-plugin-jsdoc": "^39.6.4",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-unicorn": "^45.0.2",
     "execa": "^5.0.0",
     "jest": "^27.0.1",
-    "prettier": "^2.0.4",
+    "prettier": "^2.8.2",
     "release-it": "^14.2.1",
-    "release-it-lerna-changelog": "^3.1.0"
+    "release-it-lerna-changelog": "^3.1.0",
+    "typescript": "^4.9.4"
   },
   "engines": {
-    "node": "10.* || 12.* || >= 14"
+    "node": "12.* || >= 14"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
