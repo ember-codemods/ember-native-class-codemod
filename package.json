@@ -46,7 +46,7 @@
     "update-docs": "codemod-cli update-docs"
   },
   "dependencies": {
-    "@babel/parser": "^7.20.13",
+    "@babel/parser": "^7.21.2",
     "camelcase": "^6.3.0",
     "codemod-cli": "^3.2.0",
     "cosmiconfig": "^8.0.0",
@@ -62,7 +62,7 @@
     "zod": "^3.20.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.12",
+    "@babel/core": "^7.21.0",
     "@babel/eslint-parser": "^7.19.1",
     "@babel/preset-env": "^7.20.2",
     "@jest/globals": "^29.4.1",
