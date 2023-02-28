@@ -17,9 +17,6 @@ const options: ParserOptions = {
     'decorators-legacy',
     'exportDefaultFrom',
     'typescript',
-    // FIXME: Any other plugins we should enable?
-    // FIXME: Allow user to enable additional plugins? Could be dangerous.
-    // FIXME: How to use preset-env?
   ],
 };
 
