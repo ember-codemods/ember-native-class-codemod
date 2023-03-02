@@ -20,7 +20,7 @@ const transformer: Transform = function (
 
   if (replaced) {
     source = root.toSource({
-      quote: userOptions.quotes ?? userOptions.quote,
+      quote: userOptions.quote,
     });
   }
 
