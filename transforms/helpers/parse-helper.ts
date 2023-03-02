@@ -104,7 +104,10 @@ export function getClassName(
     );
   }
 
-  if (!['Component', 'Helper', 'EmberObject'].includes(type)) {
+  if (
+    !['Component', 'Helper', 'EmberObject'].includes(type) &&
+    !className.endsWith(type)
+  ) {
     className = `${className}${capitalizedType}`;
   }
 
