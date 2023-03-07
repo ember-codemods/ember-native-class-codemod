@@ -16,7 +16,7 @@ const DEFAULT_DECORATOR_CONFIG = {
 const DecoratorOptionsSchema = z
   .object({
     inObjectLiterals: StringArraySchema.describe(
-      'Allow-list for decorators currently applied to object literal properties that can be safely applied to class properties.'
+      'A list of decorators that are allowed on object literal properties. (Method decorators will always be allowed.) When the codemod finds a field with one of these decorators, it will be translated directly into a class field with the same decorator. Including a decorator in this list means that you believe that the decorator will work correctly on a class field.'
     ),
   })
   .partial();
