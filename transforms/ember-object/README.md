@@ -14,30 +14,36 @@ ember-native-class-codemod ember-object path/of/files/ or/some**/*glob.js
 ## Input / Output
 
 <!--FIXTURES_TOC_START-->
-
-- [action-invalid](#action-invalid)
-- [basic](#basic)
-- [chained-class-definition](#chained-class-definition)
-- [class-fields](#class-fields)
-- [class-reopen](#class-reopen)
-- [decorators-invalid](#decorators-invalid)
-- [decorators](#decorators)
-- [default-export](#default-export)
-- [double-quotes](#double-quotes)
-- [ember-concurrency](#ember-concurrency)
-- [import](#import)
-- [injecting-service](#injecting-service)
-- [runtime](#runtime)
+* [action-invalid](#action-invalid)
+* [basic-computed](#basic-computed)
+* [basic](#basic)
+* [chained-class-definition](#chained-class-definition)
+* [class-fields](#class-fields)
+* [class-reopen](#class-reopen)
+* [decorators-invalid](#decorators-invalid)
+* [decorators](#decorators)
+* [default-export](#default-export)
+* [double-quotes](#double-quotes)
+* [ember-concurrency](#ember-concurrency)
+* [frozen](#frozen)
+* [import](#import)
+* [injecting-service](#injecting-service)
+* [logical-expression](#logical-expression)
+* [mixin](#mixin)
+* [object-literal-with-action-hash-and-decorator](#object-literal-with-action-hash-and-decorator)
+* [object-literal-with-decorators-invalid](#object-literal-with-decorators-invalid)
+* [object-literal-with-decorators](#object-literal-with-decorators)
+* [partial-transform](#partial-transform)
+* [runtime](#runtime)
 <!--FIXTURES_TOC_END-->
 
 ## <!--FIXTURES_CONTENT_START-->
-
+---
 <a id="action-invalid">**action-invalid**</a>
 
 **Input** (<small>[action-invalid.input.js](transforms/ember-object/__testfixtures__/action-invalid.input.js)</small>):
-
 ```js
-const Foo = EmberObject.extend({
+const Foo1 = EmberObject.extend({
   actions: {
     bar() {
       this._super(...arguments);
@@ -46,7 +52,7 @@ const Foo = EmberObject.extend({
   },
 });
 
-const Foo = EmberObject.extend({
+const Foo2 = EmberObject.extend({
   actions: {
     biz() {
       this._super(...arguments);
@@ -55,7 +61,7 @@ const Foo = EmberObject.extend({
   },
 });
 
-const Foo = EmberObject.extend({
+const Foo3 = EmberObject.extend({
   actions: {
     baz() {
       this._super(...arguments);
@@ -64,7 +70,7 @@ const Foo = EmberObject.extend({
   },
 });
 
-const Foo = EmberObject.extend({
+const Foo4 = EmberObject.extend({
   actions: {
     sendBaz() {
       this._super(...arguments);
@@ -73,7 +79,7 @@ const Foo = EmberObject.extend({
   },
 });
 
-const Foo = EmberObject.extend({
+const Foo5 = EmberObject.extend({
   actions: {
     thisBaz() {
       this._super(...arguments);
@@ -81,12 +87,12 @@ const Foo = EmberObject.extend({
     },
   },
 });
+
 ```
 
 **Output** (<small>[action-invalid.output.js](transforms/ember-object/__testfixtures__/action-invalid.output.js)</small>):
-
 ```js
-const Foo = EmberObject.extend({
+const Foo1 = EmberObject.extend({
   actions: {
     bar() {
       this._super(...arguments);
@@ -95,7 +101,7 @@ const Foo = EmberObject.extend({
   },
 });
 
-const Foo = EmberObject.extend({
+const Foo2 = EmberObject.extend({
   actions: {
     biz() {
       this._super(...arguments);
@@ -104,7 +110,7 @@ const Foo = EmberObject.extend({
   },
 });
 
-const Foo = EmberObject.extend({
+const Foo3 = EmberObject.extend({
   actions: {
     baz() {
       this._super(...arguments);
@@ -113,7 +119,7 @@ const Foo = EmberObject.extend({
   },
 });
 
-const Foo = EmberObject.extend({
+const Foo4 = EmberObject.extend({
   actions: {
     sendBaz() {
       this._super(...arguments);
@@ -122,7 +128,7 @@ const Foo = EmberObject.extend({
   },
 });
 
-const Foo = EmberObject.extend({
+const Foo5 = EmberObject.extend({
   actions: {
     thisBaz() {
       this._super(...arguments);
@@ -130,19 +136,51 @@ const Foo = EmberObject.extend({
     },
   },
 });
+
+```
+---
+<a id="basic-computed">**basic-computed**</a>
+
+**Input** (<small>[basic-computed.input.js](transforms/ember-object/__testfixtures__/basic-computed.input.js)</small>):
+```js
+import { computed } from '@ember/object';
+
+var HasComputed = EmberObject.extend({
+  isEnabled: computed('a', 'c', function() {
+    return false;
+  }),
+  a: true,
+  c: ''
+});
+
 ```
 
----
+**Output** (<small>[basic-computed.output.js](transforms/ember-object/__testfixtures__/basic-computed.output.js)</small>):
+```js
+import classic from 'ember-classic-decorator';
+import { computed } from '@ember/object';
 
+@classic
+class HasComputed extends EmberObject {
+  @computed('a', 'c')
+  get isEnabled() {
+    return false;
+  }
+
+  a = true;
+  c = '';
+}
+
+```
+---
 <a id="basic">**basic**</a>
 
 **Input** (<small>[basic.input.js](transforms/ember-object/__testfixtures__/basic.input.js)</small>):
-
 ```js
 /**
  * Program comments
  */
-const Foo = Test.extend(MyMixin, {
+const Foo1 = Test.extend(MyMixin, {
   /**
    * Property comments
    */
@@ -160,7 +198,7 @@ const Foo = Test.extend(MyMixin, {
     // do things
   },
 
-  otherMethod: function () {},
+  otherMethod: function() {},
 
   get accessor() {
     return this._value;
@@ -175,11 +213,11 @@ const Foo = Test.extend(MyMixin, {
   },
 });
 
-const Foo = EmberObject.extend(MixinA, MixinB);
+const Foo2 = EmberObject.extend(MixinA, MixinB);
+
 ```
 
 **Output** (<small>[basic.output.js](transforms/ember-object/__testfixtures__/basic.output.js)</small>):
-
 ```js
 import classic from 'ember-classic-decorator';
 
@@ -187,7 +225,7 @@ import classic from 'ember-classic-decorator';
  * Program comments
  */
 @classic
-class Foo extends Test.extend(MyMixin) {
+class Foo1 extends Test.extend(MyMixin) {
   /**
    * Property comments
    */
@@ -222,35 +260,31 @@ class Foo extends Test.extend(MyMixin) {
 }
 
 @classic
-class Foo extends EmberObject.extend(MixinA, MixinB) {}
+class Foo2 extends EmberObject.extend(MixinA, MixinB) {}
+
 ```
-
 ---
-
 <a id="chained-class-definition">**chained-class-definition**</a>
 
 **Input** (<small>[chained-class-definition.input.js](transforms/ember-object/__testfixtures__/chained-class-definition.input.js)</small>):
-
 ```js
 import EmberObject from '@ember/object';
 
 export default EmberObject.extend({}).reopenClass({});
+
 ```
 
 **Output** (<small>[chained-class-definition.output.js](transforms/ember-object/__testfixtures__/chained-class-definition.output.js)</small>):
-
 ```js
 import EmberObject from '@ember/object';
 
 export default EmberObject.extend({}).reopenClass({});
+
 ```
-
 ---
-
 <a id="class-fields">**class-fields**</a>
 
 **Input** (<small>[class-fields.input.js](transforms/ember-object/__testfixtures__/class-fields.input.js)</small>):
-
 ```js
 /**
  * Program comments
@@ -263,7 +297,7 @@ const Foo = Test.extend({
     // do things
   },
 
-  otherMethod: function () {},
+  otherMethod: function() {},
 
   get accessor() {
     return this._value;
@@ -277,10 +311,10 @@ const Foo = Test.extend({
     this._super(...arguments);
   },
 });
+
 ```
 
 **Output** (<small>[class-fields.output.js](transforms/ember-object/__testfixtures__/class-fields.output.js)</small>):
-
 ```js
 import classic from 'ember-classic-decorator';
 
@@ -310,14 +344,12 @@ class Foo extends Test {
     super.anotherMethod(...arguments);
   }
 }
+
 ```
-
 ---
-
 <a id="class-reopen">**class-reopen**</a>
 
 **Input** (<small>[class-reopen.input.js](transforms/ember-object/__testfixtures__/class-reopen.input.js)</small>):
-
 ```js
 import EmberObject from '@ember/object';
 
@@ -326,10 +358,10 @@ const Foo = EmberObject.extend({});
 Foo.reopenClass({});
 
 export default Foo;
+
 ```
 
 **Output** (<small>[class-reopen.output.js](transforms/ember-object/__testfixtures__/class-reopen.output.js)</small>):
-
 ```js
 import classic from 'ember-classic-decorator';
 import EmberObject from '@ember/object';
@@ -340,32 +372,29 @@ class Foo extends EmberObject {}
 Foo.reopenClass({});
 
 export default Foo;
+
 ```
-
 ---
-
 <a id="decorators-invalid">**decorators-invalid**</a>
 
 **Input** (<small>[decorators-invalid.input.js](transforms/ember-object/__testfixtures__/decorators-invalid.input.js)</small>):
-
 ```js
 // Do not transform
-const Foo = EmberObject.extend({
+const Foo1 = EmberObject.extend({
   statefulObject: {},
-  statefulArray: [],
 });
 
 // Do not transform if not a primitive value
-const Foo = EmberObject.extend({
+const Foo2 = EmberObject.extend({
   macroValue: macro(),
 });
 
 // Do not transform as a computed property has readOnly and volatile with meta
-const Foo = EmberObject.extend({
+const Foo3 = EmberObject.extend({
   firstName: '',
   lastName: '',
 
-  fName2: computed('firstName', 'lastName', function () {
+  fName2: computed('firstName', 'lastName', function() {
     return true;
   })
     .property('baz')
@@ -375,54 +404,56 @@ const Foo = EmberObject.extend({
 });
 
 // Do not transform as a computed meta has volatile
-const Foo = EmberObject.extend({
+const Foo4 = EmberObject.extend({
   lName1: add('description', 'lastName').volatile(),
 });
 
 // Do not transform as computed prop has `property`
-const Foo = EmberObject.extend({
-  fName2: computed('firstName', 'lastName', function () {
+const Foo5 = EmberObject.extend({
+  fName2: computed('firstName', 'lastName', function() {
     return true;
   }).property('baz'),
 });
 
 // Do not transform as computed prop has `meta`
-const Foo = EmberObject.extend({
-  fName2: computed('firstName', 'lastName', function () {
+const Foo6 = EmberObject.extend({
+  fName2: computed('firstName', 'lastName', function() {
     return true;
   }).meta({ type: 'Property' }),
 });
 
 // Do not transform as action name matches lifecycle hook
-const Foo = EmberObject.extend({
+const Foo7 = EmberObject.extend({
   actions: {
     click() {
       this.set('clicked', true);
     },
   },
+});
+
+const Foo8 = EmberObject.extend({
+  statefulArray: [],
 });
 ```
 
 **Output** (<small>[decorators-invalid.output.js](transforms/ember-object/__testfixtures__/decorators-invalid.output.js)</small>):
-
 ```js
 // Do not transform
-const Foo = EmberObject.extend({
+const Foo1 = EmberObject.extend({
   statefulObject: {},
-  statefulArray: [],
 });
 
 // Do not transform if not a primitive value
-const Foo = EmberObject.extend({
+const Foo2 = EmberObject.extend({
   macroValue: macro(),
 });
 
 // Do not transform as a computed property has readOnly and volatile with meta
-const Foo = EmberObject.extend({
+const Foo3 = EmberObject.extend({
   firstName: '',
   lastName: '',
 
-  fName2: computed('firstName', 'lastName', function () {
+  fName2: computed('firstName', 'lastName', function() {
     return true;
   })
     .property('baz')
@@ -432,40 +463,42 @@ const Foo = EmberObject.extend({
 });
 
 // Do not transform as a computed meta has volatile
-const Foo = EmberObject.extend({
+const Foo4 = EmberObject.extend({
   lName1: add('description', 'lastName').volatile(),
 });
 
 // Do not transform as computed prop has `property`
-const Foo = EmberObject.extend({
-  fName2: computed('firstName', 'lastName', function () {
+const Foo5 = EmberObject.extend({
+  fName2: computed('firstName', 'lastName', function() {
     return true;
   }).property('baz'),
 });
 
 // Do not transform as computed prop has `meta`
-const Foo = EmberObject.extend({
-  fName2: computed('firstName', 'lastName', function () {
+const Foo6 = EmberObject.extend({
+  fName2: computed('firstName', 'lastName', function() {
     return true;
   }).meta({ type: 'Property' }),
 });
 
 // Do not transform as action name matches lifecycle hook
-const Foo = EmberObject.extend({
+const Foo7 = EmberObject.extend({
   actions: {
     click() {
       this.set('clicked', true);
     },
   },
 });
+
+const Foo8 = EmberObject.extend({
+  statefulArray: [],
+});
+
 ```
-
 ---
-
 <a id="decorators">**decorators**</a>
 
 **Input** (<small>[decorators.input.js](transforms/ember-object/__testfixtures__/decorators.input.js)</small>):
-
 ```js
 import {
   alias,
@@ -486,22 +519,25 @@ import layout from 'components/templates/foo';
 import { someActionUtil } from 'some/action/util';
 import NUMERIC_CONSTANT from 'constants/numbers';
 
-const Foo = EmberObject.extend({
+const Foo1 = EmberObject.extend({
   tagName: 'div',
   classNames: ['test-class', 'custom-class'],
   a: '',
   b: service('store'),
   myController: controller('abc'),
-  observedProp: watcher('xyz', function () {
+  observedProp: watcher('xyz', function() {
     return 'observed';
   }),
-  event: on('click', function () {
+  observedProp2: watcher('xyz', function() {
+    return this._super(...arguments);
+  }),
+  event: on('click', function() {
     return 'abc';
   }),
-  excitingChores: computedMap('chores', function (chore, index) {
+  excitingChores: computedMap('chores', function(chore, index) {
     return chore.toUpperCase() + '!';
   }),
-  remainingChores: filter('chores', function (chore, index, array) {
+  remainingChores: filter('chores', function(chore, index, array) {
     return !chore.done;
   }),
 
@@ -520,7 +556,7 @@ const Foo = EmberObject.extend({
 
 var comp = EmberObject.extend({
   classNameBindings: ['isEnabled:enabled:disabled', 'a:b:c', 'c:d'],
-  isEnabled: computed('a', 'c', function () {
+  isEnabled: computed('a', 'c', function() {
     return false;
   }),
   a: true,
@@ -530,7 +566,7 @@ var comp = EmberObject.extend({
   customHref: 'http://emberjs.com',
 });
 
-const Foo = EmberObject.extend({
+const Foo2 = EmberObject.extend({
   firstName: null,
   lastName: null,
 
@@ -551,7 +587,7 @@ const Foo = EmberObject.extend({
   /**
   Computed description
   */
-  description: computed('fullName', 'age', 'country', function () {
+  description: computed('fullName', 'age', 'country', function() {
     const desc = this._super(...arguments);
     if (desc) {
       return desc;
@@ -574,14 +610,14 @@ const Foo = EmberObject.extend({
   /**
    * Fname2
    */
-  fName2: computed('firstName', 'lastName', function () {
+  fName2: computed('firstName', 'lastName', function() {
     return true;
   }).readOnly(),
 
   /**
    * Fname3
    */
-  fName3: computed('firstName', 'lastName', function () {
+  fName3: computed('firstName', 'lastName', function() {
     return true;
   }).volatile(),
 
@@ -620,22 +656,22 @@ const Foo = EmberObject.extend({
   isGreaterThanLimit: gt('limit', NUMERIC_CONSTANT).readOnly(),
 });
 
-const Foo = EmberObject.extend({
+const Foo3 = EmberObject.extend({
   layout,
 });
+
 ```
 
 **Output** (<small>[decorators.output.js](transforms/ember-object/__testfixtures__/decorators.output.js)</small>):
-
 ```js
 import classic from 'ember-classic-decorator';
 
 import {
-  classNames,
   attributeBindings,
   classNameBindings,
-  tagName,
+  classNames,
   layout as templateLayout,
+  tagName,
 } from '@ember-decorators/component';
 
 import { observes as watcher, on } from '@ember-decorators/object';
@@ -662,7 +698,7 @@ import NUMERIC_CONSTANT from 'constants/numbers';
 @classic
 @tagName('div')
 @classNames('test-class', 'custom-class')
-class Foo extends EmberObject {
+class Foo1 extends EmberObject {
   a = '';
 
   @service('store')
@@ -676,17 +712,22 @@ class Foo extends EmberObject {
     return 'observed';
   }
 
+  @watcher('xyz')
+  observedProp2() {
+    return super.observedProp2(...arguments);
+  }
+
   @on('click')
   event() {
     return 'abc';
   }
 
-  @computedMap('chores', function (chore, index) {
+  @computedMap('chores', function(chore, index) {
     return chore.toUpperCase() + '!';
   })
   excitingChores;
 
-  @filter('chores', function (chore, index, array) {
+  @filter('chores', function(chore, index, array) {
     return !chore.done;
   })
   remainingChores;
@@ -708,7 +749,7 @@ class Foo extends EmberObject {
     // class's actions to be safe. This should be refactored to call a normal method
     // on the parent class. If the parent class has not been converted to native
     // classes, it may need to be refactored as well. See
-    // https: //github.com/scalvert/ember-native-class-codemod/blob/master/README.md
+    // https://github.com/scalvert/ember-native-class-codemod/blob/master/README.md
     // for more details.
     super.actions.baz.call(this, ...arguments);
   }
@@ -732,7 +773,7 @@ class comp extends EmberObject {
 }
 
 @classic
-class Foo extends EmberObject {
+class Foo2 extends EmberObject {
   firstName = null;
   lastName = null;
 
@@ -835,45 +876,41 @@ class Foo extends EmberObject {
 
 @classic
 @templateLayout(layout)
-class Foo extends EmberObject {}
+class Foo3 extends EmberObject {}
+
 ```
-
 ---
-
 <a id="default-export">**default-export**</a>
 
 **Input** (<small>[default-export.input.js](transforms/ember-object/__testfixtures__/default-export.input.js)</small>):
-
 ```js
 export default EmberObject.extend({});
+
 ```
 
 **Output** (<small>[default-export.output.js](transforms/ember-object/__testfixtures__/default-export.output.js)</small>):
-
 ```js
 import classic from 'ember-classic-decorator';
 @classic
 export default class DefaultExport extends EmberObject {}
+
 ```
-
 ---
-
 <a id="double-quotes">**double-quotes**</a>
 
 **Input** (<small>[double-quotes.input.js](transforms/ember-object/__testfixtures__/double-quotes.input.js)</small>):
-
 ```js
 /**
  * Program comments
  */
-const Foo = Test.extend(MyMixin, {
+const Foo1 = Test.extend(MyMixin, {
   /**
    * Property comments
    */
-  prop: 'defaultValue',
+  prop: "defaultValue",
   boolProp: true,
   numProp: 123,
-  [MY_VAL]: 'val',
+  [MY_VAL]: "val",
   queryParams: {},
   someVal,
 
@@ -884,7 +921,7 @@ const Foo = Test.extend(MyMixin, {
     // do things
   },
 
-  otherMethod: function () {},
+  otherMethod: function() {},
 
   get accessor() {
     return this._value;
@@ -899,27 +936,27 @@ const Foo = Test.extend(MyMixin, {
   },
 });
 
-const Foo = EmberObject.extend(MixinA, MixinB);
+const Foo2 = EmberObject.extend(MixinA, MixinB);
+
 ```
 
 **Output** (<small>[double-quotes.output.js](transforms/ember-object/__testfixtures__/double-quotes.output.js)</small>):
-
 ```js
-import classic from 'ember-classic-decorator';
+import classic from "ember-classic-decorator";
 
 /**
  * Program comments
  */
 @classic
-class Foo extends Test.extend(MyMixin) {
+class Foo1 extends Test.extend(MyMixin) {
   /**
    * Property comments
    */
-  prop = 'defaultValue';
+  prop = "defaultValue";
 
   boolProp = true;
   numProp = 123;
-  [MY_VAL] = 'val';
+  [MY_VAL] = "val";
   queryParams = {};
   someVal = someVal;
 
@@ -946,31 +983,29 @@ class Foo extends Test.extend(MyMixin) {
 }
 
 @classic
-class Foo extends EmberObject.extend(MixinA, MixinB) {}
+class Foo2 extends EmberObject.extend(MixinA, MixinB) {}
+
 ```
-
 ---
-
 <a id="ember-concurrency">**ember-concurrency**</a>
 
 **Input** (<small>[ember-concurrency.input.js](transforms/ember-object/__testfixtures__/ember-concurrency.input.js)</small>):
-
 ```js
 import Component from '@ember/component';
 import { task } from 'ember-concurrency';
 
 export default Component.extend({
-  fetchAlerts: task(function* () {
+  fetchAlerts: task(function*() {
     let alerts = yield this.store.query('alert', {
-      filter: { id: this.get('alert.id') },
+      filter: { id: this.get('alert.id') }
     });
     return alerts.sortBy('createdAt').reverse();
   }).drop(),
 });
+
 ```
 
 **Output** (<small>[ember-concurrency.output.js](transforms/ember-object/__testfixtures__/ember-concurrency.output.js)</small>):
-
 ```js
 import classic from 'ember-classic-decorator';
 import Component from '@ember/component';
@@ -978,22 +1013,46 @@ import { task } from 'ember-concurrency';
 
 @classic
 export default class EmberConcurrency extends Component {
-  @(task(function* () {
+  @(task(function*() {
     let alerts = yield this.store.query('alert', {
-      filter: { id: this.get('alert.id') },
+      filter: { id: this.get('alert.id') }
     });
     return alerts.sortBy('createdAt').reverse();
   }).drop())
   fetchAlerts;
 }
+
+```
+---
+<a id="frozen">**frozen**</a>
+
+**Input** (<small>[frozen.input.js](transforms/ember-object/__testfixtures__/frozen.input.js)</small>):
+```js
+/**
+ * Program comments
+ */
+const Foo = Test.extend({
+  frozen: Object.freeze(['name'])
+});
 ```
 
----
+**Output** (<small>[frozen.output.js](transforms/ember-object/__testfixtures__/frozen.output.js)</small>):
+```js
+import classic from 'ember-classic-decorator';
 
+/**
+ * Program comments
+ */
+@classic
+class Foo extends Test {
+ frozen = Object.freeze(['name']);
+}
+
+```
+---
 <a id="import">**import**</a>
 
 **Input** (<small>[import.input.js](transforms/ember-object/__testfixtures__/import.input.js)</small>):
-
 ```js
 import Service from '@ember/service';
 import Controller from '@ember/controller';
@@ -1002,16 +1061,16 @@ import Evented, { on } from '@ember/object/evented';
 const ser = Service.extend({});
 const ctrl = Controller.extend({});
 const evt = Service.extend(Evented, {
-  e: on('click', function () {
+  e: on('click', function() {
     return 'e';
   }),
 });
 
 export { ser, ctrl, evt };
+
 ```
 
 **Output** (<small>[import.output.js](transforms/ember-object/__testfixtures__/import.output.js)</small>):
-
 ```js
 import classic from 'ember-classic-decorator';
 import { on } from '@ember-decorators/object';
@@ -1034,14 +1093,12 @@ class evt extends Service.extend(Evented) {
 }
 
 export { ser, ctrl, evt };
+
 ```
-
 ---
-
 <a id="injecting-service">**injecting-service**</a>
 
 **Input** (<small>[injecting-service.input.js](transforms/ember-object/__testfixtures__/injecting-service.input.js)</small>):
-
 ```js
 import Service, { service as injectService } from '@ember/service';
 
@@ -1049,30 +1106,482 @@ export default Service.extend({
   something: injectService(),
   otherThing: injectService('some-thing'),
 });
+
 ```
 
 **Output** (<small>[injecting-service.output.js](transforms/ember-object/__testfixtures__/injecting-service.output.js)</small>):
-
 ```js
 import classic from 'ember-classic-decorator';
 import Service, { service as injectService } from '@ember/service';
 
 @classic
-export default class InjectingServiceService extends Service {
+export default class InjectingService extends Service {
   @injectService()
   something;
 
   @injectService('some-thing')
   otherThing;
 }
+
+```
+---
+<a id="logical-expression">**logical-expression**</a>
+
+**Input** (<small>[logical-expression.input.js](transforms/ember-object/__testfixtures__/logical-expression.input.js)</small>):
+```js
+/**
+ * Program comments
+ */
+const Foo = Test.extend({
+  location: ENV.locationType || 'history'
+});
 ```
 
----
+**Output** (<small>[logical-expression.output.js](transforms/ember-object/__testfixtures__/logical-expression.output.js)</small>):
+```js
+import classic from 'ember-classic-decorator';
 
+/**
+ * Program comments
+ */
+@classic
+class Foo extends Test {
+ location = ENV.locationType || 'history';
+}
+
+```
+---
+<a id="mixin">**mixin**</a>
+
+**Input** (<small>[mixin.input.js](transforms/ember-object/__testfixtures__/mixin.input.js)</small>):
+```js
+const HasMixin = Test.extend(MyMixin, {});
+
+```
+
+**Output** (<small>[mixin.output.js](transforms/ember-object/__testfixtures__/mixin.output.js)</small>):
+```js
+import classic from 'ember-classic-decorator';
+
+@classic
+class HasMixin extends Test.extend(MyMixin) {}
+
+```
+---
+<a id="object-literal-with-action-hash-and-decorator">**object-literal-with-action-hash-and-decorator**</a>
+
+**Input** (<small>[object-literal-with-action-hash-and-decorator.input.js](transforms/ember-object/__testfixtures__/object-literal-with-action-hash-and-decorator.input.js)</small>):
+```js
+import EmberObject, { action, set } from '@ember/object';
+
+const Foo = EmberObject.extend({
+  @action
+  toggleShowing() {
+    set(this, 'isShowing', !this.isShowing);
+  },
+
+  actions: {
+    toggleSnowing() {
+      set(this, 'isSnowing', !this.isSnowing);
+    }
+  }
+});
+
+```
+
+**Output** (<small>[object-literal-with-action-hash-and-decorator.output.js](transforms/ember-object/__testfixtures__/object-literal-with-action-hash-and-decorator.output.js)</small>):
+```js
+import classic from 'ember-classic-decorator';
+import EmberObject, { action, set } from '@ember/object';
+
+@classic
+class Foo extends EmberObject {
+  @action
+  toggleShowing() {
+    set(this, 'isShowing', !this.isShowing);
+  }
+
+  @action
+  toggleSnowing() {
+    set(this, 'isSnowing', !this.isSnowing);
+  }
+}
+
+```
+---
+<a id="object-literal-with-decorators-invalid">**object-literal-with-decorators-invalid**</a>
+
+**Input** (<small>[object-literal-with-decorators-invalid.input.js](transforms/ember-object/__testfixtures__/object-literal-with-decorators-invalid.input.js)</small>):
+```js
+// Do not transform if not a primitive value
+const Foo1 = EmberObject.extend({
+  @tracked computedMacro: customMacro(),
+});
+
+// Do not transform if not on allowlist
+const Foo2 = EmberObject.extend({
+  @banned prop: '',
+});
+
+// Do not transform array
+const Foo3 = EmberObject.extend({
+  @tracked arr: [1, 2, 3],
+});
+
+// Do not function expression if not on allowlist
+const Foo4 = EmberObject.extend({
+  @userAdded methodish: () => {},
+});
+
+```
+
+**Output** (<small>[object-literal-with-decorators-invalid.output.js](transforms/ember-object/__testfixtures__/object-literal-with-decorators-invalid.output.js)</small>):
+```js
+// Do not transform if not a primitive value
+const Foo1 = EmberObject.extend({
+  @tracked computedMacro: customMacro(),
+});
+
+// Do not transform if not on allowlist
+const Foo2 = EmberObject.extend({
+  @banned prop: '',
+});
+
+// Do not transform array
+const Foo3 = EmberObject.extend({
+  @tracked arr: [1, 2, 3],
+});
+
+// Do not function expression if not on allowlist
+const Foo4 = EmberObject.extend({
+  @userAdded methodish: () => {},
+});
+```
+---
+<a id="object-literal-with-decorators">**object-literal-with-decorators**</a>
+
+**Input** (<small>[object-literal-with-decorators.input.js](transforms/ember-object/__testfixtures__/object-literal-with-decorators.input.js)</small>):
+```js
+import EmberObject, { action, set, computed } from '@ember/object';
+import { dependentKeyCompat } from '@ember/object/compat';
+import { alias } from '@ember/object/computed';
+import { tracked } from '@glimmer/tracking';
+import { attribute, className } from '@ember-decorators/component';
+import { observes, on } from '@ember-decorators/object';
+
+const Foo = EmberObject.extend({
+
+  // @ember/object
+
+  @action
+  toggleShowing() {
+    set(this, 'isShowing', !this.isShowing);
+  },
+
+  @computed('firstName', 'lastName')
+  fullName() {
+    return `${this.firstName} ${this.lastName}`;
+  },
+
+  // @ember/object/compat
+
+  @dependentKeyCompat
+  fullName2: function() {
+    return `${this.firstName} ${this.lastName}`;
+  },
+
+  // @ember/object/computed
+
+  @alias('foo') hasAlias: undefined,
+  @and('foo', 'bar') hasAnd: undefined,
+  @bool('foo') hasBool: undefined,
+  @collect('foo', 'bar') hasCollect: undefined,
+  @deprecatingAlias('foo') hasDeprecatingAlias: undefined,
+  @empty('foo') hasEmpty: undefined,
+  @equal('foo', 'bar') hasEqual: undefined,
+  @filterBy('foo', 'bar') hasFilterBy: undefined,
+  @gt('foo', 'bar') hasGt: undefined,
+  @gte('foo', 'bar') hasGte: undefined,
+  @intersect('foo', 'bar') hasIntersect: undefined,
+  @lt('foo', 'bar') hasLt: undefined,
+  @lte('foo', 'bar') hasLte: undefined,
+  @mapBy('foo', 'bar') hasMapBy: undefined,
+  @match('foo', /bar/) hasMatch: undefined,
+  @max('foo', 'bar') hasMax: undefined,
+  @min('foo', 'bar') hasMin: undefined,
+  @none('foo') hasNone: undefined,
+  @not('foo') hasNot: undefined,
+  @notEmpty('foo') hasNotEmpty: undefined,
+  @oneWay('foo') hasOneWay: undefined,
+  @or('foo', 'bar') hasOr: undefined,
+  @readOnly('foo') hasReadOnly: undefined,
+  @reads('foo') hasReads: undefined,
+  @setDiff('foo', 'bar') hasSetDiff: undefined,
+  @sum('foo', 'bar') hasSum: undefined,
+  @union('foo', 'bar') hasUnion: undefined,
+  @uniq('foo') hasUniq: undefined,
+  @uniqBy('foo', 'bar') hasUniqBy: undefined,
+
+  @filter('foo', function(foo, index, array) { return false })
+  hasFilter: undefined,
+
+  @map('foo', function(foo, index, array) { return 'bar' })
+  hasMap: undefined,
+
+  @sort('foo', function(a, b) {
+    if (a.priority > b.priority) {
+      return 1;
+    } else if (a.priority < b.priority) {
+      return -1;
+    }
+
+    return 0;
+  })
+  hasSort: undefined,
+
+  // @glimmer/tracking
+
+  @tracked count: 0,
+
+  // @ember-decorators/component
+
+  @attribute id: '1',
+
+  @className('active', 'inactive')
+  isActive: true,
+
+  // @ember-decorators/object
+
+  @observes('value')
+  valueObserver() {
+    // Executes whenever the "value" property changes
+  },
+
+  @on('barEvent')
+  bar() {
+    // Executes whenever barEvent is emitted
+  },
+
+  @userAdded
+  yolo() {
+    // methods always pass through decorators, even if not on allow-list
+  }
+});
+
+```
+
+**Output** (<small>[object-literal-with-decorators.output.js](transforms/ember-object/__testfixtures__/object-literal-with-decorators.output.js)</small>):
+```js
+import classic from 'ember-classic-decorator';
+import { alias } from '@ember/object/computed';
+import EmberObject, { action, set, computed } from '@ember/object';
+import { dependentKeyCompat } from '@ember/object/compat';
+import { tracked } from '@glimmer/tracking';
+import { attribute, className } from '@ember-decorators/component';
+import { observes, on } from '@ember-decorators/object';
+
+@classic
+class Foo extends EmberObject {
+  // @ember/object
+
+  @action
+  toggleShowing() {
+    set(this, 'isShowing', !this.isShowing);
+  }
+
+  @computed('firstName', 'lastName')
+  fullName() {
+    return `${this.firstName} ${this.lastName}`;
+  }
+
+  // @ember/object/compat
+
+  @dependentKeyCompat
+  fullName2() {
+    return `${this.firstName} ${this.lastName}`;
+  }
+
+  // @ember/object/computed
+
+  @alias('foo')
+  hasAlias;
+
+  @and('foo', 'bar')
+  hasAnd;
+
+  @bool('foo')
+  hasBool;
+
+  @collect('foo', 'bar')
+  hasCollect;
+
+  @deprecatingAlias('foo')
+  hasDeprecatingAlias;
+
+  @empty('foo')
+  hasEmpty;
+
+  @equal('foo', 'bar')
+  hasEqual;
+
+  @filterBy('foo', 'bar')
+  hasFilterBy;
+
+  @gt('foo', 'bar')
+  hasGt;
+
+  @gte('foo', 'bar')
+  hasGte;
+
+  @intersect('foo', 'bar')
+  hasIntersect;
+
+  @lt('foo', 'bar')
+  hasLt;
+
+  @lte('foo', 'bar')
+  hasLte;
+
+  @mapBy('foo', 'bar')
+  hasMapBy;
+
+  @match('foo', /bar/)
+  hasMatch;
+
+  @max('foo', 'bar')
+  hasMax;
+
+  @min('foo', 'bar')
+  hasMin;
+
+  @none('foo')
+  hasNone;
+
+  @not('foo')
+  hasNot;
+
+  @notEmpty('foo')
+  hasNotEmpty;
+
+  @oneWay('foo')
+  hasOneWay;
+
+  @or('foo', 'bar')
+  hasOr;
+
+  @readOnly('foo')
+  hasReadOnly;
+
+  @reads('foo')
+  hasReads;
+
+  @setDiff('foo', 'bar')
+  hasSetDiff;
+
+  @sum('foo', 'bar')
+  hasSum;
+
+  @union('foo', 'bar')
+  hasUnion;
+
+  @uniq('foo')
+  hasUniq;
+
+  @uniqBy('foo', 'bar')
+  hasUniqBy;
+
+  @filter('foo', function(foo, index, array) { return false })
+  hasFilter;
+
+  @map('foo', function(foo, index, array) { return 'bar' })
+  hasMap;
+
+  @sort('foo', function(a, b) {
+    if (a.priority > b.priority) {
+      return 1;
+    } else if (a.priority < b.priority) {
+      return -1;
+    }
+
+    return 0;
+  })
+  hasSort;
+
+  // @glimmer/tracking
+
+  @tracked
+  count = 0;
+
+  // @ember-decorators/component
+
+  @attribute
+  id = '1';
+
+  @className('active', 'inactive')
+  isActive = true;
+
+  // @ember-decorators/object
+
+  @observes('value')
+  valueObserver() {
+    // Executes whenever the "value" property changes
+  }
+
+  @on('barEvent')
+  bar() {
+    // Executes whenever barEvent is emitted
+  }
+
+  @userAdded
+  yolo() {
+    // methods always pass through decorators, even if not on allow-list
+  }
+}
+
+```
+---
+<a id="partial-transform">**partial-transform**</a>
+
+**Input** (<small>[partial-transform.input.js](transforms/ember-object/__testfixtures__/partial-transform.input.js)</small>):
+```js
+import EmberObject from '@ember/object';
+import { inject as service } from '@ember/service';
+
+// Should succeed
+const Foo1 = EmberObject.extend({
+  store: service('store'),
+});
+
+// Should fail
+const Foo2 = EmberObject.extend({
+  macroValue: macro(),
+})
+
+```
+
+**Output** (<small>[partial-transform.output.js](transforms/ember-object/__testfixtures__/partial-transform.output.js)</small>):
+```js
+import classic from 'ember-classic-decorator';
+import { inject as service } from '@ember/service';
+import EmberObject from '@ember/object';
+
+// Should succeed
+@classic
+class Foo1 extends EmberObject {
+  @service('store')
+  store;
+}
+
+// Should fail
+const Foo2 = EmberObject.extend({
+  macroValue: macro(),
+})
+
+```
+---
 <a id="runtime">**runtime**</a>
 
 **Input** (<small>[runtime.input.js](transforms/ember-object/__testfixtures__/runtime.input.js)</small>):
-
 ```js
 import Runtime from 'common/runtime';
 import { alias } from '@ember/object/computed';
@@ -1098,7 +1607,7 @@ export default Runtime.extend(MyMixin, {
   unobservedProp: null,
   offProp: null,
 
-  numPlusOne: computed('numProp', function () {
+  numPlusOne: computed('numProp', function() {
     return this.get('numProp') + 1;
   }),
 
@@ -1108,7 +1617,7 @@ export default Runtime.extend(MyMixin, {
 
   anotherMacro: customMacroWithInput({
     foo: 123,
-    bar: 'baz',
+    bar: 'baz'
   }),
 
   /**
@@ -1118,7 +1627,7 @@ export default Runtime.extend(MyMixin, {
     // do things
   },
 
-  otherMethod: function () {},
+  otherMethod: function() {},
 
   get accessor() {
     return this._value;
@@ -1146,10 +1655,10 @@ export default Runtime.extend(MyMixin, {
     },
   },
 });
+
 ```
 
 **Output** (<small>[runtime.output.js](transforms/ember-object/__testfixtures__/runtime.output.js)</small>):
-
 ```js
 import classic from 'ember-classic-decorator';
 import { off, unobserves } from '@ember-decorators/object';
@@ -1198,7 +1707,7 @@ export default class _Runtime extends Runtime.extend(MyMixin) {
 
   @customMacroWithInput({
     foo: 123,
-    bar: 'baz',
+    bar: 'baz'
   })
   anotherMacro;
 
@@ -1238,11 +1747,11 @@ export default class _Runtime extends Runtime.extend(MyMixin) {
     // class's actions to be safe. This should be refactored to call a normal method
     // on the parent class. If the parent class has not been converted to native
     // classes, it may need to be refactored as well. See
-    // https: //github.com/scalvert/ember-native-class-codemod/blob/master/README.md
+    // https://github.com/scalvert/ember-native-class-codemod/blob/master/README.md
     // for more details.
     super.actions.overriddenActionMethod.call(this, ...arguments) && this.boolProp;
   }
 }
-```
 
+```
 <!--FIXTURES_CONTENT_END-->

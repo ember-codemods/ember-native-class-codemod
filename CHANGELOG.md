@@ -1,5 +1,38 @@
 # Changelog
 
+
+## v3.1.0 (2023-03-10)
+
+#### :rocket: Enhancement
+* [#502](https://github.com/ember-codemods/ember-native-class-codemod/pull/502) Support legacy decorators in object literals (and related improvements) ([@gitKrystan](https://github.com/gitKrystan))
+
+#### :bug: Bug Fix
+* [#520](https://github.com/ember-codemods/ember-native-class-codemod/pull/520) Handle 'true'/'false' stringified boolean options and better config error handling ([@gitKrystan](https://github.com/gitKrystan))
+* [#211](https://github.com/ember-codemods/ember-native-class-codemod/pull/211) Don't append object name when type is already at the end of the filename ([@patocallaghan](https://github.com/patocallaghan))
+
+#### :house: Internal
+* [#519](https://github.com/ember-codemods/ember-native-class-codemod/pull/519) Remove node 12 from package.json engines / Upgrade release-it dependencies ([@gitKrystan](https://github.com/gitKrystan))
+* [#518](https://github.com/ember-codemods/ember-native-class-codemod/pull/518) Run yarn upgrade ([@gitKrystan](https://github.com/gitKrystan))
+* [#517](https://github.com/ember-codemods/ember-native-class-codemod/pull/517) Upgrade typescript ([@gitKrystan](https://github.com/gitKrystan))
+* [#516](https://github.com/ember-codemods/ember-native-class-codemod/pull/516) Upgrade release-it dependencies ([@gitKrystan](https://github.com/gitKrystan))
+* [#515](https://github.com/ember-codemods/ember-native-class-codemod/pull/515) Upgrade prettier ([@gitKrystan](https://github.com/gitKrystan))
+* [#514](https://github.com/ember-codemods/ember-native-class-codemod/pull/514) Upgrade execa ([@gitKrystan](https://github.com/gitKrystan))
+* [#513](https://github.com/ember-codemods/ember-native-class-codemod/pull/513) Upgrade eslint dependencies ([@gitKrystan](https://github.com/gitKrystan))
+* [#512](https://github.com/ember-codemods/ember-native-class-codemod/pull/512) Upgrade jest dependencies ([@gitKrystan](https://github.com/gitKrystan))
+* [#511](https://github.com/ember-codemods/ember-native-class-codemod/pull/511) Upgrade zod ([@gitKrystan](https://github.com/gitKrystan))
+* [#510](https://github.com/ember-codemods/ember-native-class-codemod/pull/510) Upgrade winston ([@gitKrystan](https://github.com/gitKrystan))
+* [#508](https://github.com/ember-codemods/ember-native-class-codemod/pull/508) Upgrade walk-sync ([@gitKrystan](https://github.com/gitKrystan))
+* [#507](https://github.com/ember-codemods/ember-native-class-codemod/pull/507) Upgrade minimatch ([@gitKrystan](https://github.com/gitKrystan))
+* [#506](https://github.com/ember-codemods/ember-native-class-codemod/pull/506) Remove unused dependencies ([@gitKrystan](https://github.com/gitKrystan))
+* [#505](https://github.com/ember-codemods/ember-native-class-codemod/pull/505) Upgrade cosmiconfig ([@gitKrystan](https://github.com/gitKrystan))
+* [#504](https://github.com/ember-codemods/ember-native-class-codemod/pull/504) Upgrade @babel dependencies ([@gitKrystan](https://github.com/gitKrystan))
+* [#498](https://github.com/ember-codemods/ember-native-class-codemod/pull/498) Convert to TypeScript ([@gitKrystan](https://github.com/gitKrystan))
+
+#### Committers: 3
+- Berkan Ünal ([@brkn](https://github.com/brkn))
+- Krystan HuffMenne ([@gitKrystan](https://github.com/gitKrystan))
+- Pat O'Callaghan ([@patocallaghan](https://github.com/patocallaghan))
+
 ## v3.0.0 (2022-11-14)
 
 #### :boom: Breaking Change
