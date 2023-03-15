@@ -91,7 +91,7 @@ describe('options', () => {
       });
     });
 
-    describe.each(['classFields', 'classicDecorator', 'partialTransforms'])(
+    describe.each(['classFields', 'classicDecorator'])(
       '%s (StringBooleanSchema)',
       (fieldName) => {
         test(`it parses \`{ ${fieldName}: true }\``, () => {

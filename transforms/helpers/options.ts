@@ -1,7 +1,6 @@
 import { inspect } from 'node:util';
 import type { ZodError } from 'zod';
 import { z } from 'zod';
-import logger from './log-helper';
 import type { RuntimeData } from './runtime-data';
 import {
   StringArraySchema,
@@ -81,9 +80,6 @@ export const UserOptionsSchema = z.object({
   classicDecorator: StringBooleanSchema.describe(
     'Enable/disable adding the [`@classic` decorator](https://github.com/pzuraq/ember-classic-decorator), which helps with transitioning Ember Octane'
   ),
-  partialTransforms: StringBooleanSchema.describe(
-    'If `false`, the entire file will fail validation if any EmberObject within it fails validation.'
-  ),
   quote: QuoteSchema.describe(
     'Whether to use double or single quotes by default for new statements that are added during the codemod.'
   ),
@@ -132,7 +128,8 @@ function logConfigError(
   for (const [key, value] of Object.entries(flattened.fieldErrors)) {
     errors.push(`[${key}] ${value.join('; ')}`);
   }
-  logger.error(`[${source}]: CONFIG ERROR: \n\t${errors.join('\n\t')}`);
+  const message = errors.join('\n\t');
+  throw new ConfigError(`${source} Config Error\n\t${message}`);
 }
 
 interface PrivateOptions {
@@ -147,6 +144,12 @@ export const DEFAULT_OPTIONS: UserOptions = {
   classFields: true,
   classicDecorator: true,
   quote: 'single',
-  partialTransforms: true,
   ignoreLeakingState: ['queryParams'],
 };
+
+class ConfigError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ConfigError';
+  }
+}
