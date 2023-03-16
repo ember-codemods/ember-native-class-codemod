@@ -18,7 +18,8 @@ for (let testFile of testFiles) {
   let moduleName = testFile.replace(/\.input\.[^./]+$/, '');
   let value = mockTelemetryData[moduleName] || {};
 
-  mockTelemetry[path.resolve(__dirname, `./__testfixtures__/${moduleName}`)] = value;
+  mockTelemetry[path.resolve(__dirname, `./__testfixtures__/${moduleName}`)] =
+    value;
 }
 
 setTelemetry(mockTelemetry);
