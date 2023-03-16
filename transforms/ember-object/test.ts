@@ -1,23 +1,22 @@
-'use strict';
-
-const path = require('path');
-const { runTransformTest } = require('codemod-cli');
-const { setTelemetry } = require('ember-codemods-telemetry-helpers');
+import { runTransformTest } from 'codemod-cli';
+import { setTelemetry } from 'ember-codemods-telemetry-helpers';
+import { globSync } from 'glob';
+import path from 'path';
 
 // bootstrap the mock telemetry data
-const walkSync = require('walk-sync');
-const mockTelemetryData = require('./__testfixtures__/-mock-telemetry.json');
+import mockTelemetryData from './__testfixtures__/-mock-telemetry.json';
 
-// This is nasty, cwd is screwed up here for some reason
-let testFiles = walkSync('./transforms/ember-object/__testfixtures__', {
-  globs: ['**/*.input.js'],
-});
-let mockTelemetry = {};
+const testFiles = globSync(
+  './transforms/ember-object/__testfixtures__/**/*.input.js'
+);
+const mockTelemetry: Record<string, unknown> = {};
 
-for (let testFile of testFiles) {
-  let moduleName = testFile.replace(/\.input\.[^./]+$/, '');
-  let value = mockTelemetryData[moduleName] || {};
+for (const testFile of testFiles) {
+  const moduleName = testFile.replace(/\.input\.[^./]+$/, '');
+  const value =
+    (mockTelemetryData as Record<string, unknown>)[moduleName] ?? {};
 
+  // eslint-disable-next-line unicorn/prefer-module
   mockTelemetry[path.resolve(__dirname, `./__testfixtures__/${moduleName}`)] =
     value;
 }
