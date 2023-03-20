@@ -92,7 +92,6 @@ transformation of
 ## More Transform Examples
 
 <!--TRANSFORMS_START-->
-
 * [ember-object](transforms/ember-object/README.md)
 * [helpers](transforms/helpers/README.md)
 <!--TRANSFORMS_END-->
