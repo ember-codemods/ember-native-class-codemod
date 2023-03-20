@@ -1,6 +1,6 @@
 {
   "name": "ember-native-class-codemod",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Codemods for transforming ember app code to native class syntax with decorators.",
   "keywords": [
     "codemod-cli"
@@ -43,8 +43,6 @@
     "lint:prettier:fix": "prettier --write .",
     "lint:ts": "tsc --noEmit",
     "test": "yarn build && codemod-cli test && node ./test/run-test.js && yarn clean",
-    "fixme": "rm codemods.log; yarn build && codemod-cli test; yarn clean",
-    "dogfood": "rm codemods.log && yarn jscodeshift --transform ./transforms/ember-object/index.ts --verbose=2 ./transforms/ember-object/__testfixtures__/*.input.js",
     "update-docs": "codemod-cli update-docs"
   },
   "dependencies": {
@@ -106,8 +104,5 @@
       "release": true,
       "tokenRef": "GITHUB_AUTH"
     }
-  },
-  "volta": {
-    "node": "14.21.3"
   }
 }
