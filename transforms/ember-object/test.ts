@@ -1,13 +1,12 @@
-import { describe, expect, test, beforeEach, afterEach } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, test } from '@jest/globals';
 import { setTelemetry } from 'ember-codemods-telemetry-helpers';
 import { globSync } from 'glob';
-// @ts-expect-error FIXME
 import { applyTransform } from 'jscodeshift/dist/testUtils';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import transform, { parser } from '../ember-object/index';
-import mockTelemetryData from './__testfixtures__/-mock-telemetry.json';
 import { assert } from '../helpers/util/types';
+import mockTelemetryData from './__testfixtures__/-mock-telemetry.json';
 
 const fixtureDir = 'transforms/ember-object/__testfixtures__/';
 const testFiles = globSync(`${fixtureDir}**/*.input.js`);
@@ -120,9 +119,10 @@ function runTest(
   }
 }
 
-function runTransform(input: string, testPath: string): string {
-  // FIXME
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
+function runTransform(
+  input: string,
+  testPath: string
+): string | null | undefined {
   return applyTransform(
     transform,
     // NOTE: This version of options unused in the transform
