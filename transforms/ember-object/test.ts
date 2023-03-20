@@ -113,7 +113,7 @@ function runTest(
     }
     expect(errorCount).toEqual(1);
   } else if (skipped) {
-    expect(runTransform(input, testPath)).toEqual('');
+    expect(runTransform(input, testPath)).toBeUndefined();
   } else {
     expect(runTransform(input, testPath)).toEqual(output.trim());
   }
