@@ -43,7 +43,7 @@
     "lint:prettier:fix": "prettier --write .",
     "lint:ts": "tsc --noEmit",
     "test": "yarn build && codemod-cli test && node ./test/run-test.js && yarn clean",
-    "fixme": "rm codemods.log; yarn build && codemod-cli test -t string-boolean; yarn clean",
+    "fixme": "rm codemods.log; yarn build && codemod-cli test; yarn clean",
     "dogfood": "rm codemods.log && yarn jscodeshift --transform ./transforms/ember-object/index.ts --verbose=2 ./transforms/ember-object/__testfixtures__/*.input.js",
     "update-docs": "codemod-cli update-docs"
   },

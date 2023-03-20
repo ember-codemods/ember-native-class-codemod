@@ -1,3 +1,5 @@
+/* Expect skipped */
+
 /**
  * Program comments
  */

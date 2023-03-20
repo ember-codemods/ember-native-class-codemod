@@ -77,8 +77,7 @@ function _maybeTransformEmberObjects(
   if (eoExtendExpressionPaths.length === 0) {
     logger.info({
       filePath,
-      message:
-        "UNMODIFIED: Did not find any 'EmberObject.extend()' expressions",
+      info: "UNMODIFIED: Did not find any 'EmberObject.extend()' expressions",
     });
   }
 

@@ -27,7 +27,7 @@ const transformer: Transform = function (
     }
 
     if (isTestFile(filePath)) {
-      logger.info({ filePath, message: 'SKIPPED: test file' });
+      logger.info({ filePath, info: 'SKIPPED: test file' });
       return; // status: 'skipped'
     }
 
@@ -36,7 +36,7 @@ const transformer: Transform = function (
     if (userOptions.type && !isFileOfType(filePath, userOptions.type)) {
       logger.info({
         filePath,
-        message: `SKIPPED: Type mismatch, expected type '${userOptions.type}' did not match type of file`,
+        info: `SKIPPED: Type mismatch, expected type '${userOptions.type}' did not match type of file`,
       });
       return; // status: 'skipped'
     }

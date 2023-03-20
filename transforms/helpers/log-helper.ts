@@ -6,16 +6,15 @@ const { combine, timestamp, printf } = format;
 
 const logFormatter = printf(({ level, timestamp, message: raw }) => {
   assert(typeof timestamp === 'string');
-  let message = `${timestamp} `;
+  let message = `${timestamp} ${level.toLocaleUpperCase()}: `;
   if (typeof raw === 'string') {
-    message += `${level}: ${raw}`;
+    message += raw;
   } else if (isRecord(raw)) {
     if (typeof raw['filePath'] === 'string') {
       message += `[${raw['filePath']}]`;
     }
-    message += ` ${level.toLocaleUpperCase()}: `;
-    if (typeof raw['message'] === 'string') {
-      message += `\n\t${raw['message']}`;
+    if (typeof raw['info'] === 'string') {
+      message += `\n\t${raw['info']}`;
     }
     if (raw['error'] instanceof Error) {
       message += `\n\t${raw['error'].name}: ${raw['error'].message}`;

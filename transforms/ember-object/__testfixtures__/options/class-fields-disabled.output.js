@@ -1,3 +1,12 @@
+/*
+Expect error:
+  ValidationError: Validation errors for class 'Foo':
+    [prop]: Transform not supported - need option '--class-fields=true'
+    [boolProp]: Transform not supported - need option '--class-fields=true'
+    [numProp]: Transform not supported - need option '--class-fields=true'
+    [MY_VAL]: Transform not supported - need option '--class-fields=true'
+*/
+
 /**
  * Program comments
  */

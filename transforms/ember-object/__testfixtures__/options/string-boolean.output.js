@@ -1,4 +1,13 @@
-class Foo1 extends EmberObject {}
+/*
+Expect error:
+	ValidationError: Validation errors for class 'Foo2':
+		[prop]: Transform not supported - need option '--class-fields=true'
+		[boolProp]: Transform not supported - need option '--class-fields=true'
+		[numProp]: Transform not supported - need option '--class-fields=true'
+		[MY_VAL]: Transform not supported - need option '--class-fields=true'
+*/
+
+const Foo1 = EmberObject.extend({});
 
 /**
  * Program comments
