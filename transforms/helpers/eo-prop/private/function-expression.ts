@@ -51,6 +51,8 @@ export default class EOFunctionExpressionProp extends AbstractEOProp<
         body: this.value.body,
         comments: this.comments,
         decorators: this.existingDecorators,
+        generator: this.value.generator ?? false,
+        async: this.value.async ?? false,
       }),
       this.replaceSuperWithUndefined
     );
