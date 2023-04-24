@@ -1022,7 +1022,7 @@
     enabled "2.0.x"
     kuler "^2.0.0"
 
-"@es-joy/jsdoccomment@~0.37.1":
+"@es-joy/jsdoccomment@~0.37.0":
   version "0.37.1"
   resolved "https://registry.yarnpkg.com/@es-joy/jsdoccomment/-/jsdoccomment-0.37.1.tgz#fa32a41ba12097452693343e09ad4d26d157aedd"
   integrity sha512-5vxWJ1gEkEF0yRd0O+uK6dHJf7adrxwQSX8PuRiPfFSAbNLnY0ZJfXaZucoz14Jj2N11xn2DnlEPwWRpYpvRjg==
@@ -3308,12 +3308,12 @@ eslint-plugin-eslint-comments@^3.2.0:
     escape-string-regexp "^1.0.5"
     ignore "^5.0.5"
 
-eslint-plugin-jsdoc@^43.1.0:
-  version "43.1.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-43.1.0.tgz#e4e685eef66b17d0b99221e5933c9f179cb2fe94"
-  integrity sha512-TIeaVIW3nu9/dCrx/W5+IUUyNHyYP/dzEd4JKjxfhCFjEA6D1KmNFr00ykLxHcTeHsZs02TbT3CEA8Coen3u8A==
+eslint-plugin-jsdoc@43.0.5:
+  version "43.0.5"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-43.0.5.tgz#5b19487f6bb8d9cda64eafd992f8ec190bcec043"
+  integrity sha512-4+hN5jrwcElXwK+J6GiUYbgHl+C063lu1gR2ajUA1L4bs+rBsAoV37dP2gISfqzoU83VsY1/sSD4wvH87JHCsQ==
   dependencies:
-    "@es-joy/jsdoccomment" "~0.37.1"
+    "@es-joy/jsdoccomment" "~0.37.0"
     are-docs-informative "^0.0.2"
     comment-parser "1.3.1"
     debug "^4.3.4"
