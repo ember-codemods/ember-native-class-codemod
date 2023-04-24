@@ -6,5 +6,5 @@ declare module 'jscodeshift/dist/testUtils' {
     transformOptions: Options,
     fileInfo: FileInfo,
     testOptions?: { parser: Parser }
-  ): string | null | undefined;
+  ): string;
 }

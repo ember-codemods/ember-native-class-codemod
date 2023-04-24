@@ -125,10 +125,7 @@ function runTest(
   }
 }
 
-function runTransform(
-  input: string,
-  testPath: string
-): string | null | undefined {
+function runTransform(input: string, testPath: string): string {
   return applyTransform(
     transform,
     // NOTE: This version of options unused in the transform
