@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { DEFAULT_OPTIONS, parseConfig } from '../transforms/helpers/options';
-import { makeLogMatcher } from './helpers/expect-logs';
+import { makeMultilineMatcher } from './helpers/expect-multiline';
 
 describe('options', () => {
   describe('parseConfig', () => {
@@ -60,7 +60,7 @@ describe('options', () => {
       test('it errors for invalid `decorators` config', () => {
         expect(() => parseConfig('test', { decorators: 'oops' })).toThrow(
           new RegExp(
-            makeLogMatcher(
+            makeMultilineMatcher(
               'test Config Error',
               "[decorators] Expected DecoratorOptions object or boolean, received 'oops'"
             )
@@ -95,7 +95,7 @@ describe('options', () => {
         test(`it errors for invalid \`${fieldName}\` config`, () => {
           expect(() => parseConfig('test', { [fieldName]: 'oops' })).toThrow(
             new RegExp(
-              makeLogMatcher(
+              makeMultilineMatcher(
                 'test Config Error',
                 `[${fieldName}] Expected boolean, received string`
               )
@@ -119,7 +119,7 @@ describe('options', () => {
       test('it errors for invalid `quote` config', () => {
         expect(() => parseConfig('test', { quote: 'oops' })).toThrow(
           new RegExp(
-            makeLogMatcher(
+            makeMultilineMatcher(
               'test Config Error',
               "[quote] Expected 'single' or 'double', received 'oops"
             )
@@ -157,7 +157,7 @@ describe('options', () => {
           parseConfig('test', { ignoreLeakingState: false })
         ).toThrow(
           new RegExp(
-            makeLogMatcher(
+            makeMultilineMatcher(
               'test Config Error',
               '[ignoreLeakingState] Expected array of strings or comma-separated string, received false'
             )
@@ -178,7 +178,7 @@ describe('options', () => {
       test('it errors for invalid `type` config', () => {
         expect(() => parseConfig('test', { type: 'oops' })).toThrow(
           new RegExp(
-            makeLogMatcher(
+            makeMultilineMatcher(
               'test Config Error',
               "[type] Expected 'services', 'routes', 'components', or 'controllers', received 'oops"
             )
