@@ -1,4 +1,4 @@
-import minimatch from 'minimatch';
+import { minimatch } from 'minimatch';
 import type { Options } from './options';
 
 const TYPE_PATTERNS = {
