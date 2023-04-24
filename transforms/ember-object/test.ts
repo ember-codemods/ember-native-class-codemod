@@ -101,21 +101,27 @@ function runTest(
   expectedError: string | undefined,
   skipped: boolean
 ): void {
+  let error: unknown = null;
+  let result: string | null | undefined;
+
+  try {
+    result = runTransform(input, testPath);
+  } catch (e: unknown) {
+    error = e;
+  }
+
   if (expectedError) {
-    // IDG why expect().toThrow() doesn't work here but whatever
-    let errorCount = 0;
-    try {
-      runTransform(input, testPath);
-    } catch (e: unknown) {
-      errorCount++;
-      assert(e instanceof Error, 'expected e to be an Error');
-      expect(`${e.name}: ${squish(e.message)}`).toEqual(squish(expectedError));
-    }
-    expect(errorCount).toEqual(1);
+    expect(result).toBeUndefined();
+    assert(error instanceof Error, 'expected e to be an Error');
+    expect(`${error.name}: ${squish(error.message)}`).toEqual(
+      squish(expectedError)
+    );
   } else if (skipped) {
-    expect(runTransform(input, testPath)).toBeUndefined();
+    expect(error).toBeNull();
+    expect(result).toEqual(''); // applyTransform coerces undefined to ''
   } else {
-    expect(runTransform(input, testPath)).toEqual(output.trim());
+    expect(error).toBeNull();
+    expect(result).toEqual(output.trim());
   }
 }
 
