@@ -57,4 +57,7 @@ const execOpts = { cwd: inputDir, stderr: 'inherit' };
 
   console.log('codemod ran successfully! 🎉');
   process.exit(0);
-})();
+})().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});
