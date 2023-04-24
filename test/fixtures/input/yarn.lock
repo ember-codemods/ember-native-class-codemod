@@ -1178,6 +1178,15 @@
     ember-cli-version-checker "^5.1.2"
     semver "^7.3.5"
 
+"@embroider/addon-shim@^1.8.4":
+  version "1.8.4"
+  resolved "https://registry.yarnpkg.com/@embroider/addon-shim/-/addon-shim-1.8.4.tgz#0e7f32c5506bf0f3eb0840506e31c36c7053763c"
+  integrity sha512-sFhfWC0vI18KxVenmswQ/ShIvBg4juL8ubI+Q3NTSdkCTeaPQ/DIOUF6oR5DCQ8eO/TkIaw+kdG3FkTY6yNJqA==
+  dependencies:
+    "@embroider/shared-internals" "^2.0.0"
+    broccoli-funnel "^3.0.8"
+    semver "^7.3.8"
+
 "@embroider/macros@^1.0.0", "@embroider/macros@^1.10.0":
   version "1.10.0"
   resolved "https://registry.yarnpkg.com/@embroider/macros/-/macros-1.10.0.tgz#af3844d5db48f001b85cfb096c76727c72ad6c1e"
@@ -4309,6 +4318,14 @@ ember-template-recast@^6.1.4:
     slash "^3.0.0"
     tmp "^0.2.1"
     workerpool "^6.4.0"
+
+ember-welcome-page@^7.0.1:
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/ember-welcome-page/-/ember-welcome-page-7.0.1.tgz#089ce6b4836a1af621dc7506942179efbbfd807b"
+  integrity sha512-3Dj7+ap38O/rgQBNqBsd7RPfH81a6DE1xJbipMt9mjOkvLo3OamZiiekAeax3Ydnm3yKYCtbxHPkCIEn4G6B8A==
+  dependencies:
+    "@embroider/addon-shim" "^1.8.4"
+    "@glimmer/component" "^1.1.2"
 
 emoji-regex@^8.0.0:
   version "8.0.0"
