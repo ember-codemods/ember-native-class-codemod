@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from '@jest/globals';
 import { setTelemetry } from 'ember-codemods-telemetry-helpers';
-import { globSync } from 'glob';
+import { GlobSync } from 'glob';
 import { applyTransform } from 'jscodeshift/dist/testUtils';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -9,7 +9,7 @@ import { assert } from '../helpers/util/types';
 import mockTelemetryData from './__testfixtures__/-mock-telemetry.json';
 
 const fixtureDir = 'transforms/ember-object/__testfixtures__/';
-const testFiles = globSync(`${fixtureDir}**/*.input.js`);
+const testFiles = new GlobSync(`${fixtureDir}**/*.input.js`).found;
 
 const mockTelemetry: Record<string, unknown> = {};
 for (const testFile of testFiles) {
