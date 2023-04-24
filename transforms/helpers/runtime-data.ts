@@ -1,6 +1,7 @@
 import { getTelemetryFor } from 'ember-codemods-telemetry-helpers';
 import path from 'path';
 import { z } from 'zod';
+import logger from './log-helper';
 
 const RuntimeDataSchema = z.object({
   type: z.string().optional(),
@@ -14,12 +15,19 @@ const RuntimeDataSchema = z.object({
 export type RuntimeData = z.infer<typeof RuntimeDataSchema>;
 
 /**
- * TODO
+ * Gets telemetry data for the file and parses it into a valid `RuntimeData`
+ * object.
  */
 export function getRuntimeData(filePath: string): RuntimeData {
-  const rawTelemetry = getTelemetryFor(path.resolve(filePath));
+  let rawTelemetry = getTelemetryFor(path.resolve(filePath));
   if (!rawTelemetry) {
-    throw new RuntimeDataError('Could not find runtime data');
+    // Do not re-throw. The most likely reason this happened was because
+    // the user's app threw an error. We still want the codemod to work if so.
+    logger.error({
+      filePath,
+      error: new RuntimeDataError('Could not find runtime data'),
+    });
+    rawTelemetry = {};
   }
 
   const result = RuntimeDataSchema.safeParse(rawTelemetry);
