@@ -19,8 +19,7 @@
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "importsNotUsedAsValues": "error"
+    "noUnusedParameters": true
   },
   "include": ["transforms/**/*"],
   "exclude": ["transforms/ember-object/__testfixtures__/**/*"]
