@@ -96,7 +96,7 @@ export default class EOSimpleProp extends AbstractEOProp<
       if ('args' in decorator) {
         decorators.push(createDecoratorWithArgs(decoratorName, decorator.args));
       } else {
-        logger.info(`[${this.name}] Ignored decorator ${decoratorName}`);
+        logger.warn(`[${this.name}] Ignored decorator ${decoratorName}`);
       }
     }
 

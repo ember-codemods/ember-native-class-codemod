@@ -7,6 +7,7 @@
     "checkJs": false,
     "noEmitOnError": false,
     "skipLibCheck": false,
+    "resolveJsonModule": true,
 
     "strict": true,
     "forceConsistentCasingInFileNames": true,

@@ -76,7 +76,7 @@ export default abstract class AbstractEOComputedProp<
     for (const decorator of this.decorators) {
       const decoratorName = decorator.name;
       if (this.isVolatileReadOnly) {
-        logger.info(`[${this.name}] Ignored decorator ${decoratorName}`);
+        logger.warn(`[${this.name}] Ignored decorator ${decoratorName}`);
       } else {
         decorators.push(this.buildDecorator(decoratorName));
       }

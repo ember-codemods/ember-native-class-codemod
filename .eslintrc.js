@@ -37,7 +37,7 @@ module.exports = {
     'unicorn/consistent-destructuring': 'off',
     'unicorn/consistent-function-scoping': ['error', { checkArrowFunctions: false }],
     'unicorn/custom-error-definition': 'error',
-    'unicorn/filename-case': ['error', { case: 'kebabCase' }],
+    'unicorn/filename-case': 'off',
     'unicorn/no-array-callback-reference': 'off',
     'unicorn/no-array-method-this-argument': 'off', // False positives
     'unicorn/no-null': 'off',
