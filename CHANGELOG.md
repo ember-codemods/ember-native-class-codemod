@@ -1,6 +1,24 @@
 # Changelog
 
 
+
+## v3.2.0 (2023-04-26)
+
+#### :rocket: Enhancement
+* [#525](https://github.com/ember-codemods/ember-native-class-codemod/pull/525) Utilize jscodeshift CLI results output ([@gitKrystan](https://github.com/gitKrystan))
+
+#### :bug: Bug Fix
+* [#524](https://github.com/ember-codemods/ember-native-class-codemod/pull/524) Retain async / generator behavior on class methods (Closes [#521](https://github.com/ember-codemods/ember-native-class-codemod/issues/521)) ([@gitKrystan](https://github.com/gitKrystan))
+
+#### :memo: Documentation
+* [#531](https://github.com/ember-codemods/ember-native-class-codemod/pull/531) Fix typos in readme ([@gitKrystan](https://github.com/gitKrystan))
+
+#### :house: Internal
+* [#529](https://github.com/ember-codemods/ember-native-class-codemod/pull/529) Upgrade Dependencies + Fix CI ([@gitKrystan](https://github.com/gitKrystan))
+
+#### Committers: 1
+- Krystan HuffMenne ([@gitKrystan](https://github.com/gitKrystan))
+
 ## v3.1.0 (2023-03-10)
 
 #### :rocket: Enhancement

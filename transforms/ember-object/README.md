@@ -14,34 +14,51 @@ ember-native-class-codemod ember-object path/of/files/ or/some**/*glob.js
 ## Input / Output
 
 <!--FIXTURES_TOC_START-->
-* [action-invalid](#action-invalid)
+* [action-invalid-1](#action-invalid-1)
+* [action-invalid-2](#action-invalid-2)
+* [action-invalid-3](#action-invalid-3)
+* [action-invalid-4](#action-invalid-4)
+* [action-invalid-5](#action-invalid-5)
+* [async-function-property](#async-function-property)
+* [async-method](#async-method)
 * [basic-computed](#basic-computed)
 * [basic](#basic)
 * [chained-class-definition](#chained-class-definition)
 * [class-fields](#class-fields)
 * [class-reopen](#class-reopen)
-* [decorators-invalid](#decorators-invalid)
+* [decorators-invalid-1](#decorators-invalid-1)
+* [decorators-invalid-2](#decorators-invalid-2)
+* [decorators-invalid-3](#decorators-invalid-3)
+* [decorators-invalid-4](#decorators-invalid-4)
+* [decorators-invalid-5](#decorators-invalid-5)
+* [decorators-invalid-6](#decorators-invalid-6)
+* [decorators-invalid-7](#decorators-invalid-7)
+* [decorators-invalid-8](#decorators-invalid-8)
 * [decorators](#decorators)
 * [default-export](#default-export)
 * [double-quotes](#double-quotes)
 * [ember-concurrency](#ember-concurrency)
 * [frozen](#frozen)
+* [generator-method](#generator-method)
+* [generator-property](#generator-property)
 * [import](#import)
 * [injecting-service](#injecting-service)
 * [logical-expression](#logical-expression)
 * [mixin](#mixin)
 * [object-literal-with-action-hash-and-decorator](#object-literal-with-action-hash-and-decorator)
-* [object-literal-with-decorators-invalid](#object-literal-with-decorators-invalid)
+* [object-literal-with-decorators-invalid-1](#object-literal-with-decorators-invalid-1)
+* [object-literal-with-decorators-invalid-2](#object-literal-with-decorators-invalid-2)
+* [object-literal-with-decorators-invalid-3](#object-literal-with-decorators-invalid-3)
+* [object-literal-with-decorators-invalid-4](#object-literal-with-decorators-invalid-4)
 * [object-literal-with-decorators](#object-literal-with-decorators)
-* [partial-transform](#partial-transform)
 * [runtime](#runtime)
 <!--FIXTURES_TOC_END-->
 
 ## <!--FIXTURES_CONTENT_START-->
 ---
-<a id="action-invalid">**action-invalid**</a>
+<a id="action-invalid-1">**action-invalid-1**</a>
 
-**Input** (<small>[action-invalid.input.js](transforms/ember-object/__testfixtures__/action-invalid.input.js)</small>):
+**Input** (<small>[action-invalid-1.input.js](transforms/ember-object/__testfixtures__/action-invalid-1.input.js)</small>):
 ```js
 const Foo1 = EmberObject.extend({
   actions: {
@@ -51,6 +68,49 @@ const Foo1 = EmberObject.extend({
     },
   },
 });
+```
+
+**Output** (<small>[action-invalid-1.output.js](transforms/ember-object/__testfixtures__/action-invalid-1.output.js)</small>):
+```js
+/*
+Expect error:
+	ValidationError: Validation errors for class 'Foo1':
+		[actions]: Transform not supported - [bar]: calling the passed action would cause an infinite loop. See https://github.com/scalvert/eslint-plugin-ember-es6-class/pull/2 for more details
+*/
+
+const Foo1 = EmberObject.extend({
+  actions: {
+    bar() {
+      this._super(...arguments);
+      this.get('bar')();
+    },
+  },
+});
+
+```
+---
+<a id="action-invalid-2">**action-invalid-2**</a>
+
+**Input** (<small>[action-invalid-2.input.js](transforms/ember-object/__testfixtures__/action-invalid-2.input.js)</small>):
+```js
+const Foo2 = EmberObject.extend({
+  actions: {
+    biz() {
+      this._super(...arguments);
+      get(this, 'biz')();
+    },
+  },
+});
+
+```
+
+**Output** (<small>[action-invalid-2.output.js](transforms/ember-object/__testfixtures__/action-invalid-2.output.js)</small>):
+```js
+/*
+Expect error:
+	ValidationError: Validation errors for class 'Foo2':
+		[actions]: Transform not supported - [biz]: calling the passed action would cause an infinite loop. See https://github.com/scalvert/eslint-plugin-ember-es6-class/pull/2 for more details
+*/
 
 const Foo2 = EmberObject.extend({
   actions: {
@@ -61,6 +121,12 @@ const Foo2 = EmberObject.extend({
   },
 });
 
+```
+---
+<a id="action-invalid-3">**action-invalid-3**</a>
+
+**Input** (<small>[action-invalid-3.input.js](transforms/ember-object/__testfixtures__/action-invalid-3.input.js)</small>):
+```js
 const Foo3 = EmberObject.extend({
   actions: {
     baz() {
@@ -69,6 +135,49 @@ const Foo3 = EmberObject.extend({
     },
   },
 });
+
+```
+
+**Output** (<small>[action-invalid-3.output.js](transforms/ember-object/__testfixtures__/action-invalid-3.output.js)</small>):
+```js
+/*
+Expect error:
+	ValidationError: Validation errors for class 'Foo3':
+		[actions]: Transform not supported - [baz]: calling the passed action would cause an infinite loop. See https://github.com/scalvert/eslint-plugin-ember-es6-class/pull/2 for more details
+*/
+
+const Foo3 = EmberObject.extend({
+  actions: {
+    baz() {
+      this._super(...arguments);
+      tryInvoke(this, 'baz');
+    },
+  },
+});
+
+```
+---
+<a id="action-invalid-4">**action-invalid-4**</a>
+
+**Input** (<small>[action-invalid-4.input.js](transforms/ember-object/__testfixtures__/action-invalid-4.input.js)</small>):
+```js
+const Foo4 = EmberObject.extend({
+  actions: {
+    sendBaz() {
+      this._super(...arguments);
+      this.send('sendBaz');
+    },
+  },
+});
+```
+
+**Output** (<small>[action-invalid-4.output.js](transforms/ember-object/__testfixtures__/action-invalid-4.output.js)</small>):
+```js
+/*
+Expect error:
+	ValidationError: Validation errors for class 'Foo4':
+		[actions]: Transform not supported - [sendBaz]: calling the passed action would cause an infinite loop. See https://github.com/scalvert/eslint-plugin-ember-es6-class/pull/2 for more details
+*/
 
 const Foo4 = EmberObject.extend({
   actions: {
@@ -79,6 +188,12 @@ const Foo4 = EmberObject.extend({
   },
 });
 
+```
+---
+<a id="action-invalid-5">**action-invalid-5**</a>
+
+**Input** (<small>[action-invalid-5.input.js](transforms/ember-object/__testfixtures__/action-invalid-5.input.js)</small>):
+```js
 const Foo5 = EmberObject.extend({
   actions: {
     thisBaz() {
@@ -90,43 +205,13 @@ const Foo5 = EmberObject.extend({
 
 ```
 
-**Output** (<small>[action-invalid.output.js](transforms/ember-object/__testfixtures__/action-invalid.output.js)</small>):
+**Output** (<small>[action-invalid-5.output.js](transforms/ember-object/__testfixtures__/action-invalid-5.output.js)</small>):
 ```js
-const Foo1 = EmberObject.extend({
-  actions: {
-    bar() {
-      this._super(...arguments);
-      this.get('bar')();
-    },
-  },
-});
-
-const Foo2 = EmberObject.extend({
-  actions: {
-    biz() {
-      this._super(...arguments);
-      get(this, 'biz')();
-    },
-  },
-});
-
-const Foo3 = EmberObject.extend({
-  actions: {
-    baz() {
-      this._super(...arguments);
-      tryInvoke(this, 'baz');
-    },
-  },
-});
-
-const Foo4 = EmberObject.extend({
-  actions: {
-    sendBaz() {
-      this._super(...arguments);
-      this.send('sendBaz');
-    },
-  },
-});
+/*
+Expect error:
+	ValidationError: Validation errors for class 'Foo5':
+		[actions]: Transform not supported - [thisBaz]: calling the passed action would cause an infinite loop. See https://github.com/scalvert/eslint-plugin-ember-es6-class/pull/2 for more details
+*/
 
 const Foo5 = EmberObject.extend({
   actions: {
@@ -136,6 +221,56 @@ const Foo5 = EmberObject.extend({
     },
   },
 });
+
+```
+---
+<a id="async-function-property">**async-function-property**</a>
+
+**Input** (<small>[async-function-property.input.js](transforms/ember-object/__testfixtures__/async-function-property.input.js)</small>):
+```js
+const Foo = Test.extend({
+  myAsyncMethod: async function() {
+    await Promise.resolve('hello');
+  }
+});
+
+```
+
+**Output** (<small>[async-function-property.output.js](transforms/ember-object/__testfixtures__/async-function-property.output.js)</small>):
+```js
+import classic from 'ember-classic-decorator';
+
+@classic
+class Foo extends Test {
+  async myAsyncMethod() {
+    await Promise.resolve('hello');
+  }
+}
+
+```
+---
+<a id="async-method">**async-method**</a>
+
+**Input** (<small>[async-method.input.js](transforms/ember-object/__testfixtures__/async-method.input.js)</small>):
+```js
+const Foo = Test.extend({
+  async myAsyncMethod() {
+    await Promise.resolve('hello');
+  }
+});
+
+```
+
+**Output** (<small>[async-method.output.js](transforms/ember-object/__testfixtures__/async-method.output.js)</small>):
+```js
+import classic from 'ember-classic-decorator';
+
+@classic
+class Foo extends Test {
+  async myAsyncMethod() {
+    await Promise.resolve('hello');
+  }
+}
 
 ```
 ---
@@ -276,6 +411,12 @@ export default EmberObject.extend({}).reopenClass({});
 
 **Output** (<small>[chained-class-definition.output.js](transforms/ember-object/__testfixtures__/chained-class-definition.output.js)</small>):
 ```js
+/*
+Expect error:
+	ValidationError: Validation errors for class 'ChainedClassDefinition':
+		class has chained definition (e.g. EmberObject.extend().reopenClass();
+*/
+
 import EmberObject from '@ember/object';
 
 export default EmberObject.extend({}).reopenClass({});
@@ -375,19 +516,61 @@ export default Foo;
 
 ```
 ---
-<a id="decorators-invalid">**decorators-invalid**</a>
+<a id="decorators-invalid-1">**decorators-invalid-1**</a>
 
-**Input** (<small>[decorators-invalid.input.js](transforms/ember-object/__testfixtures__/decorators-invalid.input.js)</small>):
+**Input** (<small>[decorators-invalid-1.input.js](transforms/ember-object/__testfixtures__/decorators-invalid-1.input.js)</small>):
 ```js
 // Do not transform
 const Foo1 = EmberObject.extend({
   statefulObject: {},
 });
 
+```
+
+**Output** (<small>[decorators-invalid-1.output.js](transforms/ember-object/__testfixtures__/decorators-invalid-1.output.js)</small>):
+```js
+/*
+Expect error:
+  ValidationError: Validation errors for class 'Foo1':
+    [statefulObject]: Transform not supported - value is of type object. For more details: eslint-plugin-ember/avoid-leaking-state-in-ember-objects
+*/
+
+// Do not transform
+const Foo1 = EmberObject.extend({
+  statefulObject: {},
+});
+
+```
+---
+<a id="decorators-invalid-2">**decorators-invalid-2**</a>
+
+**Input** (<small>[decorators-invalid-2.input.js](transforms/ember-object/__testfixtures__/decorators-invalid-2.input.js)</small>):
+```js
 // Do not transform if not a primitive value
 const Foo2 = EmberObject.extend({
   macroValue: macro(),
 });
+```
+
+**Output** (<small>[decorators-invalid-2.output.js](transforms/ember-object/__testfixtures__/decorators-invalid-2.output.js)</small>):
+```js
+/*
+Expect error:
+  ValidationError: Validation errors for class 'Foo2':
+    [macroValue]: Transform not supported - call to 'macro' can not be transformed
+*/
+
+// Do not transform if not a primitive value
+const Foo2 = EmberObject.extend({
+  macroValue: macro(),
+});
+```
+---
+<a id="decorators-invalid-3">**decorators-invalid-3**</a>
+
+**Input** (<small>[decorators-invalid-3.input.js](transforms/ember-object/__testfixtures__/decorators-invalid-3.input.js)</small>):
+```js
+import { computed } from '@ember/object';
 
 // Do not transform as a computed property has readOnly and volatile with meta
 const Foo3 = EmberObject.extend({
@@ -403,10 +586,64 @@ const Foo3 = EmberObject.extend({
     .meta({ type: 'Property' }),
 });
 
+```
+
+**Output** (<small>[decorators-invalid-3.output.js](transforms/ember-object/__testfixtures__/decorators-invalid-3.output.js)</small>):
+```js
+/*
+Expect error:
+  ValidationError: Validation errors for class 'Foo3':
+    [fName2]: Transform not supported - value has modifiers like 'property' or 'meta'
+*/
+
+import { computed } from '@ember/object';
+
+// Do not transform as a computed property has readOnly and volatile with meta
+const Foo3 = EmberObject.extend({
+  firstName: '',
+  lastName: '',
+
+  fName2: computed('firstName', 'lastName', function() {
+    return true;
+  })
+    .property('baz')
+    .readOnly()
+    .volatile()
+    .meta({ type: 'Property' }),
+});
+
+```
+---
+<a id="decorators-invalid-4">**decorators-invalid-4**</a>
+
+**Input** (<small>[decorators-invalid-4.input.js](transforms/ember-object/__testfixtures__/decorators-invalid-4.input.js)</small>):
+```js
 // Do not transform as a computed meta has volatile
 const Foo4 = EmberObject.extend({
   lName1: add('description', 'lastName').volatile(),
 });
+
+```
+
+**Output** (<small>[decorators-invalid-4.output.js](transforms/ember-object/__testfixtures__/decorators-invalid-4.output.js)</small>):
+```js
+/*
+Expect error:
+  ValidationError: Validation errors for class 'Foo4':
+    [lName1]: Transform not supported - call to 'add' can not be transformed
+*/
+
+// Do not transform as a computed meta has volatile
+const Foo4 = EmberObject.extend({
+  lName1: add('description', 'lastName').volatile(),
+});
+```
+---
+<a id="decorators-invalid-5">**decorators-invalid-5**</a>
+
+**Input** (<small>[decorators-invalid-5.input.js](transforms/ember-object/__testfixtures__/decorators-invalid-5.input.js)</small>):
+```js
+import { computed } from '@ember/object';
 
 // Do not transform as computed prop has `property`
 const Foo5 = EmberObject.extend({
@@ -414,6 +651,31 @@ const Foo5 = EmberObject.extend({
     return true;
   }).property('baz'),
 });
+```
+
+**Output** (<small>[decorators-invalid-5.output.js](transforms/ember-object/__testfixtures__/decorators-invalid-5.output.js)</small>):
+```js
+/*
+Expect error:
+  ValidationError: Validation errors for class 'Foo5':
+    [fName2]: Transform not supported - value has modifiers like 'property' or 'meta'
+*/
+
+import { computed } from '@ember/object';
+
+// Do not transform as computed prop has `property`
+const Foo5 = EmberObject.extend({
+  fName2: computed('firstName', 'lastName', function() {
+    return true;
+  }).property('baz'),
+});
+```
+---
+<a id="decorators-invalid-6">**decorators-invalid-6**</a>
+
+**Input** (<small>[decorators-invalid-6.input.js](transforms/ember-object/__testfixtures__/decorators-invalid-6.input.js)</small>):
+```js
+import { computed } from '@ember/object';
 
 // Do not transform as computed prop has `meta`
 const Foo6 = EmberObject.extend({
@@ -421,6 +683,47 @@ const Foo6 = EmberObject.extend({
     return true;
   }).meta({ type: 'Property' }),
 });
+```
+
+**Output** (<small>[decorators-invalid-6.output.js](transforms/ember-object/__testfixtures__/decorators-invalid-6.output.js)</small>):
+```js
+/*
+Expect error:
+  ValidationError: Validation errors for class 'Foo6':
+    [fName2]: Transform not supported - value has modifiers like 'property' or 'meta'
+*/
+
+import { computed } from '@ember/object';
+
+// Do not transform as computed prop has `meta`
+const Foo6 = EmberObject.extend({
+  fName2: computed('firstName', 'lastName', function() {
+    return true;
+  }).meta({ type: 'Property' }),
+});
+```
+---
+<a id="decorators-invalid-7">**decorators-invalid-7**</a>
+
+**Input** (<small>[decorators-invalid-7.input.js](transforms/ember-object/__testfixtures__/decorators-invalid-7.input.js)</small>):
+```js
+// Do not transform as action name matches lifecycle hook
+const Foo7 = EmberObject.extend({
+  actions: {
+    click() {
+      this.set('clicked', true);
+    },
+  },
+});
+```
+
+**Output** (<small>[decorators-invalid-7.output.js](transforms/ember-object/__testfixtures__/decorators-invalid-7.output.js)</small>):
+```js
+/*
+Expect error:
+  ValidationError: Validation errors for class 'Foo7':
+    [actions]: Transform not supported - [click]: action name matches one of the lifecycle hooks. Rename and try again. See https://github.com/scalvert/ember-native-class-codemod/issues/34 for more details
+*/
 
 // Do not transform as action name matches lifecycle hook
 const Foo7 = EmberObject.extend({
@@ -431,64 +734,24 @@ const Foo7 = EmberObject.extend({
   },
 });
 
+```
+---
+<a id="decorators-invalid-8">**decorators-invalid-8**</a>
+
+**Input** (<small>[decorators-invalid-8.input.js](transforms/ember-object/__testfixtures__/decorators-invalid-8.input.js)</small>):
+```js
 const Foo8 = EmberObject.extend({
   statefulArray: [],
 });
 ```
 
-**Output** (<small>[decorators-invalid.output.js](transforms/ember-object/__testfixtures__/decorators-invalid.output.js)</small>):
+**Output** (<small>[decorators-invalid-8.output.js](transforms/ember-object/__testfixtures__/decorators-invalid-8.output.js)</small>):
 ```js
-// Do not transform
-const Foo1 = EmberObject.extend({
-  statefulObject: {},
-});
-
-// Do not transform if not a primitive value
-const Foo2 = EmberObject.extend({
-  macroValue: macro(),
-});
-
-// Do not transform as a computed property has readOnly and volatile with meta
-const Foo3 = EmberObject.extend({
-  firstName: '',
-  lastName: '',
-
-  fName2: computed('firstName', 'lastName', function() {
-    return true;
-  })
-    .property('baz')
-    .readOnly()
-    .volatile()
-    .meta({ type: 'Property' }),
-});
-
-// Do not transform as a computed meta has volatile
-const Foo4 = EmberObject.extend({
-  lName1: add('description', 'lastName').volatile(),
-});
-
-// Do not transform as computed prop has `property`
-const Foo5 = EmberObject.extend({
-  fName2: computed('firstName', 'lastName', function() {
-    return true;
-  }).property('baz'),
-});
-
-// Do not transform as computed prop has `meta`
-const Foo6 = EmberObject.extend({
-  fName2: computed('firstName', 'lastName', function() {
-    return true;
-  }).meta({ type: 'Property' }),
-});
-
-// Do not transform as action name matches lifecycle hook
-const Foo7 = EmberObject.extend({
-  actions: {
-    click() {
-      this.set('clicked', true);
-    },
-  },
-});
+/*
+Expect error:
+  ValidationError: Validation errors for class 'Foo8':
+    [statefulArray]: Transform not supported - value is of type object. For more details: eslint-plugin-ember/avoid-leaking-state-in-ember-objects
+*/
 
 const Foo8 = EmberObject.extend({
   statefulArray: [],
@@ -1050,6 +1313,56 @@ class Foo extends Test {
 
 ```
 ---
+<a id="generator-method">**generator-method**</a>
+
+**Input** (<small>[generator-method.input.js](transforms/ember-object/__testfixtures__/generator-method.input.js)</small>):
+```js
+const Foo = Test.extend({
+  *gen() {
+    yield 'hello';
+  }
+});
+
+```
+
+**Output** (<small>[generator-method.output.js](transforms/ember-object/__testfixtures__/generator-method.output.js)</small>):
+```js
+import classic from 'ember-classic-decorator';
+
+@classic
+class Foo extends Test {
+  *gen() {
+    yield 'hello';
+  }
+}
+
+```
+---
+<a id="generator-property">**generator-property**</a>
+
+**Input** (<small>[generator-property.input.js](transforms/ember-object/__testfixtures__/generator-property.input.js)</small>):
+```js
+const Foo = Test.extend({
+  gen: function*() {
+    yield 'hello';
+  }
+});
+
+```
+
+**Output** (<small>[generator-property.output.js](transforms/ember-object/__testfixtures__/generator-property.output.js)</small>):
+```js
+import classic from 'ember-classic-decorator';
+
+@classic
+class Foo extends Test {
+  *gen() {
+    yield 'hello';
+  }
+}
+
+```
+---
 <a id="import">**import**</a>
 
 **Input** (<small>[import.input.js](transforms/ember-object/__testfixtures__/import.input.js)</small>):
@@ -1209,50 +1522,100 @@ class Foo extends EmberObject {
 
 ```
 ---
-<a id="object-literal-with-decorators-invalid">**object-literal-with-decorators-invalid**</a>
+<a id="object-literal-with-decorators-invalid-1">**object-literal-with-decorators-invalid-1**</a>
 
-**Input** (<small>[object-literal-with-decorators-invalid.input.js](transforms/ember-object/__testfixtures__/object-literal-with-decorators-invalid.input.js)</small>):
+**Input** (<small>[object-literal-with-decorators-invalid-1.input.js](transforms/ember-object/__testfixtures__/object-literal-with-decorators-invalid-1.input.js)</small>):
 ```js
 // Do not transform if not a primitive value
 const Foo1 = EmberObject.extend({
   @tracked computedMacro: customMacro(),
 });
+```
+
+**Output** (<small>[object-literal-with-decorators-invalid-1.output.js](transforms/ember-object/__testfixtures__/object-literal-with-decorators-invalid-1.output.js)</small>):
+```js
+/*
+Expect error:
+  ValidationError: Validation errors for class 'Foo1':
+    [computedMacro]: Transform not supported - can only transform object literal decorators on methods or properties with literal values (string, number, boolean, null, undefined)
+    [computedMacro]: Transform not supported - call to 'customMacro' can not be transformed
+*/
+
+// Do not transform if not a primitive value
+const Foo1 = EmberObject.extend({
+  @tracked computedMacro: customMacro(),
+});
+```
+---
+<a id="object-literal-with-decorators-invalid-2">**object-literal-with-decorators-invalid-2**</a>
+
+**Input** (<small>[object-literal-with-decorators-invalid-2.input.js](transforms/ember-object/__testfixtures__/object-literal-with-decorators-invalid-2.input.js)</small>):
+```js
+// Do not transform if not on allowlist
+const Foo2 = EmberObject.extend({
+  @banned prop: '',
+});
+```
+
+**Output** (<small>[object-literal-with-decorators-invalid-2.output.js](transforms/ember-object/__testfixtures__/object-literal-with-decorators-invalid-2.output.js)</small>):
+```js
+/*
+Expect error:
+  ValidationError: Validation errors for class 'Foo2':
+    [prop]: Transform not supported - decorator '@banned' not included in ALLOWED_OBJECT_LITERAL_DECORATORS or option '--objectLiteralDecorators'
+*/
 
 // Do not transform if not on allowlist
 const Foo2 = EmberObject.extend({
   @banned prop: '',
 });
 
+```
+---
+<a id="object-literal-with-decorators-invalid-3">**object-literal-with-decorators-invalid-3**</a>
+
+**Input** (<small>[object-literal-with-decorators-invalid-3.input.js](transforms/ember-object/__testfixtures__/object-literal-with-decorators-invalid-3.input.js)</small>):
+```js
 // Do not transform array
 const Foo3 = EmberObject.extend({
   @tracked arr: [1, 2, 3],
 });
+```
 
-// Do not function expression if not on allowlist
+**Output** (<small>[object-literal-with-decorators-invalid-3.output.js](transforms/ember-object/__testfixtures__/object-literal-with-decorators-invalid-3.output.js)</small>):
+```js
+/*
+Expect error:
+  ValidationError: Validation errors for class 'Foo3':
+    [arr]: Transform not supported - value is of type object. For more details: eslint-plugin-ember/avoid-leaking-state-in-ember-objects
+*/
+
+// Do not transform array
+const Foo3 = EmberObject.extend({
+  @tracked arr: [1, 2, 3],
+});
+```
+---
+<a id="object-literal-with-decorators-invalid-4">**object-literal-with-decorators-invalid-4**</a>
+
+**Input** (<small>[object-literal-with-decorators-invalid-4.input.js](transforms/ember-object/__testfixtures__/object-literal-with-decorators-invalid-4.input.js)</small>):
+```js
+// Do not transform function expression if not on allowlist
 const Foo4 = EmberObject.extend({
   @userAdded methodish: () => {},
 });
 
 ```
 
-**Output** (<small>[object-literal-with-decorators-invalid.output.js](transforms/ember-object/__testfixtures__/object-literal-with-decorators-invalid.output.js)</small>):
+**Output** (<small>[object-literal-with-decorators-invalid-4.output.js](transforms/ember-object/__testfixtures__/object-literal-with-decorators-invalid-4.output.js)</small>):
 ```js
-// Do not transform if not a primitive value
-const Foo1 = EmberObject.extend({
-  @tracked computedMacro: customMacro(),
-});
+/*
+Expect error:
+  ValidationError: Validation errors for class 'Foo4':
+    [methodish]: Transform not supported - decorator '@userAdded' not included in ALLOWED_OBJECT_LITERAL_DECORATORS or option '--objectLiteralDecorators'
+*/
 
-// Do not transform if not on allowlist
-const Foo2 = EmberObject.extend({
-  @banned prop: '',
-});
-
-// Do not transform array
-const Foo3 = EmberObject.extend({
-  @tracked arr: [1, 2, 3],
-});
-
-// Do not function expression if not on allowlist
+// Do not transform function expression if not on allowlist
 const Foo4 = EmberObject.extend({
   @userAdded methodish: () => {},
 });
@@ -1537,45 +1900,6 @@ class Foo extends EmberObject {
     // methods always pass through decorators, even if not on allow-list
   }
 }
-
-```
----
-<a id="partial-transform">**partial-transform**</a>
-
-**Input** (<small>[partial-transform.input.js](transforms/ember-object/__testfixtures__/partial-transform.input.js)</small>):
-```js
-import EmberObject from '@ember/object';
-import { inject as service } from '@ember/service';
-
-// Should succeed
-const Foo1 = EmberObject.extend({
-  store: service('store'),
-});
-
-// Should fail
-const Foo2 = EmberObject.extend({
-  macroValue: macro(),
-})
-
-```
-
-**Output** (<small>[partial-transform.output.js](transforms/ember-object/__testfixtures__/partial-transform.output.js)</small>):
-```js
-import classic from 'ember-classic-decorator';
-import { inject as service } from '@ember/service';
-import EmberObject from '@ember/object';
-
-// Should succeed
-@classic
-class Foo1 extends EmberObject {
-  @service('store')
-  store;
-}
-
-// Should fail
-const Foo2 = EmberObject.extend({
-  macroValue: macro(),
-})
 
 ```
 ---
