@@ -180,7 +180,7 @@ describe('options', () => {
           new RegExp(
             makeMultilineMatcher(
               'test Config Error',
-              "[type] Expected 'services', 'routes', 'components', or 'controllers', received 'oops"
+              "[type] Expected 'adapters', 'components', 'controllers', 'helpers', 'routes', or 'services', received 'oops'"
             )
           )
         );

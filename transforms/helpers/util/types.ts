@@ -40,3 +40,14 @@ export function defined<T>(
   assert(value !== undefined, message);
   return value;
 }
+
+/**
+ * Wraps Array.map in a type-check that the initial array has at least two
+ * items, then returns an array asserting that it has the same number of items.
+ */
+export function twoOrMoreMap<T, U>(
+  array: readonly [T, T, ...T[]],
+  callbackfn: (value: T, index: number, array: readonly T[]) => U
+): [U, U, ...U[]] {
+  return array.map(callbackfn) as unknown as [U, U, ...U[]];
+}
