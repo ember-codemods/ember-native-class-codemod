@@ -2,7 +2,7 @@ import { default as j } from 'jscodeshift';
 import * as AST from '../helpers/ast';
 import type { DecoratorImportInfoMap } from './decorator-info';
 import { getDecoratorImportInfo } from './decorator-info';
-import type { Options } from './options';
+import type { UserOptions } from './options';
 import {
   createEmberDecoratorSpecifiers,
   createImportDeclaration,
@@ -87,11 +87,11 @@ function createNewImportDeclarations(
   decoratorsToImport: string[],
   /** Already imported paths */
   decoratorPathsToIgnore: string[],
-  options: Options
+  userOptions: UserOptions
 ): void {
   const firstDeclaration = AST.getFirstDeclaration(root);
 
-  if (options.classicDecorator) {
+  if (userOptions.classicDecorator) {
     firstDeclaration.insertBefore(
       createImportDeclaration(
         [j.importDefaultSpecifier(j.identifier('classic'))],
@@ -236,7 +236,7 @@ function getExistingImportForPath(
 export function createDecoratorImportDeclarations(
   root: AST.Collection,
   decoratorsToImport: string[],
-  options: Options
+  userOptions: UserOptions
 ): void {
   // Iterate through existing imports, extract the already imported specifiers
   const decoratorPathSpecifierMap = getDecoratorPathSpecifiers(
@@ -272,7 +272,7 @@ export function createDecoratorImportDeclarations(
     root,
     decoratorsToImport,
     decoratorPathsImported,
-    options
+    userOptions
   );
 }
 

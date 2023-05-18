@@ -20,15 +20,10 @@ export default function maybeTransformEmberObjects(
   filePath: string,
   userOptions: UserOptions
 ): boolean {
-  const options: Options = {
-    ...userOptions,
-    runtimeData: getRuntimeData(filePath),
-  };
-
   const { results, decoratorImportSpecs } = _maybeTransformEmberObjects(
     root,
     filePath,
-    options
+    userOptions
   );
 
   for (const result of results) {
@@ -44,7 +39,7 @@ export default function maybeTransformEmberObjects(
   const decoratorsToImport = Object.keys(decoratorImportSpecs).filter(
     (key) => decoratorImportSpecs[key as keyof DecoratorImportSpecs]
   );
-  createDecoratorImportDeclarations(root, decoratorsToImport, options);
+  createDecoratorImportDeclarations(root, decoratorsToImport, userOptions);
 
   return results.length > 0 && results.every((r) => r.success);
 }
@@ -52,7 +47,7 @@ export default function maybeTransformEmberObjects(
 function _maybeTransformEmberObjects(
   root: AST.Collection,
   filePath: string,
-  options: Options
+  userOptions: UserOptions
 ): {
   results: TransformResult[];
   decoratorImportSpecs: DecoratorImportSpecs;
@@ -79,27 +74,32 @@ function _maybeTransformEmberObjects(
       filePath,
       info: "UNMODIFIED: Did not find any 'EmberObject.extend()' expressions",
     });
-  }
+  } else {
+    const options: Options = {
+      ...userOptions,
+      runtimeData: getRuntimeData(filePath),
+    };
 
-  // eslint-disable-next-line unicorn/no-array-for-each
-  eoExtendExpressionPaths.forEach((eoExtendExpressionPath) => {
-    const extendExpression = new EOExtendExpression(
-      eoExtendExpressionPath,
-      filePath,
-      existingDecoratorImportInfos,
-      options
-    );
-
-    const result = extendExpression.transform();
-    results.push(result);
-
-    if (result.success) {
-      decoratorImportSpecs = mergeDecoratorImportSpecs(
-        extendExpression.decoratorImportSpecs,
-        decoratorImportSpecs
+    // eslint-disable-next-line unicorn/no-array-for-each
+    eoExtendExpressionPaths.forEach((eoExtendExpressionPath) => {
+      const extendExpression = new EOExtendExpression(
+        eoExtendExpressionPath,
+        filePath,
+        existingDecoratorImportInfos,
+        options
       );
-    }
-  });
+
+      const result = extendExpression.transform();
+      results.push(result);
+
+      if (result.success) {
+        decoratorImportSpecs = mergeDecoratorImportSpecs(
+          extendExpression.decoratorImportSpecs,
+          decoratorImportSpecs
+        );
+      }
+    });
+  }
 
   return { results, decoratorImportSpecs };
 }
