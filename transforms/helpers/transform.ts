@@ -77,7 +77,7 @@ function _maybeTransformEmberObjects(
   } else {
     const options: Options = {
       ...userOptions,
-      runtimeData: getRuntimeData(filePath),
+      runtimeData: getRuntimeData(filePath, userOptions),
     };
 
     // eslint-disable-next-line unicorn/no-array-for-each

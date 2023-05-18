@@ -100,6 +100,8 @@ export const UserOptionsSchema = z.object({
   type: TypeSchema.describe(
     'Apply transformation to only passed type.'
   ).optional(),
+  moduleRoot: z.string().min(1).optional().describe('FIXME'),
+  packageBase: z.string().min(1).optional().describe('FIXME'),
 });
 
 export type UserOptions = z.infer<typeof UserOptionsSchema>;
