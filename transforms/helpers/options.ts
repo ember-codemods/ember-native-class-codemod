@@ -7,6 +7,7 @@ import {
   StringBooleanSchema,
   StringFalseSchema,
 } from './schema-helper';
+import { defined, twoOrMoreMap } from './util/types';
 
 const DEFAULT_DECORATOR_CONFIG = {
   inObjectLiterals: [],
@@ -49,20 +50,30 @@ const QuoteSchema = z.union([z.literal('single'), z.literal('double')], {
   },
 });
 
+export const TYPES = [
+  'adapters',
+  'components',
+  'controllers',
+  'helpers',
+  'routes',
+  'services',
+] as const;
+
+export type Type = (typeof TYPES)[number];
+
 const TypeSchema = z.union(
-  [
-    z.literal('services'),
-    z.literal('routes'),
-    z.literal('components'),
-    z.literal('controllers'),
-  ],
+  twoOrMoreMap(TYPES, (type) => z.literal(type)),
   {
     errorMap: (issue, ctx) => {
       if (issue.code === z.ZodIssueCode.invalid_union) {
+        const formattedTypes = TYPES.map((type) => `'${type}'`);
+        const expected = `${formattedTypes
+          .slice(0, -1)
+          .join(', ')}, or ${defined(
+          formattedTypes[formattedTypes.length - 1]
+        )}`;
         return {
-          message: `Expected 'services', 'routes', 'components', or 'controllers', received ${inspect(
-            ctx.data
-          )}`,
+          message: `Expected ${expected}, received ${inspect(ctx.data)}`,
         };
       }
       return { message: ctx.defaultError };

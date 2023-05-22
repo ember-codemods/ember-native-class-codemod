@@ -1,16 +1,9 @@
 import { minimatch } from 'minimatch';
-import type { Options } from './options';
+import { TYPES, type Type } from './options';
 
-const TYPE_PATTERNS = {
-  service: '**/services/**/*.js',
-  services: '**/services/**/*.js',
-  controller: '**/controllers/**/*.js',
-  controllers: '**/controllers/**/*.js',
-  component: '**/components/**/*.js',
-  components: '**/components/**/*.js',
-  route: '**/routes/**/*.js',
-  routes: '**/routes/**/*.js',
-} as const;
+const TYPE_PATTERNS = Object.fromEntries(
+  TYPES.map((type) => [type, `**/${type}/**/*.js`] as const)
+) as Record<Type, string>;
 
 const TEST_FILE_PATTERN = '**/*-test.js' as const;
 
@@ -23,10 +16,6 @@ export function isTestFile(file: string): boolean {
  * Returns true if the given path matches the type of ember object
  * The glob patterns are specified by `TYPE_PATTERNS`
  */
-export function isFileOfType(file: string, type: Options['type']): boolean {
-  return (
-    // False positive
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    !!type && !!TYPE_PATTERNS[type] && minimatch(file, TYPE_PATTERNS[type])
-  );
+export function isFileOfType(file: string, type: Type): boolean {
+  return minimatch(file, TYPE_PATTERNS[type]);
 }

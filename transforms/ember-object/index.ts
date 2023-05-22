@@ -27,7 +27,7 @@ const transformer: Transform = function (
     }
 
     if (isTestFile(filePath)) {
-      logger.info({ filePath, info: 'SKIPPED: test file' });
+      logger.debug({ filePath, info: 'SKIPPED: test file' });
       return; // status: 'skipped'
     }
 
