@@ -31,8 +31,8 @@
   ],
   "scripts": {
     "release": "release-it",
-    "prepublishOnly": "yarn build",
-    "postpublish": "yarn clean",
+    "prepublishOnly": "pnpm build",
+    "postpublish": "pnpm clean",
     "build": "tsc",
     "clean": "tsc --build --clean && git checkout test/fixtures",
     "lint": "concurrently \"npm:lint:*(!fix)\" --names \"lint:\"",
@@ -42,7 +42,7 @@
     "lint:prettier": "prettier --check .",
     "lint:prettier:fix": "prettier --write .",
     "lint:ts": "tsc --noEmit",
-    "test": "yarn build && codemod-cli test && node ./test/run-test.js && yarn clean",
+    "test": "pnpm build && codemod-cli test && node ./test/run-test.js && pnpm clean",
     "update-docs": "codemod-cli update-docs"
   },
   "dependencies": {
@@ -63,10 +63,12 @@
     "@jest/globals": "^29.5.0",
     "@release-it-plugins/lerna-changelog": "^5.0.0",
     "@tsconfig/node12": "^1.0.11",
+    "@types/babel__core": "^7.20.5",
     "@types/glob": "^8.1.0",
     "@types/jscodeshift": "^0.11.6",
     "@typescript-eslint/eslint-plugin": "^5.59.1",
     "@typescript-eslint/parser": "^5.59.1",
+    "ast-types": "^0.14.2",
     "concurrently": "^8.0.1",
     "eslint": "^8.39.0",
     "eslint-config-prettier": "^8.8.0",
@@ -90,7 +92,7 @@
   },
   "release-it": {
     "hooks": {
-      "after:bump": "yarn update-docs"
+      "after:bump": "pnpm update-docs"
     },
     "plugins": {
       "@release-it-plugins/lerna-changelog": {
