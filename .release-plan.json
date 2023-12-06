@@ -1,0 +1,29 @@
+{
+  "solution": {
+    "ember-native-class-codemod": {
+      "impact": "major",
+      "oldVersion": "3.2.0",
+      "newVersion": "4.0.0",
+      "constraints": [
+        {
+          "impact": "major",
+          "reason": "Appears in changelog section :boom: Breaking Change"
+        },
+        {
+          "impact": "minor",
+          "reason": "Appears in changelog section :rocket: Enhancement"
+        },
+        {
+          "impact": "patch",
+          "reason": "Appears in changelog section :bug: Bug Fix"
+        },
+        {
+          "impact": "patch",
+          "reason": "Appears in changelog section :house: Internal"
+        }
+      ],
+      "pkgJSONPath": "./package.json"
+    }
+  },
+  "description": "## Release (2023-12-06)\n\nember-native-class-codemod 4.0.0 (major)\n\n#### :boom: Breaking Change\n* `ember-native-class-codemod`\n  * [#544](https://github.com/ember-codemods/ember-native-class-codemod/pull/544) drop support for node 14 ([@mansona](https://github.com/mansona))\n\n#### :rocket: Enhancement\n* `ember-native-class-codemod`\n  * [#533](https://github.com/ember-codemods/ember-native-class-codemod/pull/533) Allow 'helpers' and 'adapters' in type config ([@gitKrystan](https://github.com/gitKrystan))\n\n#### :bug: Bug Fix\n* `ember-native-class-codemod`\n  * [#545](https://github.com/ember-codemods/ember-native-class-codemod/pull/545) convert to pnpm ([@mansona](https://github.com/mansona))\n  * [#534](https://github.com/ember-codemods/ember-native-class-codemod/pull/534) Only get telemetry if transform is actually needed ([@gitKrystan](https://github.com/gitKrystan))\n\n#### :house: Internal\n* `ember-native-class-codemod`\n  * [#546](https://github.com/ember-codemods/ember-native-class-codemod/pull/546) start using release-plan ([@mansona](https://github.com/mansona))\n\n#### Committers: 2\n- Chris Manson ([@mansona](https://github.com/mansona))\n- Krystan HuffMenne ([@gitKrystan](https://github.com/gitKrystan))\n"
+}

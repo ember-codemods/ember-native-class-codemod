@@ -1,4 +1,28 @@
 # Changelog
+## Release (2023-12-06)
+
+ember-native-class-codemod 4.0.0 (major)
+
+#### :boom: Breaking Change
+* `ember-native-class-codemod`
+  * [#544](https://github.com/ember-codemods/ember-native-class-codemod/pull/544) drop support for node 14 ([@mansona](https://github.com/mansona))
+
+#### :rocket: Enhancement
+* `ember-native-class-codemod`
+  * [#533](https://github.com/ember-codemods/ember-native-class-codemod/pull/533) Allow 'helpers' and 'adapters' in type config ([@gitKrystan](https://github.com/gitKrystan))
+
+#### :bug: Bug Fix
+* `ember-native-class-codemod`
+  * [#545](https://github.com/ember-codemods/ember-native-class-codemod/pull/545) convert to pnpm ([@mansona](https://github.com/mansona))
+  * [#534](https://github.com/ember-codemods/ember-native-class-codemod/pull/534) Only get telemetry if transform is actually needed ([@gitKrystan](https://github.com/gitKrystan))
+
+#### :house: Internal
+* `ember-native-class-codemod`
+  * [#546](https://github.com/ember-codemods/ember-native-class-codemod/pull/546) start using release-plan ([@mansona](https://github.com/mansona))
+
+#### Committers: 2
+- Chris Manson ([@mansona](https://github.com/mansona))
+- Krystan HuffMenne ([@gitKrystan](https://github.com/gitKrystan))
 
 
 
