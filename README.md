@@ -103,12 +103,12 @@ transformation of
 
 - clone the repo
 - change into the repo directory
-- `yarn`
+- `pnpm`
 
 ### Running Tests
 
-- `yarn test`
+- `pnpm test`
 
 ### Update Documentation
 
-- `yarn update-docs`
+- `pnpm update-docs`
