@@ -73,6 +73,7 @@ export const DECORATOR_PATHS: ReadonlyMap<string, DecoratorPathInfo> = new Map([
     {
       importPropDecoratorMap: {
         inject: 'inject',
+        service: 'service',
       },
       decoratorPath: '@ember/service',
     },
