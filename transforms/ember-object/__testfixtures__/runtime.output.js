@@ -1,9 +1,9 @@
 import classic from 'ember-classic-decorator';
 import { off, unobserves } from '@ember-decorators/object';
 import { action, computed } from '@ember/object';
+import { service } from '@ember/service';
 import { alias } from '@ember/object/computed';
 import Runtime from 'common/runtime';
-import { service } from '@ember/service';
 
 /**
  * Program comments
