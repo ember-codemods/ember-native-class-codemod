@@ -97,6 +97,9 @@ export const UserOptionsSchema = z.object({
   ignoreLeakingState: StringArraySchema.describe(
     'Allow-list for ObjectExpression or ArrayExpression properties to ignore issues detailed in eslint-plugin-ember/avoid-leaking-state-in-ember-objects.'
   ),
+  noTelemetry: StringBooleanSchema.describe(
+    'Disable telemetry. Enabled by default.'
+  ),
   type: TypeSchema.describe(
     'Apply transformation to only passed type.'
   ).optional(),
@@ -145,7 +148,7 @@ function logConfigError(
 
 interface PrivateOptions {
   /** @private */
-  runtimeData: RuntimeData;
+  runtimeData: RuntimeData | null;
 }
 
 export type Options = UserOptions & PrivateOptions;
@@ -156,6 +159,7 @@ export const DEFAULT_OPTIONS: UserOptions = {
   classicDecorator: true,
   quote: 'single',
   ignoreLeakingState: ['queryParams'],
+  noTelemetry: false,
 };
 
 class ConfigError extends Error {

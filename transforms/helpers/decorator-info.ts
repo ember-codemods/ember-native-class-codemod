@@ -1,6 +1,6 @@
-import { assert } from './util/types';
-import { COMPUTED_DECORATOR_NAME, METHOD_DECORATORS } from './util/index';
 import type * as AST from '../helpers/ast';
+import { COMPUTED_DECORATOR_NAME, METHOD_DECORATORS } from './util/index';
+import { assert } from './util/types';
 
 export interface DecoratorImportInfo {
   name: string;

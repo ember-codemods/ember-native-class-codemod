@@ -18,8 +18,8 @@ export type RuntimeData = z.infer<typeof RuntimeDataSchema>;
  * Gets telemetry data for the file and parses it into a valid `RuntimeData`
  * object.
  */
-export function getRuntimeData(filePath: string): RuntimeData {
-  let rawTelemetry = getTelemetryFor(path.resolve(filePath));
+export function getRuntimeData(filePath: string): RuntimeData | null {
+  const rawTelemetry = getTelemetryFor(path.resolve(filePath));
   if (!rawTelemetry) {
     // Do not re-throw. The most likely reason this happened was because
     // the user's app threw an error. We still want the codemod to work if so.
@@ -27,7 +27,7 @@ export function getRuntimeData(filePath: string): RuntimeData {
       filePath,
       error: new RuntimeDataError('Could not find runtime data'),
     });
-    rawTelemetry = {};
+    return null;
   }
 
   const result = RuntimeDataSchema.safeParse(rawTelemetry);

@@ -50,6 +50,12 @@ If you have any _lazily loaded_ modules, such as modules from Ember Engines,
 you'll need to make sure that the URL you provide loads these modules as well.
 Otherwise, the codemod will not be able to detect them or analyze them.
 
+To disable this feature, run with `NO_TELEMETRY=true` and omit the path to your local server:
+
+```shell
+NO_TELEMETRY=true npx ember-native-class-codemod [OPTIONS] path/of/files/ or/some**/*glob.js
+```
+
 ### Types
 
 The `type` option can be used to further narrow down transforms to a particular type of

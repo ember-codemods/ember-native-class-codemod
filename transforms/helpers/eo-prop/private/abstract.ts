@@ -36,7 +36,7 @@ export default abstract class AbstractEOProp<
 
   protected decorators: DecoratorImportInfo[] = [];
 
-  protected readonly runtimeData: RuntimeData;
+  protected readonly runtimeData: RuntimeData | null;
 
   /**
    * Override to `true` if the property type supports object literal decorators
@@ -55,7 +55,7 @@ export default abstract class AbstractEOProp<
     protected readonly options: Options
   ) {
     this.runtimeData = options.runtimeData;
-    if (this.runtimeData.type) {
+    if (this.runtimeData) {
       const { offProperties, unobservedProperties } = this.runtimeData;
 
       const unobservedArgs = unobservedProperties[this.name];
@@ -163,7 +163,7 @@ export default abstract class AbstractEOProp<
   }
 
   protected get isOverridden(): boolean {
-    return this.runtimeData.overriddenProperties.includes(this.name);
+    return this.runtimeData?.overriddenProperties.includes(this.name) ?? false;
   }
 
   protected get replaceSuperWithUndefined(): boolean {
@@ -171,7 +171,7 @@ export default abstract class AbstractEOProp<
   }
 
   private get hasRuntimeData(): boolean {
-    return !!this.runtimeData.type;
+    return this.runtimeData !== null;
   }
 
   protected get hasDecorators(): boolean {
