@@ -31,8 +31,13 @@ export default class EOExtendExpression {
   ) {
     const raw = path.value;
 
-    this.className = getClassName(path, filePath, options.runtimeData.type);
     this.superClassName = raw.callee.object.name;
+    this.className = getClassName(
+      path,
+      filePath,
+      this.superClassName,
+      options.runtimeData?.type
+    );
 
     const mixins: AST.EOMixin[] = [];
     for (const arg of raw.arguments) {

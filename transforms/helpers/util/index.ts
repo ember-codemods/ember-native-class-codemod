@@ -1,3 +1,5 @@
+import camelcase from 'camelcase';
+
 export const ACTIONS_NAME = 'actions' as const;
 export type ACTIONS_NAME = typeof ACTIONS_NAME;
 
@@ -285,7 +287,9 @@ export function allowObjectLiteralDecorator(
   );
 }
 
-/** Convert the first letter to uppercase */
-export function capitalizeFirstLetter(name: string): string {
-  return name ? name.charAt(0).toUpperCase() + name.slice(1) : '';
+/**
+ * Returns a PascalCase version of the given string.
+ */
+export function classify(name: string): string {
+  return camelcase(name, { pascalCase: true });
 }

@@ -1,10 +1,23 @@
-import camelCase from 'camelcase';
 import { default as j } from 'jscodeshift';
 import path from 'path';
 import * as AST from './ast';
-import type { DecoratorImportSpecs } from './util/index';
-import { capitalizeFirstLetter } from './util/index';
+import { classify, type DecoratorImportSpecs } from './util/index';
 import { assert, defined, isRecord } from './util/types';
+
+const DO_NOT_SUFFIX = new Set(['Component', 'Helper', 'EmberObject']);
+
+// List copied from ember-codemods-telemetry-helpers
+const TELEMETRY_TYPES = new Set([
+  'Application',
+  'Controller',
+  'Route',
+  'Component',
+  'Service',
+  'Helper',
+  'Router',
+  'Engine',
+  'EmberObject',
+]);
 
 /**
  * Get the map of decorators to import other than the computed props, services etc
@@ -23,6 +36,7 @@ export function mergeDecoratorImportSpecs(
     templateLayout: existing.templateLayout || newSpecs.templateLayout,
     off: existing.off || newSpecs.off,
     tagName: existing.tagName || newSpecs.tagName,
+    observes: existing.observes || newSpecs.observes,
     unobserves: existing.unobserves || newSpecs.unobserves,
   };
 }
@@ -74,7 +88,8 @@ export function getExpressionToReplace(
 export function getClassName(
   eoExtendExpressionPath: AST.Path<AST.EOExtendExpression>,
   filePath: string,
-  type = ''
+  superClassName: string,
+  type: string | undefined
 ): string {
   const varDeclaration = getClosestVariableDeclaration(eoExtendExpressionPath);
   if (varDeclaration) {
@@ -93,22 +108,24 @@ export function getClassName(
     return identifier.name;
   }
 
-  let className = capitalizeFirstLetter(
-    camelCase(path.basename(filePath, 'js'))
-  );
-  const capitalizedType = capitalizeFirstLetter(type);
+  let className = classify(path.basename(filePath, 'js'));
 
-  if (capitalizedType === className) {
-    className = capitalizeFirstLetter(
-      camelCase(path.basename(path.dirname(filePath)))
-    );
+  // If type is undefined, this means we couldn't find the telemetry or the user
+  // is running in NO_TELEMETRY mode. In this case, try to infer the type from
+  // the super class name.
+  if (!type) {
+    superClassName = classify(superClassName);
+    if (TELEMETRY_TYPES.has(superClassName)) {
+      type = superClassName;
+    }
   }
 
-  if (
-    !['Component', 'Helper', 'EmberObject'].includes(type) &&
-    !className.endsWith(type)
-  ) {
-    className = `${className}${capitalizedType}`;
+  if (type === className) {
+    className = classify(path.basename(path.dirname(filePath)));
+  }
+
+  if (type && !DO_NOT_SUFFIX.has(type) && !className.endsWith(type)) {
+    className = `${className}${type}`;
   }
 
   return className;
