@@ -64,6 +64,7 @@ function _maybeTransformEmberObjects(
     templateLayout: false,
     off: false,
     tagName: false,
+    observes: false,
     unobserves: false,
   };
 

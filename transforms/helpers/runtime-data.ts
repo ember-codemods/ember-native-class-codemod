@@ -10,6 +10,7 @@ const RuntimeDataSchema = z.object({
   overriddenActions: z.array(z.string()).default([]),
   overriddenProperties: z.array(z.string()).default([]),
   unobservedProperties: z.record(z.array(z.string())).default({}),
+  observerProperties: z.record(z.array(z.string())).default({}),
 });
 
 export type RuntimeData = z.infer<typeof RuntimeDataSchema>;

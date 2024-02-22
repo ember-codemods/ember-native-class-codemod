@@ -4,6 +4,7 @@ import type { Options } from '../../options';
 import type { RuntimeData } from '../../runtime-data';
 import type { DecoratorImportSpecs } from '../../util/index';
 import {
+  OBSERVES_DECORATOR_NAME,
   OFF_DECORATOR_NAME,
   UNOBSERVES_DECORATOR_NAME,
   allowObjectLiteralDecorator,
@@ -91,6 +92,7 @@ export default abstract class AbstractEOProp<
       templateLayout: false,
       off: this.hasOffDecorator,
       tagName: false,
+      observes: this.hasObservesDecorator,
       unobserves: this.hasUnobservesDecorator,
     };
   }
@@ -180,6 +182,10 @@ export default abstract class AbstractEOProp<
 
   protected get needsDecorators(): boolean {
     return this.hasExistingDecorators || this.hasDecorators;
+  }
+
+  private get hasObservesDecorator(): boolean {
+    return this.decorators.some((d) => d.name === OBSERVES_DECORATOR_NAME);
   }
 
   private get hasUnobservesDecorator(): boolean {
