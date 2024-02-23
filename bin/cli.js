@@ -4,10 +4,10 @@
 const { gatherTelemetryForUrl, analyzeEmberObject } = require('ember-codemods-telemetry-helpers');
 
 (async () => {
-  let args = process.argv.slice(2);
+  let args = process.argv.slice(1);
   if (process.env['NO_TELEMETRY'] !== 'true') {
     await gatherTelemetryForUrl(process.argv[2], analyzeEmberObject);
-    args = process.argv.slice(1);
+    args = process.argv.slice(2);
   }
 
   require('codemod-cli').runTransform(__dirname, 'ember-object', args);
