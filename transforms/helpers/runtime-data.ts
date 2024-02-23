@@ -2,6 +2,7 @@ import { getTelemetryFor } from 'ember-codemods-telemetry-helpers';
 import path from 'path';
 import { z } from 'zod';
 import logger from './log-helper';
+import { isRecord } from './util/types';
 
 const RuntimeDataSchema = z.object({
   type: z.string().optional(),
@@ -21,7 +22,7 @@ export type RuntimeData = z.infer<typeof RuntimeDataSchema>;
  */
 export function getRuntimeData(filePath: string): RuntimeData | null {
   const rawTelemetry = getTelemetryFor(path.resolve(filePath));
-  if (!rawTelemetry) {
+  if (!isRecord(rawTelemetry) || !('type' in rawTelemetry)) {
     // Do not re-throw. The most likely reason this happened was because
     // the user's app threw an error. We still want the codemod to work if so.
     logger.error({

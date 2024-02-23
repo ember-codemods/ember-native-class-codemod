@@ -156,7 +156,9 @@ function getDecoratorPathSpecifiers(
         decoratorsToImport
       );
 
-      const existingSpecifiers = decoratorImport.value.specifiers ?? [];
+      // The type for value seems to be wrong
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      const existingSpecifiers = decoratorImport.value?.specifiers ?? [];
 
       // Iterate over existing specifiers for the current path. This is needed
       // to pick the only required specifiers from the existing imports

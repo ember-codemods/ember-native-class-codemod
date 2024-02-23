@@ -1,7 +1,8 @@
-import Runtime from 'common/runtime';
+import { computed, observer } from '@ember/object';
 import { alias } from '@ember/object/computed';
-import { computed } from '@ember/object';
 import { service } from '@ember/service';
+import Runtime from 'common/runtime';
+import { customMacro, customMacroWithInput } from 'my-app/lib';
 
 /**
  * Program comments
@@ -18,6 +19,8 @@ export default Runtime.extend(MyMixin, {
 
   error: service(),
   errorService: service('error'),
+
+  observerProp: observer('prop', function() { return this.prop; }),
 
   unobservedProp: null,
   offProp: null,

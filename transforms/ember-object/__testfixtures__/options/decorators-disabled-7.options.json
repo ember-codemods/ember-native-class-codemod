@@ -1,3 +1,4 @@
 {
-  "decorators": false
+  "decorators": false,
+  "noTelemetry": false
 }

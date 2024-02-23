@@ -1,9 +1,10 @@
 import classic from 'ember-classic-decorator';
-import { off, unobserves } from '@ember-decorators/object';
+import { off, unobserves, observes } from '@ember-decorators/object';
 import { action, computed } from '@ember/object';
 import { service } from '@ember/service';
 import { alias } from '@ember/object/computed';
 import Runtime from 'common/runtime';
+import { customMacro, customMacroWithInput } from 'my-app/lib';
 
 /**
  * Program comments
@@ -25,6 +26,9 @@ export default class _Runtime extends Runtime.extend(MyMixin) {
 
   @service('error')
   errorService;
+
+  @observes('prop')
+  observerProp() { return this.prop; }
 
   @unobserves('prop3', 'prop4')
   unobservedProp;

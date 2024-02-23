@@ -99,7 +99,10 @@ function getDecorators(
   const decoratorImportInfo = existingDecoratorImportInfos.get(calleeName);
   if (decoratorImportInfo) {
     decorators.push(decoratorImportInfo);
-  } else if (options.runtimeData?.computedProperties.includes(raw.key.name)) {
+  } else if (
+    options.noTelemetry ||
+    options.runtimeData?.computedProperties.includes(raw.key.name)
+  ) {
     decorators.push({ name: calleeName });
   }
   return decorators;
