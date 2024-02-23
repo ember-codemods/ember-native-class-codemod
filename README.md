@@ -56,6 +56,8 @@ To disable this feature, run with `NO_TELEMETRY=true` and omit the path to your 
 NO_TELEMETRY=true npx ember-native-class-codemod [OPTIONS] path/of/files/ or/some**/*glob.js
 ```
 
+DANGER: Disabling the telemetry may result in incorrect behavior. Carefully vet the results.
+
 ### Types
 
 The `type` option can be used to further narrow down transforms to a particular type of
