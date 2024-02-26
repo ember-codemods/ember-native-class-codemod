@@ -1,4 +1,14 @@
 # Changelog
+## Release (2024-02-26)
+
+ember-native-class-codemod 4.1.0 (minor)
+
+#### :rocket: Enhancement
+* `ember-native-class-codemod`
+  * [#550](https://github.com/ember-codemods/ember-native-class-codemod/pull/550) Add NO_TELEMETRY mode / Implement observer -> observes behavior ([@gitKrystan](https://github.com/gitKrystan))
+
+#### Committers: 1
+- Krystan HuffMenne ([@gitKrystan](https://github.com/gitKrystan))
 ## Release (2023-12-06)
 
 ember-native-class-codemod 4.0.0 (major)
