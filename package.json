@@ -26,7 +26,7 @@
   "files": [
     "/bin",
     "/lib",
-    "/transforms/helpers",
+    "/transforms/helpers/**/*.js",
     "/transforms/ember-object/index.js"
   ],
   "scripts": {
