@@ -1,17 +1,21 @@
 {
   "solution": {
     "ember-native-class-codemod": {
-      "impact": "minor",
-      "oldVersion": "4.0.0",
-      "newVersion": "4.1.0",
+      "impact": "patch",
+      "oldVersion": "4.1.0",
+      "newVersion": "4.1.1",
       "constraints": [
         {
-          "impact": "minor",
-          "reason": "Appears in changelog section :rocket: Enhancement"
+          "impact": "patch",
+          "reason": "Appears in changelog section :bug: Bug Fix"
+        },
+        {
+          "impact": "patch",
+          "reason": "Appears in changelog section :house: Internal"
         }
       ],
       "pkgJSONPath": "./package.json"
     }
   },
-  "description": "## Release (2024-02-26)\n\nember-native-class-codemod 4.1.0 (minor)\n\n#### :rocket: Enhancement\n* `ember-native-class-codemod`\n  * [#550](https://github.com/ember-codemods/ember-native-class-codemod/pull/550) Add NO_TELEMETRY mode / Implement observer -> observes behavior ([@gitKrystan](https://github.com/gitKrystan))\n\n#### Committers: 1\n- Krystan HuffMenne ([@gitKrystan](https://github.com/gitKrystan))\n"
+  "description": "## Release (2024-02-26)\n\nember-native-class-codemod 4.1.1 (patch)\n\n#### :bug: Bug Fix\n* `ember-native-class-codemod`\n  * [#552](https://github.com/ember-codemods/ember-native-class-codemod/pull/552) Fix off-by-one-error when interpreting CLI args ([@gitKrystan](https://github.com/gitKrystan))\n\n#### :house: Internal\n* `ember-native-class-codemod`\n  * [#551](https://github.com/ember-codemods/ember-native-class-codemod/pull/551) Don't publish TS files ([@gitKrystan](https://github.com/gitKrystan))\n\n#### Committers: 1\n- Krystan HuffMenne ([@gitKrystan](https://github.com/gitKrystan))\n"
 }
