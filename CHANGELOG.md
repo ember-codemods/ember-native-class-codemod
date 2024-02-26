@@ -1,6 +1,20 @@
 # Changelog
 ## Release (2024-02-26)
 
+ember-native-class-codemod 4.1.1 (patch)
+
+#### :bug: Bug Fix
+* `ember-native-class-codemod`
+  * [#552](https://github.com/ember-codemods/ember-native-class-codemod/pull/552) Fix off-by-one-error when interpreting CLI args ([@gitKrystan](https://github.com/gitKrystan))
+
+#### :house: Internal
+* `ember-native-class-codemod`
+  * [#551](https://github.com/ember-codemods/ember-native-class-codemod/pull/551) Don't publish TS files ([@gitKrystan](https://github.com/gitKrystan))
+
+#### Committers: 1
+- Krystan HuffMenne ([@gitKrystan](https://github.com/gitKrystan))
+## Release (2024-02-26)
+
 ember-native-class-codemod 4.1.0 (minor)
 
 #### :rocket: Enhancement
