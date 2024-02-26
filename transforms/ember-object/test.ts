@@ -11,6 +11,9 @@ import mockTelemetryData from './__testfixtures__/-mock-telemetry.json';
 const fixtureDir = 'transforms/ember-object/__testfixtures__/';
 const testFiles = new GlobSync(`${fixtureDir}**/*.input.js`).found;
 
+const OUTPUT_PARSER =
+  /^(?:\/\*\nExpect error:\n(?<expectedError>[\S\s]*)\n\*\/)?(?<content>[\S\s]*)$/;
+
 const mockTelemetry: Record<string, unknown> = {};
 for (const testFile of testFiles) {
   const moduleName = testFile
@@ -31,7 +34,9 @@ interface TestCase {
   testPath: string;
   input: string;
   output: string;
+  outputWithNoTelemetry: string;
   expectedError: string | undefined;
+  expectedErrorWithNoTelemetry: string | undefined;
   skipped: boolean;
   options: string;
 }
@@ -44,17 +49,26 @@ const testCases = testFiles.map((inputPath): TestCase => {
   const testPath = path.join(fixtureDir, `${testName}${extension}`);
   const input = readFileSync(inputPath, 'utf8');
   const outputPath = path.join(fixtureDir, `${testName}.output${extension}`);
+  const outputWithNoTelemetryPath = path.join(
+    fixtureDir,
+    `${testName}.output-no-telemetry${extension}`
+  );
 
-  const fullOutput = readFileSync(outputPath, 'utf8');
-  const parsedOutput =
-    /^(?:\/\*\nExpect error:\n(?<expectedError>[\S\s]*)\n\*\/)?(?<content>[\S\s]*)$/.exec(
-      fullOutput
-    );
-  const output = parsedOutput?.groups?.['content'];
-  assert(output, `Expected to find file content in ${outputPath}`);
-  const expectedError = parsedOutput.groups?.['expectedError'];
+  const { fullOutput, output, expectedError } = parseOutput(outputPath);
 
   const skipped = fullOutput.startsWith('/* Expect skipped */');
+
+  let outputWithNoTelemetry;
+  let expectedErrorWithNoTelemetry;
+  if (existsSync(outputWithNoTelemetryPath)) {
+    ({
+      output: outputWithNoTelemetry,
+      expectedError: expectedErrorWithNoTelemetry,
+    } = parseOutput(outputWithNoTelemetryPath));
+  } else {
+    outputWithNoTelemetry = output;
+    expectedErrorWithNoTelemetry = expectedError;
+  }
 
   const optionsPath = path.join(fixtureDir, `${testName}.options.json`);
   const options = existsSync(optionsPath)
@@ -65,7 +79,9 @@ const testCases = testFiles.map((inputPath): TestCase => {
     testPath,
     input,
     output,
+    outputWithNoTelemetry,
     expectedError,
+    expectedErrorWithNoTelemetry,
     skipped,
     options,
   };
@@ -74,7 +90,20 @@ const testCases = testFiles.map((inputPath): TestCase => {
 describe('ember-object', () => {
   describe.each(testCases)(
     '$testName',
-    ({ testPath, input, output, expectedError, skipped, options }) => {
+    ({
+      testPath,
+      input,
+      output,
+      outputWithNoTelemetry,
+      expectedError,
+      expectedErrorWithNoTelemetry,
+      skipped,
+      options,
+    }) => {
+      const parsedOptions = options
+        ? (JSON.parse(options) as Record<string, unknown>)
+        : {};
+
       beforeEach(function () {
         process.env['CODEMOD_CLI_ARGS'] = options;
       });
@@ -90,9 +119,47 @@ describe('ember-object', () => {
       test('is idempotent', function () {
         runTest(testPath, output, output, expectedError, skipped);
       });
+
+      // NOTE: To skip testing an input file in no telemetry file, make an
+      // options file with `{ "noTelemetry": "false" }`
+      if (parsedOptions['noTelemetry'] === undefined) {
+        describe('NO_TELEMETRY', function () {
+          beforeEach(function () {
+            process.env['CODEMOD_CLI_ARGS'] = JSON.stringify({
+              noTelemetry: true,
+              ...parsedOptions,
+            });
+          });
+
+          test('transforms correctly', function () {
+            runTest(
+              testPath,
+              input,
+              outputWithNoTelemetry,
+              expectedErrorWithNoTelemetry,
+              skipped
+            );
+          });
+
+          // FIXME: is idempotent
+        });
+      }
     }
   );
 });
+
+function parseOutput(outputPath: string): {
+  fullOutput: string;
+  output: string;
+  expectedError: string | undefined;
+} {
+  const fullOutput = readFileSync(outputPath, 'utf8');
+  const parsedOutput = OUTPUT_PARSER.exec(fullOutput);
+  const output = parsedOutput?.groups?.['content'];
+  assert(output, `Expected to find file content in ${outputPath}`);
+  const expectedError = parsedOutput.groups?.['expectedError'];
+  return { fullOutput, output, expectedError };
+}
 
 function runTest(
   testPath: string,

@@ -1,3 +1,5 @@
 node_modules
 *.log
 .eslintcache
+transforms/**/*.js
+!transforms/ember-object/__testfixtures__/**/*.js

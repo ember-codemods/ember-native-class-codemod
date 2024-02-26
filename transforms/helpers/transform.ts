@@ -64,6 +64,7 @@ function _maybeTransformEmberObjects(
     templateLayout: false,
     off: false,
     tagName: false,
+    observes: false,
     unobserves: false,
   };
 
@@ -77,7 +78,7 @@ function _maybeTransformEmberObjects(
   } else {
     const options: Options = {
       ...userOptions,
-      runtimeData: getRuntimeData(filePath),
+      runtimeData: userOptions.noTelemetry ? null : getRuntimeData(filePath),
     };
 
     // eslint-disable-next-line unicorn/no-array-for-each

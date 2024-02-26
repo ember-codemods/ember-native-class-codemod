@@ -3,10 +3,10 @@ import type * as AST from '../../../ast';
 import type { DecoratorImportInfo } from '../../../decorator-info';
 import logger from '../../../log-helper';
 import type { Options } from '../../../options';
+import { COMPUTED_DECORATOR_NAME } from '../../../util/index';
 import { defined } from '../../../util/types';
 import AbstractEOProp from '../abstract';
 import type { CallExpressionModifier } from './modifier-helper';
-import { COMPUTED_DECORATOR_NAME } from '../../../util/index';
 
 /**
  * Ember Object Call Expression Property

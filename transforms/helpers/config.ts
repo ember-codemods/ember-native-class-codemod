@@ -22,6 +22,9 @@ export default function getConfig(dir = process.cwd()): UserOptions {
     getFileConfig(dir),
     getCliConfig()
   );
+  if (process.env['NO_TELEMETRY'] === 'true') {
+    config.noTelemetry = true;
+  }
   return UserOptionsSchema.parse(config);
 }
 

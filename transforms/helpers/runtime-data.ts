@@ -2,6 +2,7 @@ import { getTelemetryFor } from 'ember-codemods-telemetry-helpers';
 import path from 'path';
 import { z } from 'zod';
 import logger from './log-helper';
+import { isRecord } from './util/types';
 
 const RuntimeDataSchema = z.object({
   type: z.string().optional(),
@@ -10,6 +11,7 @@ const RuntimeDataSchema = z.object({
   overriddenActions: z.array(z.string()).default([]),
   overriddenProperties: z.array(z.string()).default([]),
   unobservedProperties: z.record(z.array(z.string())).default({}),
+  observerProperties: z.record(z.array(z.string())).default({}),
 });
 
 export type RuntimeData = z.infer<typeof RuntimeDataSchema>;
@@ -18,16 +20,16 @@ export type RuntimeData = z.infer<typeof RuntimeDataSchema>;
  * Gets telemetry data for the file and parses it into a valid `RuntimeData`
  * object.
  */
-export function getRuntimeData(filePath: string): RuntimeData {
-  let rawTelemetry = getTelemetryFor(path.resolve(filePath));
-  if (!rawTelemetry) {
+export function getRuntimeData(filePath: string): RuntimeData | null {
+  const rawTelemetry = getTelemetryFor(path.resolve(filePath));
+  if (!isRecord(rawTelemetry) || !('type' in rawTelemetry)) {
     // Do not re-throw. The most likely reason this happened was because
     // the user's app threw an error. We still want the codemod to work if so.
     logger.error({
       filePath,
       error: new RuntimeDataError('Could not find runtime data'),
     });
-    rawTelemetry = {};
+    return null;
   }
 
   const result = RuntimeDataSchema.safeParse(rawTelemetry);

@@ -87,6 +87,6 @@ export default class EOActionMethod extends EOMethod implements Action {
   }
 
   protected override get isOverridden(): boolean {
-    return this.runtimeData.overriddenActions.includes(this.name);
+    return this.runtimeData?.overriddenActions.includes(this.name) ?? false;
   }
 }

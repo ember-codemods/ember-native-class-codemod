@@ -1,3 +1,5 @@
+import camelcase from 'camelcase';
+
 export const ACTIONS_NAME = 'actions' as const;
 export type ACTIONS_NAME = typeof ACTIONS_NAME;
 
@@ -10,6 +12,7 @@ export const LAYOUT_DECORATOR_LOCAL_NAME = 'templateLayout' as const;
 export const LAYOUT_DECORATOR_NAME = 'layout' as const;
 export const OFF_DECORATOR_NAME = 'off' as const;
 export const TAG_NAME_DECORATOR_NAME = 'tagName' as const;
+export const OBSERVES_DECORATOR_NAME = 'observes' as const;
 export const UNOBSERVES_DECORATOR_NAME = 'unobserves' as const;
 export type ATTRIBUTE_BINDINGS_DECORATOR_NAME =
   typeof ATTRIBUTE_BINDINGS_DECORATOR_NAME;
@@ -19,7 +22,6 @@ export type CLASS_NAMES_DECORATOR_NAME = typeof CLASS_NAMES_DECORATOR_NAME;
 export type LAYOUT_DECORATOR_NAME = typeof LAYOUT_DECORATOR_NAME;
 export type TAG_NAME_DECORATOR_NAME = typeof TAG_NAME_DECORATOR_NAME;
 
-const OBSERVES_DECORATOR_NAME = 'observes' as const;
 const ON_DECORATOR_NAME = 'on' as const;
 
 interface DecoratorPathInfo {
@@ -36,59 +38,83 @@ export interface DecoratorImportSpecs {
   [LAYOUT_DECORATOR_LOCAL_NAME]: boolean;
   [OFF_DECORATOR_NAME]: boolean;
   [TAG_NAME_DECORATOR_NAME]: boolean;
+  [OBSERVES_DECORATOR_NAME]: boolean;
   [UNOBSERVES_DECORATOR_NAME]: boolean;
 }
 
-export const DECORATOR_PATHS: ReadonlyMap<string, DecoratorPathInfo> = new Map([
-  [
-    '@ember/object',
-    {
-      importPropDecoratorMap: {
-        observer: OBSERVES_DECORATOR_NAME,
-        computed: COMPUTED_DECORATOR_NAME,
-      },
-      decoratorPath: '@ember/object',
-    },
-  ],
-  [
-    '@ember/object/evented',
-    {
-      importPropDecoratorMap: {
-        on: ON_DECORATOR_NAME,
-      },
-      decoratorPath: '@ember-decorators/object',
-    },
-  ],
-  [
-    '@ember/controller',
-    {
-      importPropDecoratorMap: {
-        inject: 'inject',
-      },
-      decoratorPath: '@ember/controller',
-    },
-  ],
-  [
-    '@ember/service',
-    {
-      importPropDecoratorMap: {
-        inject: 'inject',
-        service: 'service',
-      },
-      decoratorPath: '@ember/service',
-    },
-  ],
-  [
-    '@ember/object/computed',
-    {
-      decoratorPath: '@ember/object/computed',
-    },
-  ],
-]);
-
-export const DECORATOR_PATH_OVERRIDES: ReadonlyMap<string, string> = new Map([
-  [OBSERVES_DECORATOR_NAME, '@ember-decorators/object'],
-]);
+export const PROPS_TO_DECORATORS: ReadonlyMap<string, DecoratorPathInfo[]> =
+  new Map([
+    [
+      '@ember/object',
+      [
+        {
+          decoratorPath: '@ember-decorators/object',
+          importPropDecoratorMap: { observer: OBSERVES_DECORATOR_NAME },
+        },
+        {
+          decoratorPath: '@ember/object',
+          importPropDecoratorMap: {
+            [COMPUTED_DECORATOR_NAME]: COMPUTED_DECORATOR_NAME,
+          },
+        },
+      ],
+    ],
+    [
+      '@ember/object/evented',
+      [
+        {
+          decoratorPath: '@ember-decorators/object',
+          importPropDecoratorMap: {
+            [ON_DECORATOR_NAME]: ON_DECORATOR_NAME,
+          },
+        },
+        {
+          decoratorPath: '@ember-decorators/object',
+          importPropDecoratorMap: {
+            [OFF_DECORATOR_NAME]: OFF_DECORATOR_NAME,
+          },
+        },
+      ],
+    ],
+    [
+      '@ember/controller',
+      [
+        {
+          decoratorPath: '@ember/controller',
+          importPropDecoratorMap: {
+            inject: 'inject',
+          },
+        },
+      ],
+    ],
+    [
+      '@ember/service',
+      [
+        {
+          decoratorPath: '@ember/service',
+          importPropDecoratorMap: {
+            // FIXME: service?
+            inject: 'inject',
+          },
+        },
+        {
+          decoratorPath: '@ember/service',
+          importPropDecoratorMap: {
+            service: 'service',
+          },
+        },
+      ],
+    ],
+    // FIXME: Do we need this?
+    [
+      '@ember/object/computed',
+      [
+        {
+          decoratorPath: '@ember/object/computed',
+        },
+      ],
+    ],
+  ]);
 
 export const CLASS_DECORATOR_NAMES = [
   ATTRIBUTE_BINDINGS_DECORATOR_NAME,
@@ -285,7 +311,9 @@ export function allowObjectLiteralDecorator(
   );
 }
 
-/** Convert the first letter to uppercase */
-export function capitalizeFirstLetter(name: string): string {
-  return name ? name.charAt(0).toUpperCase() + name.slice(1) : '';
+/**
+ * Returns a PascalCase version of the given string.
+ */
+export function classify(name: string): string {
+  return camelcase(name, { pascalCase: true });
 }

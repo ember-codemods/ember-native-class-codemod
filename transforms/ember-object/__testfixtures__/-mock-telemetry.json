@@ -1,8 +1,8 @@
 {
   "runtime": {
     "computedProperties": ["computedMacro", "anotherMacro", "numPlusOne", "numPlusPlus", "error", "errorService"],
-    "observedProperties": [],
-    "observerProperties": {},
+    "observedProperties": ["prop"],
+    "observerProperties": { "observerProp": ["prop"] },
     "offProperties": { "offProp": ["prop1", "prop2"] },
     "overriddenActions": ["overriddenActionMethod"],
     "overriddenProperties": ["overriddenMethod"],

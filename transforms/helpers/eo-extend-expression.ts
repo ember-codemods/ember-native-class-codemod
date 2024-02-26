@@ -31,8 +31,13 @@ export default class EOExtendExpression {
   ) {
     const raw = path.value;
 
-    this.className = getClassName(path, filePath, options.runtimeData.type);
     this.superClassName = raw.callee.object.name;
+    this.className = getClassName(
+      path,
+      filePath,
+      this.superClassName,
+      options.runtimeData?.type
+    );
 
     const mixins: AST.EOMixin[] = [];
     for (const arg of raw.arguments) {
@@ -92,6 +97,7 @@ export default class EOExtendExpression {
       templateLayout: false,
       off: false,
       tagName: false,
+      observes: false,
       unobserves: false,
     };
     const { properties } = this;
@@ -110,6 +116,7 @@ export default class EOExtendExpression {
           specs.templateLayout || prop.decoratorImportSpecs.templateLayout,
         off: specs.off || prop.decoratorImportSpecs.off,
         tagName: specs.tagName || prop.decoratorImportSpecs.tagName,
+        observes: specs.observes || prop.decoratorImportSpecs.observes,
         unobserves: specs.unobserves || prop.decoratorImportSpecs.unobserves,
       };
     }
