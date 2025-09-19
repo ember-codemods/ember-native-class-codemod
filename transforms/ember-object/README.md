@@ -722,7 +722,7 @@ const Foo7 = EmberObject.extend({
 /*
 Expect error:
   ValidationError: Validation errors for class 'Foo7':
-    [actions]: Transform not supported - [click]: action name matches one of the lifecycle hooks. Rename and try again. See https://github.com/scalvert/ember-native-class-codemod/issues/34 for more details
+    [actions]: Transform not supported - [click]: action name matches one of the lifecycle hooks. Rename and try again. See https://github.com/ember-codemods/ember-native-class-codemod/issues/34 for more details
 */
 
 // Do not transform as action name matches lifecycle hook
@@ -1012,7 +1012,7 @@ class Foo1 extends EmberObject {
     // class's actions to be safe. This should be refactored to call a normal method
     // on the parent class. If the parent class has not been converted to native
     // classes, it may need to be refactored as well. See
-    // https://github.com/scalvert/ember-native-class-codemod/blob/master/README.md
+    // https://github.com/ember-codemods/ember-native-class-codemod/blob/master/README.md
     // for more details.
     super.actions.baz.call(this, ...arguments);
   }
@@ -2071,7 +2071,7 @@ export default class _Runtime extends Runtime.extend(MyMixin) {
     // class's actions to be safe. This should be refactored to call a normal method
     // on the parent class. If the parent class has not been converted to native
     // classes, it may need to be refactored as well. See
-    // https://github.com/scalvert/ember-native-class-codemod/blob/master/README.md
+    // https://github.com/ember-codemods/ember-native-class-codemod/blob/master/README.md
     // for more details.
     super.actions.overriddenActionMethod.call(this, ...arguments) && this.boolProp;
   }

@@ -88,7 +88,7 @@ export default class EOActionsProp extends AbstractEOProp<
   /**
    * Iterate over actions and verify that the action name does not match the lifecycle hooks
    * The transformation is not supported if an action has the same name as lifecycle hook
-   * Reference: https://github.com/scalvert/ember-native-class-codemod/issues/34
+   * Reference: https://github.com/ember-codemods/ember-native-class-codemod/issues/34
    */
   private get lifecycleHookErrors(): string[] {
     const { actions } = this;
@@ -99,7 +99,7 @@ export default class EOActionsProp extends AbstractEOProp<
         errors.push(
           this.makeActionError(
             name,
-            'action name matches one of the lifecycle hooks. Rename and try again. See https://github.com/scalvert/ember-native-class-codemod/issues/34 for more details'
+            'action name matches one of the lifecycle hooks. Rename and try again. See https://github.com/ember-codemods/ember-native-class-codemod/issues/34 for more details'
           )
         );
       }
