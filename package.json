@@ -47,7 +47,7 @@
   "dependencies": {
     "@babel/parser": "^7.21.4",
     "camelcase": "^6.3.0",
-    "codemod-cli": "^3.2.0",
+    "codemod-cli": "github:tildeio/codemod-cli#no-babel",
     "cosmiconfig": "^7.0.0",
     "deepmerge-ts": "^4.3.0",
     "ember-codemods-telemetry-helpers": "^4.0.0",
