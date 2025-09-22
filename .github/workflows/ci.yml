@@ -35,4 +35,5 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
       - run: pnpm install
+      - run: pnpm dlx puppeteer browsers install chrome
       - run: pnpm test
