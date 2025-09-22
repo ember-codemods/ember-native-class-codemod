@@ -52,7 +52,6 @@ module.exports = {
         './.eslintrc.js',
         './.prettierrc.js',
         './bin/**/*.js',
-        './jest.config.js',
         './test/run-test.js',
         './transforms/ember-object/test.js',
       ],
@@ -79,9 +78,6 @@ module.exports = {
     // test files
     {
       files: ['**/*.test.{js,ts}'],
-      env: {
-        jest: true,
-      },
     },
     // typescript files
     {

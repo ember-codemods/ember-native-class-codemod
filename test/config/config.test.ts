@@ -1,5 +1,5 @@
-import { describe, expect, test } from '@jest/globals';
 import path from 'path';
+import { describe, expect, test } from 'vitest';
 import getConfig, { mergeConfig } from '../../transforms/helpers/config';
 import { DEFAULT_OPTIONS } from '../../transforms/helpers/options';
 

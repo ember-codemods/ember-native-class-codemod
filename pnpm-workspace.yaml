@@ -1,3 +1,6 @@
-# TODO delete this file after https://github.com/embroider-build/release-plan/issues/36 is fixed
 packages:
-  - '.'
+  - .
+  - test/fixtures/*
+
+ignoredBuiltDependencies:
+  - puppeteer
