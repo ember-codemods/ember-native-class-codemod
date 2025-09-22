@@ -1,4 +1,4 @@
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, test } from 'vitest';
 import { DEFAULT_OPTIONS, parseConfig } from '../transforms/helpers/options';
 import { makeMultilineMatcher } from './helpers/expect-multiline';
 

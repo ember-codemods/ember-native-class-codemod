@@ -1,2 +1,6 @@
+packages:
+  - .
+  - test/fixtures/*
+
 ignoredBuiltDependencies:
   - puppeteer

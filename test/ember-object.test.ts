@@ -1,14 +1,14 @@
-import { afterEach, beforeEach, describe, expect, test } from '@jest/globals';
 import { setTelemetry } from 'ember-codemods-telemetry-helpers';
 import { GlobSync } from 'glob';
 import { applyTransform } from 'jscodeshift/dist/testUtils';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import transform, { parser } from '../ember-object/index';
-import { assert } from '../helpers/util/types';
+import { afterEach, beforeEach, describe, expect, test } from 'vitest';
+import transform, { parser } from '../transforms/ember-object/index';
+import { assert } from '../transforms/helpers/util/types';
 import mockTelemetryData from './__testfixtures__/-mock-telemetry.json';
 
-const fixtureDir = 'transforms/ember-object/__testfixtures__/';
+const fixtureDir = './test/__testfixtures__/';
 const testFiles = new GlobSync(`${fixtureDir}**/*.input.js`).found;
 
 const OUTPUT_PARSER =

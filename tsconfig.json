@@ -6,7 +6,7 @@
     },
     "checkJs": false,
     "noEmitOnError": false,
-    "skipLibCheck": false,
+    "skipLibCheck": true,
     "resolveJsonModule": true,
 
     "strict": true,
